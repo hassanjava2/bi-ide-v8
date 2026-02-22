@@ -1,0 +1,15 @@
+[Unit]
+Description=BI IDE Unified API
+After=network.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=%h/bi-ide-v8
+EnvironmentFile=%h/bi-ide-v8/.env
+ExecStart=%h/bi-ide-v8/.venv/bin/uvicorn api.app:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

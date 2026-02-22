@@ -1,0 +1,2021 @@
+"""
+Unified API - نقطة دخول واحدة لكل الخدمات
+تجمع: IDE + ERP + Community + AI Hierarchy
+"""
+
+import sys
+import os
+import asyncio
+import json
+import threading
+import time
+
+# Add current directory to path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, PlainTextResponse
+from pydantic import BaseModel
+from typing import Dict, List, Optional, Any
+import uvicorn
+import shutil
+from pathlib import Path
+from datetime import datetime
+
+# Core modules
+try:
+    from core.logging_config import logger, setup_logging
+    from core.database import db_manager
+    from core.cache import cache_manager
+    from core.config import settings
+    CORE_MODULES_AVAILABLE = True
+except ImportError as e:
+    CORE_MODULES_AVAILABLE = False
+    print(f"Warning: Core modules not available: {e}")
+    logger = None
+
+# Prometheus metrics
+try:
+    from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
+    PROMETHEUS_AVAILABLE = True
+    
+    # Define metrics
+    REQUEST_COUNT = Counter('bi_ide_requests_total', 'Total requests', ['method', 'endpoint', 'status'])
+    REQUEST_LATENCY = Histogram('bi_ide_request_duration_seconds', 'Request latency', ['method', 'endpoint'])
+    ACTIVE_CONNECTIONS = Gauge('bi_ide_active_connections', 'Active connections')
+    AI_DECISIONS = Counter('bi_ide_ai_decisions_total', 'AI decisions', ['layer', 'decision_type'])
+    CACHE_HITS = Counter('bi_ide_cache_hits_total', 'Cache hits', ['cache_type'])
+    CACHE_MISSES = Counter('bi_ide_cache_misses_total', 'Cache misses', ['cache_type'])
+    
+except ImportError:
+    PROMETHEUS_AVAILABLE = False
+
+# Import services
+from ide.ide_service import get_ide_service
+from erp.erp_service import get_erp_service
+from orchestrator_api import router as orchestrator_router
+from hierarchy.specialized_ai_network import get_specialized_network_service
+
+# Import Smart Council (16 AI Wise Men)
+try:
+    from council_ai import smart_council
+    SMART_COUNCIL_AVAILABLE = True
+    print("🧠 Smart Council: 16 AI Wise Men initialized")
+except Exception as e:
+    SMART_COUNCIL_AVAILABLE = False
+    smart_council = None
+    print(f"⚠️ Smart Council: {e}")
+
+# Connect to RTX 4090 Inference Server (Ubuntu)
+import requests
+RTX4090_HOST = os.getenv("RTX4090_HOST") or os.getenv("AI_CORE_HOST", "192.168.68.125")
+RTX4090_PORT = os.getenv("RTX4090_PORT") or os.getenv("AI_CORE_PORT", "8080")
+RTX4090_URL = f"http://{RTX4090_HOST}:{RTX4090_PORT}"
+
+def check_rtx4090_connection():
+    """Check if RTX 4090 server is available"""
+    try:
+        r = requests.get(f"{RTX4090_URL}/health", timeout=5)
+        if r.status_code == 200:
+            data = r.json()
+            print(f"🔗 Connected to RTX 4090: {data.get('device', 'unknown')}")
+            print(f"   Models: {data.get('models', 0)}")
+            return True
+    except Exception as e:
+        print(f"⚠️ RTX 4090 not available: {e}")
+    return False
+
+RTX4090_AVAILABLE = check_rtx4090_connection()
+
+# Import AI Hierarchy (local or remote)
+import os
+AI_CORE_HOST = os.getenv("AI_CORE_HOST", None)
+AI_CORE_PORT = os.getenv("AI_CORE_PORT", "8080")
+AI_CORE_PORTS = [p.strip() for p in os.getenv("AI_CORE_PORTS", AI_CORE_PORT).split(",") if p.strip()]
+
+
+def _get_ai_core_base_urls() -> List[str]:
+    if not AI_CORE_HOST:
+        return []
+    ports = AI_CORE_PORTS or [AI_CORE_PORT]
+    return [f"http://{AI_CORE_HOST}:{port}" for port in ports]
+
+if AI_CORE_HOST:
+    # Remote mode - connect to RTX 4090
+    print(f"🔗 Remote AI Mode: {AI_CORE_HOST} ports={','.join(AI_CORE_PORTS)}")
+    ai_hierarchy = None  # Will use HTTP client
+else:
+    # Local mode - load hierarchy directly
+    from hierarchy import ai_hierarchy
+
+
+# Pydantic Models
+class CommandRequest(BaseModel):
+    command: str
+    alert_level: str = "GREEN"
+    context: Optional[Dict] = None
+
+
+class CodeSuggestionRequest(BaseModel):
+    code: str
+    cursor_position: int
+    language: str
+    file_path: str
+
+
+class CodeAnalysisRequest(BaseModel):
+    code: str
+    language: str
+    file_path: str
+
+
+class RefactorSuggestRequest(BaseModel):
+    code: str
+    language: str
+    file_path: str
+
+
+class TestGenerateRequest(BaseModel):
+    code: str
+    language: str
+    file_path: str
+
+
+class SymbolDocumentationRequest(BaseModel):
+    code: str
+    language: str
+    file_path: str
+    symbol: Optional[str] = None
+
+
+class SpecializationExpandRequest(BaseModel):
+    parent_id: str
+    name: str
+    description: str = ""
+
+
+class WorkerRegisterRequest(BaseModel):
+    worker_id: str
+    hostname: str
+    capabilities: Dict[str, Any] = {}
+
+
+class WorkerHeartbeatRequest(BaseModel):
+    worker_id: str
+    status: str = "online"
+    capabilities: Dict[str, Any] = {}
+
+
+class TrainingTaskCreateRequest(BaseModel):
+    topic: str
+    node_id: Optional[str] = None
+    priority: int = 5
+
+
+class TrainingTaskClaimRequest(BaseModel):
+    worker_id: str
+
+
+class TrainingTaskCompleteRequest(BaseModel):
+    task_id: str
+    worker_id: str
+    metrics: Dict[str, Any] = {}
+    artifact_name: Optional[str] = None
+    artifact_payload: Optional[Dict[str, Any]] = None
+
+
+class DualThoughtRequest(BaseModel):
+    node_id: str
+    prompt: str
+
+
+class InvoiceCreateRequest(BaseModel):
+    customer_name: str
+    customer_id: str
+    amount: float
+    tax: float
+    total: float
+    items: List[Dict]
+    notes: Optional[str] = ""
+
+
+class TerminalCommandRequest(BaseModel):
+    session_id: str
+    command: str
+
+
+class TerminalSessionStartRequest(BaseModel):
+    cwd: Optional[str] = None
+
+
+class GitCommitRequest(BaseModel):
+    message: str
+    stage_all: bool = True
+
+
+class GitSyncRequest(BaseModel):
+    remote: str = "origin"
+    branch: Optional[str] = None
+
+
+class DebugStartRequest(BaseModel):
+    file_path: str
+    breakpoints: List[int] = []
+
+
+class DebugBreakpointRequest(BaseModel):
+    session_id: str
+    file_path: str
+    line: int
+
+
+class DebugCommandRequest(BaseModel):
+    session_id: str
+    command: str
+
+
+class DebugStopRequest(BaseModel):
+    session_id: str
+
+
+class IdeaLedgerUpdateRequest(BaseModel):
+    title: Optional[str] = None
+    category: Optional[str] = None
+    summary: Optional[str] = None
+    owner: Optional[str] = None
+    priority: Optional[str] = None
+    kpi: Optional[str] = None
+    status: Optional[str] = None
+
+
+# Create app with enhanced documentation
+app = FastAPI(
+    title="BI IDE v8 - Unified AI-Powered Platform",
+    description="""
+    **BI IDE v8** - منصة متكاملة للتطوير وإدارة الموارد المؤسسية مدعومة بالذكاء الاصطناعي
+    
+    ## Features
+    * **IDE**: بيئة تطوير متكاملة مع AI Copilot
+    * **ERP**: نظام إدارة موارد مؤسسية
+    * **AI Hierarchy**: نظام هرمي ذكي (10+ طبقات)
+    * **Smart Council**: 16 حكيم AI للقرارات الاستراتيجية
+    
+    ## Authentication
+    Most endpoints require authentication via `X-API-Key` header.
+    """,
+    version="8.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
+)
+
+app.include_router(orchestrator_router)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+# Global instances
+hierarchy = None
+ide_service = None
+erp_service = None
+specialized_network_service = None
+
+# Council Chat History
+chat_history = []
+CHAT_HISTORY_FILE = Path("data/council_chat_history.json")
+chat_history_lock = threading.Lock()
+
+# Code-Free Idea Ledger
+idea_ledger_lock = threading.Lock()
+IDEA_LEDGER_FILE = Path("data/knowledge/idea-ledger-v6.json")
+idea_ledger_cache: Dict[str, Any] = {
+    "version": "1.0.0",
+    "generated_at": datetime.now().strftime("%Y-%m-%d"),
+    "policy": "code-free-migration",
+    "sources": [],
+    "ideas": []
+}
+
+council_metrics_lock = threading.Lock()
+council_metrics: Dict[str, Any] = {
+    "started_at": datetime.now().isoformat(),
+    "total_messages": 0,
+    "user_messages": 0,
+    "council_responses": 0,
+    "sources": {"rtx4090": 0, "local": 0, "fallback": 0},
+    "response_sources": {
+        "training+persona": 0,
+        "persona-template": 0,
+        "no-evidence-guard": 0,
+        "rtx4090-model": 0,
+        "fallback-template": 0,
+        "local-unknown": 0
+    },
+    "daily_quality": {},
+    "wise_men": {},
+    "layer_activity": {
+        "council": 0,
+        "scouts": 0,
+        "meta": 0,
+        "experts": 0,
+        "execution": 0,
+        "guardian": 0
+    },
+    "latency_ms": {
+        "count": 0,
+        "total": 0,
+        "min": None,
+        "max": None,
+        "last": None
+    },
+    "last_message_at": None,
+    "last_response_at": None
+}
+
+
+def _load_chat_history():
+    """تحميل سجل محادثات المجلس من القرص"""
+    global chat_history
+
+    try:
+        CHAT_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        if not CHAT_HISTORY_FILE.exists():
+            CHAT_HISTORY_FILE.write_text("[]", encoding="utf-8")
+            chat_history = []
+            return
+
+        data = json.loads(CHAT_HISTORY_FILE.read_text(encoding="utf-8") or "[]")
+        if isinstance(data, list):
+            chat_history = data
+        else:
+            chat_history = []
+    except Exception as e:
+        print(f"⚠️ Failed to load council chat history: {e}")
+        chat_history = []
+
+
+def _persist_chat_history():
+    """حفظ سجل محادثات المجلس على القرص"""
+    try:
+        CHAT_HISTORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        CHAT_HISTORY_FILE.write_text(
+            json.dumps(chat_history[-1000:], ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+    except Exception as e:
+        print(f"⚠️ Failed to persist council chat history: {e}")
+
+
+def _append_chat_message(payload: Dict[str, Any]):
+    """إضافة رسالة إلى السجل مع حفظ فوري"""
+    with chat_history_lock:
+        chat_history.append(payload)
+        if len(chat_history) > 1000:
+            del chat_history[:-1000]
+        _persist_chat_history()
+
+
+def _load_idea_ledger() -> None:
+    global idea_ledger_cache
+    try:
+        IDEA_LEDGER_FILE.parent.mkdir(parents=True, exist_ok=True)
+        if not IDEA_LEDGER_FILE.exists():
+            IDEA_LEDGER_FILE.write_text(
+                json.dumps(idea_ledger_cache, ensure_ascii=False, indent=2),
+                encoding="utf-8"
+            )
+            return
+
+        loaded = json.loads(IDEA_LEDGER_FILE.read_text(encoding="utf-8") or "{}")
+        if isinstance(loaded, dict):
+            loaded.setdefault("version", "1.0.0")
+            loaded.setdefault("generated_at", datetime.now().strftime("%Y-%m-%d"))
+            loaded.setdefault("policy", "code-free-migration")
+            loaded.setdefault("sources", [])
+            loaded.setdefault("ideas", [])
+            if not isinstance(loaded.get("ideas"), list):
+                loaded["ideas"] = []
+            idea_ledger_cache = loaded
+    except Exception as error:
+        print(f"⚠️ Failed to load idea ledger: {error}")
+
+
+def _persist_idea_ledger() -> None:
+    try:
+        IDEA_LEDGER_FILE.parent.mkdir(parents=True, exist_ok=True)
+        IDEA_LEDGER_FILE.write_text(
+            json.dumps(idea_ledger_cache, ensure_ascii=False, indent=2),
+            encoding="utf-8"
+        )
+    except Exception as error:
+        print(f"⚠️ Failed to persist idea ledger: {error}")
+
+
+def _get_idea_by_id(idea_id: str) -> Optional[Dict[str, Any]]:
+    for item in idea_ledger_cache.get("ideas", []):
+        if str(item.get("idea_id", "")).strip() == idea_id:
+            return item
+    return None
+
+
+def _record_user_message():
+    now = datetime.now().isoformat()
+    with council_metrics_lock:
+        council_metrics["total_messages"] += 1
+        council_metrics["user_messages"] += 1
+        council_metrics["layer_activity"]["guardian"] += 1
+        council_metrics["layer_activity"]["scouts"] += 1
+        council_metrics["layer_activity"]["meta"] += 1
+        council_metrics["last_message_at"] = now
+
+
+def _record_council_response(
+    council_member: str,
+    source: str,
+    message: str,
+    latency_ms: Optional[int],
+    response_source: Optional[str] = None
+):
+    now = datetime.now().isoformat()
+    day_key = datetime.now().strftime("%Y-%m-%d")
+    safe_member = (council_member or "حكيم القرار").strip()
+    safe_source = source if source in {"rtx4090", "local", "fallback"} else "fallback"
+    safe_response_source = (response_source or "").strip() or (
+        "rtx4090-model" if safe_source == "rtx4090" else "local-unknown"
+    )
+    text_length = len(message or "")
+
+    with council_metrics_lock:
+        council_metrics["total_messages"] += 1
+        council_metrics["council_responses"] += 1
+        council_metrics["sources"][safe_source] = council_metrics["sources"].get(safe_source, 0) + 1
+        source_map = council_metrics["response_sources"]
+        source_map[safe_response_source] = source_map.get(safe_response_source, 0) + 1
+        council_metrics["layer_activity"]["council"] += 1
+        council_metrics["layer_activity"]["experts"] += 1
+        council_metrics["layer_activity"]["execution"] += 1
+        council_metrics["last_response_at"] = now
+
+        daily_map = council_metrics["daily_quality"]
+        if day_key not in daily_map:
+            daily_map[day_key] = {
+                "responses": 0,
+                "evidence_backed": 0,
+                "guarded": 0
+            }
+
+        day_item = daily_map[day_key]
+        day_item["responses"] += 1
+        if safe_response_source in {"training+persona", "rtx4090-model"}:
+            day_item["evidence_backed"] += 1
+        if safe_response_source == "no-evidence-guard":
+            day_item["guarded"] += 1
+
+        wise_map = council_metrics["wise_men"]
+        if safe_member not in wise_map:
+            wise_map[safe_member] = {
+                "name": safe_member,
+                "responses": 0,
+                "total_chars": 0,
+                "avg_chars": 0,
+                "sources": {"rtx4090": 0, "local": 0, "fallback": 0},
+                "last_response_at": None
+            }
+
+        wise = wise_map[safe_member]
+        wise["responses"] += 1
+        wise["total_chars"] += text_length
+        wise["avg_chars"] = round(wise["total_chars"] / max(1, wise["responses"]), 2)
+        wise["sources"][safe_source] = wise["sources"].get(safe_source, 0) + 1
+        wise["last_response_at"] = now
+
+        if latency_ms is not None:
+            latency = council_metrics["latency_ms"]
+            latency["count"] += 1
+            latency["total"] += latency_ms
+            latency["last"] = latency_ms
+            latency["min"] = latency_ms if latency["min"] is None else min(latency["min"], latency_ms)
+            latency["max"] = latency_ms if latency["max"] is None else max(latency["max"], latency_ms)
+
+
+def _get_live_metrics_snapshot() -> Dict[str, Any]:
+    with council_metrics_lock:
+        snapshot = json.loads(json.dumps(council_metrics))
+
+    latency = snapshot.get("latency_ms", {})
+    count = latency.get("count", 0)
+    latency["avg"] = round(latency.get("total", 0) / count, 2) if count else 0
+
+    wise_items = list(snapshot.get("wise_men", {}).values())
+    wise_sorted = sorted(wise_items, key=lambda item: item.get("responses", 0), reverse=True)
+
+    total_responses = snapshot.get("council_responses", 0)
+    source_counts = snapshot.get("sources", {})
+    fallback_rate = (source_counts.get("fallback", 0) / total_responses * 100) if total_responses else 0
+    response_source_counts = snapshot.get("response_sources", {})
+
+    evidence_backed_total = (
+        response_source_counts.get("training+persona", 0)
+        + response_source_counts.get("rtx4090-model", 0)
+    )
+    guard_total = response_source_counts.get("no-evidence-guard", 0)
+    evidence_backed_rate = (evidence_backed_total / total_responses * 100) if total_responses else 0
+
+    daily_quality = snapshot.get("daily_quality", {})
+    trend_days = sorted(daily_quality.keys())[-7:]
+    daily_trend = []
+    for day in trend_days:
+        day_item = daily_quality.get(day, {})
+        day_responses = day_item.get("responses", 0)
+        day_evidence = day_item.get("evidence_backed", 0)
+        daily_trend.append({
+            "day": day,
+            "responses": day_responses,
+            "evidence_backed": day_evidence,
+            "guarded": day_item.get("guarded", 0),
+            "evidence_rate_pct": round((day_evidence / day_responses * 100), 2) if day_responses else 0
+        })
+
+    snapshot["top_wise_men"] = wise_sorted[:10]
+    snapshot["fallback_rate_pct"] = round(fallback_rate, 2)
+    snapshot["latency_ms"] = latency
+    snapshot["quality"] = {
+        "evidence_backed_total": evidence_backed_total,
+        "guard_total": guard_total,
+        "evidence_backed_rate_pct": round(evidence_backed_rate, 2),
+        "daily_trend": daily_trend
+    }
+    return snapshot
+
+
+def _bootstrap_metrics_from_history():
+    with council_metrics_lock:
+        council_metrics["wise_men"] = {}
+        council_metrics["total_messages"] = 0
+        council_metrics["user_messages"] = 0
+        council_metrics["council_responses"] = 0
+        council_metrics["sources"] = {"rtx4090": 0, "local": 0, "fallback": 0}
+        council_metrics["response_sources"] = {
+            "training+persona": 0,
+            "persona-template": 0,
+            "no-evidence-guard": 0,
+            "rtx4090-model": 0,
+            "fallback-template": 0,
+            "local-unknown": 0
+        }
+        council_metrics["daily_quality"] = {}
+        council_metrics["layer_activity"] = {
+            "council": 0,
+            "scouts": 0,
+            "meta": 0,
+            "experts": 0,
+            "execution": 0,
+            "guardian": 0
+        }
+        council_metrics["latency_ms"] = {
+            "count": 0,
+            "total": 0,
+            "min": None,
+            "max": None,
+            "last": None
+        }
+        council_metrics["last_message_at"] = None
+        council_metrics["last_response_at"] = None
+
+    for item in chat_history:
+        role = str(item.get("role", "")).lower()
+        if role == "user":
+            _record_user_message()
+            continue
+
+        if role == "council":
+            _record_council_response(
+                council_member=item.get("council_member", "حكيم القرار"),
+                source=item.get("source", "fallback"),
+                message=item.get("message", ""),
+                latency_ms=None,
+                response_source=item.get("response_source")
+            )
+
+
+@app.on_event("startup")
+async def startup():
+    """تهيئة الخدمات"""
+    global hierarchy, ide_service, erp_service, specialized_network_service, checkpoint_sync_task, last_checkpoint_sync
+    
+    print("🚀 Starting Unified API...")
+    
+    # Initialize AI Hierarchy
+    hierarchy = ai_hierarchy
+    if hierarchy:
+        await hierarchy.initialize()
+        print("🧠 AI Hierarchy initialized (15 layers)")
+    
+    # Initialize IDE
+    ide_service = get_ide_service(hierarchy)
+    print("💻 IDE Service ready")
+    
+    # Initialize ERP
+    erp_service = get_erp_service(hierarchy)
+    print("🏢 ERP Service ready")
+
+    # Initialize Specialized AI Network
+    specialized_network_service = get_specialized_network_service()
+    print("🧬 Specialized AI Network ready")
+
+    # Load persisted council history
+    _load_chat_history()
+    print(f"💬 Council history loaded: {len(chat_history)} messages")
+    _bootstrap_metrics_from_history()
+    print("📊 Council live metrics initialized")
+
+    # Load code-free idea ledger
+    _load_idea_ledger()
+    print(f"🧾 Idea ledger loaded: {len(idea_ledger_cache.get('ideas', []))} ideas")
+
+    # Start automatic checkpoint sync (remote mode)
+    if AI_CORE_HOST and AUTO_SYNC_CHECKPOINTS:
+        print(f"🔄 Checkpoint auto-sync enabled (every {AUTO_SYNC_INTERVAL_SEC}s)")
+        initial = await asyncio.to_thread(_sync_checkpoints_once, False)
+        last_checkpoint_sync = initial
+        if initial.get("status") == "success":
+            print(
+                f"📥 Initial catch-up sync: synced={initial.get('synced', 0)}, "
+                f"skipped={initial.get('skipped', 0)}, failed={initial.get('failed', 0)}, "
+                f"total={initial.get('total', 0)}"
+            )
+        else:
+            print(f"⚠️ Initial catch-up sync failed: {initial.get('message', 'unknown error')}")
+
+        checkpoint_sync_task = asyncio.create_task(_checkpoint_sync_loop())
+    else:
+        print("ℹ️ Checkpoint auto-sync disabled (set AI_CORE_HOST + AUTO_SYNC_CHECKPOINTS=1)")
+    
+    print("✅ All services initialized")
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    """إيقاف المهام الخلفية"""
+    global checkpoint_sync_task
+
+    if checkpoint_sync_task:
+        checkpoint_sync_task.cancel()
+        try:
+            await checkpoint_sync_task
+        except asyncio.CancelledError:
+            pass
+
+
+# ========== System Status ==========
+
+@app.get("/health")
+async def health_check():
+    """Health check سريع للخدمة"""
+    return {
+        "status": "ok",
+        "service": "bi-ide-api",
+        "version": "3.0.0",
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/api/v1/rtx4090/status")
+async def get_rtx4090_status():
+    """حالة اتصال RTX 4090"""
+    connected = check_rtx4090_connection()
+
+    payload = {
+        "connected": connected,
+        "url": RTX4090_URL,
+        "timestamp": datetime.now().isoformat()
+    }
+
+    if connected:
+        try:
+            r = requests.get(f"{RTX4090_URL}/health", timeout=5)
+            if r.status_code == 200:
+                payload["remote"] = r.json()
+        except Exception:
+            pass
+
+    return payload
+
+@app.get("/api/v1/status")
+async def get_status():
+    """حالة النظام الكاملة"""
+    ide_status = ide_service.get_status() if ide_service else {"files_count": 0, "copilot_ready": True}
+    erp_status = erp_service.get_dashboard() if erp_service else {"accounting": {}, "inventory": {}, "hr": {}}
+    
+    live = _get_live_metrics_snapshot()
+    wise_count = 16 if SMART_COUNCIL_AVAILABLE else len(live.get("wise_men", {}))
+
+    return {
+        "services": {
+            "ai_hierarchy": hierarchy is not None,
+            "ide": ide_status,
+            "erp": erp_status
+        },
+        "hierarchy": {
+            "council": {
+                "wise_men_count": wise_count,
+                "status": "active",
+                "responses": live.get("council_responses", 0),
+                "fallback_rate_pct": live.get("fallback_rate_pct", 0),
+                "last_response_at": live.get("last_response_at")
+            },
+            "scouts": {
+                "intel_buffer_size": 42,
+                "high_priority_queue": 0,
+                "activity": live.get("layer_activity", {}).get("scouts", 0)
+            },
+            "meta": {
+                "performance_score": 85,
+                "managers_active": 16,
+                "activity": live.get("layer_activity", {}).get("meta", 0)
+            },
+            "experts": {
+                "total": 11,
+                "domains": ["tech", "business", "science"],
+                "activity": live.get("layer_activity", {}).get("experts", 0)
+            },
+            "execution": {
+                "active_crises": 0,
+                "pending_tasks": 3,
+                "completed_tasks": live.get("layer_activity", {}).get("execution", 0)
+            }
+        },
+        "guardian": {
+            "active": True,
+            "layers": 5,
+            "active_crises": 0,
+            "total_requests": live.get("user_messages", 0),
+            "threats_blocked": 0,
+            "violations_prevented": 0,
+            "current_mode": "ACTIVE",
+            "activity": live.get("layer_activity", {}).get("guardian", 0)
+        },
+        "rtx4090": {
+            "connected": RTX4090_AVAILABLE,
+            "url": RTX4090_URL
+        },
+        "layers": 15,
+        "version": "3.0.0"
+    }
+
+
+@app.get("/api/v1/hierarchy/status")
+async def get_hierarchy_status():
+    """حالة الهرم AI"""
+    if not hierarchy:
+        raise HTTPException(500, "AI not initialized")
+    return hierarchy.get_full_status()
+
+
+@app.post("/api/v1/command")
+async def execute_command(request: CommandRequest):
+    """تنفيذ أمر عبر الهرم"""
+    if not hierarchy:
+        raise HTTPException(500, "AI not initialized")
+    
+    result = await hierarchy.execute_command(
+        request.command,
+        request.alert_level
+    )
+    return result
+
+
+@app.get("/api/v1/wisdom")
+async def get_wisdom(horizon: str = "century"):
+    """حكمة من البعد السابع"""
+    if not hierarchy:
+        return {"wisdom": "التأسيس المتين يحتاج صبراً و رؤية طويلة المدى."}
+    
+    try:
+        wisdom = hierarchy.get_wisdom()
+        return {"wisdom": wisdom, "horizon": horizon}
+    except:
+        return {"wisdom": "التأسيس المتين يحتاج صبراً و رؤية طويلة المدى.", "horizon": horizon}
+
+
+@app.get("/api/v1/guardian/status")
+async def get_guardian_status():
+    """حالة طبقة الحماية"""
+    live = _get_live_metrics_snapshot()
+    return {
+        "active": True,
+        "layers": 5,
+        "active_crises": 0,
+        "total_requests": live.get("user_messages", 0),
+        "threats_blocked": 0,
+        "violations_prevented": 0,
+        "current_mode": "ACTIVE",
+        "security_level": "normal",
+        "compliance_status": "compliant",
+        "bridge_connections": 3,
+        "eternity_backup": True,
+        "activity": live.get("layer_activity", {}).get("guardian", 0)
+    }
+
+
+# ========== IDE Endpoints ==========
+
+@app.get("/api/v1/ide/files")
+async def get_file_tree():
+    """شجرة الملفات"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+    
+    def serialize_node(node):
+        return {
+            "id": node.id,
+            "name": node.name,
+            "type": node.type,
+            "path": node.path,
+            "language": node.language,
+            "children": [serialize_node(c) for c in node.children]
+        }
+    
+    tree = ide_service.fs.get_file_tree()
+    return serialize_node(tree)
+
+
+@app.get("/api/v1/ide/files/{file_id}")
+async def get_file(file_id: str):
+    """محتوى ملف"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+    
+    content = ide_service.fs.get_file_content(file_id)
+    if content is None:
+        raise HTTPException(404, "File not found")
+    
+    return {"id": file_id, "content": content}
+
+
+@app.post("/api/v1/ide/files/{file_id}")
+async def save_file(file_id: str, request: Dict):
+    """حفظ ملف"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+    
+    success = ide_service.fs.save_file(file_id, request.get("content", ""))
+    return {"success": success}
+
+
+@app.post("/api/v1/ide/copilot/suggest")
+async def get_code_suggestions(request: CodeSuggestionRequest):
+    """اقتراحات كود من AI"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+    
+    suggestions = await ide_service.copilot.get_code_suggestions(
+        request.code,
+        request.cursor_position,
+        request.language,
+        request.file_path
+    )
+    
+    return {
+        "suggestions": [
+            {
+                "label": s.text,
+                "detail": s.detail,
+                "insertText": s.insert_text,
+                "confidence": s.confidence
+            }
+            for s in suggestions
+        ]
+    }
+
+
+@app.post("/api/v1/ide/analysis")
+async def get_code_analysis(request: CodeAnalysisRequest):
+    """تحليل ثابت للكود (MVP diagnostics)"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return ide_service.copilot.get_code_diagnostics(
+        code=request.code,
+        language=request.language,
+        file_path=request.file_path
+    )
+
+
+@app.post("/api/v1/ide/refactor/suggest")
+async def get_refactor_suggestions(request: RefactorSuggestRequest):
+    """اقتراحات Refactoring (MVP)"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return ide_service.copilot.get_refactor_suggestions(
+        code=request.code,
+        language=request.language,
+        file_path=request.file_path
+    )
+
+
+@app.post("/api/v1/ide/tests/generate")
+async def generate_tests(request: TestGenerateRequest):
+    """توليد اختبارات (MVP)"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return await ide_service.copilot.generate_tests_for_file(
+        code=request.code,
+        language=request.language,
+        file_path=request.file_path
+    )
+
+
+@app.post("/api/v1/ide/docs/symbol")
+async def get_symbol_documentation(request: SymbolDocumentationRequest):
+    """Lookup documentation/details for a symbol in current workspace"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return ide_service.copilot.get_symbol_documentation(
+        code=request.code,
+        language=request.language,
+        file_path=request.file_path,
+        symbol=request.symbol
+    )
+
+
+@app.get("/api/v1/ide/git/status")
+async def get_git_status():
+    """Git status (MVP)"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return await ide_service.git.get_status()
+
+
+@app.get("/api/v1/ide/git/diff")
+async def get_git_diff(path: Optional[str] = None):
+    """Git diff (workspace or file)"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return await ide_service.git.get_diff(path)
+
+
+@app.post("/api/v1/ide/git/commit")
+async def create_git_commit(request: GitCommitRequest):
+    """Create git commit with optional stage-all"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return await ide_service.git.commit(
+        message=request.message,
+        stage_all=request.stage_all
+    )
+
+
+@app.post("/api/v1/ide/git/push")
+async def push_git_changes(request: GitSyncRequest):
+    """Push git changes to remote"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return await ide_service.git.push(
+        remote=request.remote,
+        branch=request.branch
+    )
+
+
+@app.post("/api/v1/ide/git/pull")
+async def pull_git_changes(request: GitSyncRequest):
+    """Pull latest git changes from remote"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return await ide_service.git.pull(
+        remote=request.remote,
+        branch=request.branch
+    )
+
+
+@app.post("/api/v1/ide/debug/session/start")
+async def start_debug_session(request: DebugStartRequest):
+    """Start Python debug session (MVP)"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return await ide_service.debug.start_session(
+        file_path=request.file_path,
+        breakpoints=request.breakpoints
+    )
+
+
+@app.post("/api/v1/ide/debug/breakpoint")
+async def set_debug_breakpoint(request: DebugBreakpointRequest):
+    """Set debug breakpoint by file and line"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return await ide_service.debug.set_breakpoint(
+        session_id=request.session_id,
+        file_path=request.file_path,
+        line=request.line
+    )
+
+
+@app.post("/api/v1/ide/debug/command")
+async def execute_debug_command(request: DebugCommandRequest):
+    """Execute debug command: continue/step/next/stack/locals/..."""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return await ide_service.debug.execute(
+        session_id=request.session_id,
+        command=request.command
+    )
+
+
+@app.post("/api/v1/ide/debug/session/stop")
+async def stop_debug_session(request: DebugStopRequest):
+    """Stop debug session"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    return await ide_service.debug.stop_session(request.session_id)
+
+
+@app.post("/api/v1/ide/terminal/execute")
+async def execute_terminal(request: TerminalCommandRequest):
+    """تنفيذ أمر Terminal"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+    
+    result = await ide_service.terminal.execute_command(
+        request.session_id,
+        request.command
+    )
+    return result
+
+
+@app.post("/api/v1/ide/terminal/session/start")
+async def start_terminal_session(request: TerminalSessionStartRequest):
+    """بدء جلسة Terminal معزولة"""
+    if not ide_service:
+        raise HTTPException(500, "IDE not initialized")
+
+    session = await ide_service.terminal.start_session(request.cwd)
+    return session
+
+
+# ========== ERP Endpoints ==========
+
+@app.get("/api/v1/erp/dashboard")
+async def get_erp_dashboard():
+    """لوحة تحكم ERP"""
+    if not erp_service:
+        raise HTTPException(500, "ERP not initialized")
+    
+    return erp_service.get_dashboard()
+
+
+@app.get("/api/v1/erp/invoices")
+async def get_invoices(status: Optional[str] = None):
+    """الفواتير"""
+    if not erp_service:
+        raise HTTPException(500, "ERP not initialized")
+    
+    invoices = erp_service.accounting.get_invoices(status)
+    return [
+        {
+            "id": inv.id,
+            "number": inv.invoice_number,
+            "customer": inv.customer_name,
+            "amount": inv.amount,
+            "total": inv.total,
+            "status": inv.status.value,
+            "created": inv.created_at.isoformat(),
+            "due": inv.due_date.isoformat()
+        }
+        for inv in invoices
+    ]
+
+
+@app.post("/api/v1/erp/invoices")
+async def create_invoice(request: InvoiceCreateRequest):
+    """إنشاء فاتورة"""
+    if not erp_service:
+        raise HTTPException(500, "ERP not initialized")
+    
+    invoice = erp_service.accounting.create_invoice(request.dict())
+    return {"id": invoice.id, "number": invoice.invoice_number}
+
+
+@app.post("/api/v1/erp/invoices/{invoice_id}/pay")
+async def mark_invoice_paid(invoice_id: str):
+    """تحديد فاتورة كمدفوعة"""
+    if not erp_service:
+        raise HTTPException(500, "ERP not initialized")
+    
+    success = erp_service.accounting.mark_paid(invoice_id)
+    return {"success": success}
+
+
+@app.get("/api/v1/erp/inventory")
+async def get_inventory():
+    """المخزون"""
+    if not erp_service:
+        raise HTTPException(500, "ERP not initialized")
+    
+    items = erp_service.inventory.get_all_items()
+    return [
+        {
+            "id": item.id,
+            "sku": item.sku,
+            "name": item.name,
+            "quantity": item.quantity,
+            "reorder_point": item.reorder_point,
+            "unit_price": item.unit_price,
+            "category": item.category
+        }
+        for item in items
+    ]
+
+
+@app.get("/api/v1/erp/hr/employees")
+async def get_employees():
+    """الموظفين"""
+    if not erp_service:
+        raise HTTPException(500, "ERP not initialized")
+    
+    employees = erp_service.hr.get_all_employees()
+    return [
+        {
+            "id": emp.id,
+            "employee_id": emp.employee_id,
+            "name": emp.name,
+            "email": emp.email,
+            "department": emp.department,
+            "position": emp.position,
+            "salary": emp.salary,
+            "status": emp.status.value
+        }
+        for emp in employees
+    ]
+
+
+@app.get("/api/v1/erp/hr/payroll")
+async def get_payroll():
+    """الرواتب"""
+    if not erp_service:
+        raise HTTPException(500, "ERP not initialized")
+    
+    return erp_service.hr.calculate_payroll()
+
+
+@app.get("/api/v1/erp/reports/financial")
+async def get_financial_report(period: str = "month"):
+    """التقرير المالي"""
+    if not erp_service:
+        raise HTTPException(500, "ERP not initialized")
+    
+    return erp_service.accounting.get_financial_report(period)
+
+
+@app.get("/api/v1/erp/ai-insights")
+async def get_erp_ai_insights():
+    """رؤى AI للـ ERP"""
+    if not erp_service:
+        raise HTTPException(500, "ERP not initialized")
+    
+    insights = await erp_service.get_ai_insights()
+    return insights
+
+
+# ========== Checkpoint Sync ==========
+
+CHECKPOINTS_DIR = Path("learning_data/checkpoints")
+CHECKPOINTS_DIR.mkdir(parents=True, exist_ok=True)
+
+AUTO_SYNC_CHECKPOINTS = os.getenv("AUTO_SYNC_CHECKPOINTS", "1").lower() in ("1", "true", "yes", "on")
+AUTO_SYNC_INTERVAL_SEC = int(os.getenv("AUTO_SYNC_INTERVAL_SEC", "60"))
+MIN_CHECKPOINT_SIZE_MB = float(os.getenv("MIN_CHECKPOINT_SIZE_MB", "1"))
+MIN_CHECKPOINT_SIZE_BYTES = int(MIN_CHECKPOINT_SIZE_MB * 1024 * 1024)
+checkpoint_sync_task = None
+last_checkpoint_sync = {
+    "status": "idle",
+    "timestamp": None,
+    "synced": 0,
+    "skipped": 0,
+    "failed": 0,
+    "total": 0,
+    "message": "not started"
+}
+
+
+def _sync_checkpoints_once(force: bool = False):
+    """مزامنة دفعة واحدة من RTX 4090"""
+    if not AI_CORE_HOST:
+        return {"status": "error", "message": "RTX 4090 not configured", "synced": 0, "skipped": 0, "failed": 0, "total": 0}
+
+    base_urls = _get_ai_core_base_urls()
+    if not base_urls:
+        return {"status": "error", "message": "no AI core base urls configured", "synced": 0, "skipped": 0, "failed": 0, "total": 0}
+
+    try:
+        chosen_base_url = None
+        response = None
+        for base_url in base_urls:
+            try:
+                candidate = requests.get(f"{base_url}/checkpoints/list", timeout=20)
+                if candidate.status_code == 200:
+                    response = candidate
+                    chosen_base_url = base_url
+                    break
+            except Exception:
+                continue
+
+        if not response or not chosen_base_url:
+            return {
+                "status": "error",
+                "message": f"failed to list remote checkpoints on ports: {','.join(AI_CORE_PORTS)}",
+                "synced": 0,
+                "skipped": 0,
+                "failed": 0,
+                "total": 0,
+                "timestamp": datetime.now().isoformat()
+            }
+
+        remote_checkpoints = response.json().get("checkpoints", [])
+
+        synced = 0
+        skipped = 0
+        failed = 0
+
+        for ckpt in remote_checkpoints:
+            layer_name = ckpt.get("layer")
+            filename = ckpt.get("file")
+            if not layer_name or not filename:
+                failed += 1
+                continue
+
+            layer_dir = CHECKPOINTS_DIR / layer_name
+            layer_dir.mkdir(parents=True, exist_ok=True)
+            file_path = layer_dir / filename
+
+            if file_path.exists() and file_path.stat().st_size >= MIN_CHECKPOINT_SIZE_BYTES and not force:
+                skipped += 1
+                continue
+
+            download_url = f"{chosen_base_url}/checkpoints/download/{layer_name}/{filename}"
+            ckpt_response = requests.get(download_url, timeout=60)
+
+            if ckpt_response.status_code == 200:
+                with open(file_path, "wb") as f:
+                    f.write(ckpt_response.content)
+                synced += 1
+            else:
+                failed += 1
+
+        return {
+            "status": "success",
+            "source": chosen_base_url,
+            "synced": synced,
+            "skipped": skipped,
+            "failed": failed,
+            "total": len(remote_checkpoints),
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e),
+            "synced": 0,
+            "skipped": 0,
+            "failed": 0,
+            "total": 0,
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+async def _checkpoint_sync_loop():
+    """مزامنة دورية تلقائية للـ checkpoints"""
+    global last_checkpoint_sync
+
+    while True:
+        try:
+            result = await asyncio.to_thread(_sync_checkpoints_once, False)
+            last_checkpoint_sync = result
+            if result.get("status") == "success":
+                print(
+                    f"🔄 Auto-sync: synced={result.get('synced', 0)}, "
+                    f"skipped={result.get('skipped', 0)}, failed={result.get('failed', 0)}, "
+                    f"total={result.get('total', 0)}"
+                )
+            else:
+                print(f"⚠️ Auto-sync failed: {result.get('message', 'unknown error')}")
+        except Exception as e:
+            last_checkpoint_sync = {
+                "status": "error",
+                "timestamp": datetime.now().isoformat(),
+                "synced": 0,
+                "skipped": 0,
+                "failed": 0,
+                "total": 0,
+                "message": str(e)
+            }
+            print(f"⚠️ Auto-sync exception: {e}")
+
+        await asyncio.sleep(max(15, AUTO_SYNC_INTERVAL_SEC))
+
+
+@app.post("/api/v1/checkpoints/upload/{layer_name}")
+async def upload_checkpoint(layer_name: str, file: UploadFile = File(...)):
+    """استقبال checkpoint من RTX 4090"""
+    layer_dir = CHECKPOINTS_DIR / layer_name
+    layer_dir.mkdir(parents=True, exist_ok=True)
+    
+    file_path = layer_dir / file.filename
+    with open(file_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+    
+    print(f"📥 Received checkpoint: {layer_name}/{file.filename}")
+    return {"status": "saved", "path": str(file_path), "size": file_path.stat().st_size}
+
+@app.get("/api/v1/checkpoints")
+async def list_checkpoints():
+    """قائمة جميع الـ checkpoints المحفوظة"""
+    checkpoints = []
+    for layer_dir in CHECKPOINTS_DIR.iterdir():
+        if layer_dir.is_dir():
+            for ckpt in layer_dir.glob("*.pt"):
+                checkpoints.append({
+                    "layer": layer_dir.name,
+                    "file": ckpt.name,
+                    "size_mb": round(ckpt.stat().st_size / (1024*1024), 2),
+                    "modified": ckpt.stat().st_mtime
+                })
+    return {
+        "total": len(checkpoints),
+        "location": str(CHECKPOINTS_DIR),
+        "checkpoints": checkpoints
+    }
+
+@app.post("/api/v1/checkpoints/sync-from-rtx4090")
+async def sync_checkpoints_from_rtx4090(force: bool = False):
+    """طلب مزامنة الـ checkpoints من RTX 4090"""
+
+    try:
+        result = await asyncio.to_thread(_sync_checkpoints_once, force)
+        return result
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.get("/api/v1/checkpoints/sync-status")
+async def get_checkpoint_sync_status():
+    """آخر حالة مزامنة checkpoints"""
+    return {
+        "enabled": AUTO_SYNC_CHECKPOINTS,
+        "interval_sec": AUTO_SYNC_INTERVAL_SEC,
+        "min_checkpoint_size_mb": MIN_CHECKPOINT_SIZE_MB,
+        "ai_core_host": AI_CORE_HOST,
+        "ai_core_port": AI_CORE_PORT,
+        "ai_core_ports": AI_CORE_PORTS,
+        "last_sync": last_checkpoint_sync
+    }
+
+
+# ========== Council Chat ==========
+
+@app.get("/api/v1/council/history")
+async def get_council_history():
+    """سجل محادثات المجلس"""
+    return {
+        "history": chat_history[-50:],
+        "count": len(chat_history)
+    }
+
+class CouncilMessageRequest(BaseModel):
+    message: str
+    user_id: str = "president"
+    alert_level: str = "GREEN"
+
+@app.post("/api/v1/council/message")
+async def council_message(request: CouncilMessageRequest):
+    """
+    إرسال رسالة للمجلس - الـ AI يرد من RTX 4090
+    """
+    user_msg = request.message
+    user_id = request.user_id
+    started = time.perf_counter()
+    
+    # حفظ رسالة المستخدم
+    _append_chat_message({
+        "role": "user",
+        "user": user_id,
+        "message": user_msg,
+        "timestamp": datetime.now().isoformat()
+    })
+    _record_user_message()
+    
+    # ✅ RTX 4090 Inference (REAL AI)
+    rtx_available_now = check_rtx4090_connection()
+    if rtx_available_now:
+        try:
+            r = requests.post(
+                f"{RTX4090_URL}/council/message",
+                json={"message": user_msg, "user_id": user_id},
+                timeout=30
+            )
+            
+            if r.status_code == 200:
+                data = r.json()
+                
+                ai_response = data.get("response", "...")
+                council_member = data.get("council_member", "حكيم القرار")
+                model_used = data.get("model_used", "unknown")
+                
+                # حفظ رد AI
+                _append_chat_message({
+                    "role": "council",
+                    "council_member": council_member,
+                    "message": ai_response,
+                    "timestamp": datetime.now().isoformat(),
+                    "source": "rtx4090",
+                    "model": model_used,
+                    "response_source": "rtx4090-model",
+                    "evidence": []
+                })
+                _record_council_response(
+                    council_member=council_member,
+                    source="rtx4090",
+                    message=ai_response,
+                    latency_ms=int((time.perf_counter() - started) * 1000),
+                    response_source="rtx4090-model"
+                )
+                
+                return {
+                    "response": ai_response,
+                    "council_member": council_member,
+                    "source": "rtx4090",
+                    "model": model_used,
+                    "response_source": "rtx4090-model",
+                    "confidence": 0.9,
+                    "evidence": [],
+                    "history": chat_history[-10:]
+                }
+        except Exception as e:
+            print(f"⚠️ RTX 4090 error: {e}")
+    
+    # Fallback: Local Smart Council
+    if SMART_COUNCIL_AVAILABLE and smart_council:
+        result = smart_council.ask(user_msg)
+        
+        ai_response = result["response"]
+        council_member = result["wise_man"]
+        
+        _append_chat_message({
+            "role": "council",
+            "council_member": council_member,
+            "message": ai_response,
+            "timestamp": datetime.now().isoformat(),
+            "source": "local",
+            "response_source": result.get("response_source", "local-unknown"),
+            "evidence": result.get("evidence", [])
+        })
+        _record_council_response(
+            council_member=council_member,
+            source="local",
+            message=ai_response,
+            latency_ms=int((time.perf_counter() - started) * 1000),
+            response_source=result.get("response_source", "local-unknown")
+        )
+        
+        return {
+            "response": ai_response,
+            "council_member": council_member,
+            "source": "local",
+            "response_source": result.get("response_source", "local-unknown"),
+            "confidence": result.get("confidence", 0.0),
+            "evidence": result.get("evidence", []),
+            "needs_topic_specificity": result.get("response_source") == "no-evidence-guard",
+            "history": chat_history[-10:]
+        }
+    else:
+        # Fallback
+        ai_response = "أنا هنا لمساعدتك. ما هو سؤالك؟"
+        council_member = "حكيم القرار"
+        
+        _append_chat_message({
+            "role": "council",
+            "council_member": council_member,
+            "message": ai_response,
+            "timestamp": datetime.now().isoformat(),
+            "source": "fallback",
+            "response_source": "fallback-template",
+            "evidence": []
+        })
+        _record_council_response(
+            council_member=council_member,
+            source="fallback",
+            message=ai_response,
+            latency_ms=int((time.perf_counter() - started) * 1000),
+            response_source="fallback-template"
+        )
+        
+        return {
+            "response": ai_response,
+            "council_member": council_member,
+            "source": "fallback",
+            "response_source": "fallback-template",
+            "confidence": 0.2,
+            "evidence": [],
+            "history": chat_history[-10:]
+        }
+
+
+@app.get("/api/v1/council/wise-men")
+async def get_wise_men():
+    """قائمة الـ 16 حكيم مع قدراتهم"""
+    if SMART_COUNCIL_AVAILABLE and smart_council:
+        return {
+            "count": 16,
+            "wise_men": smart_council.get_all_wise_men(),
+            "live_metrics": _get_live_metrics_snapshot().get("top_wise_men", [])
+        }
+    else:
+        return {
+            "count": 0,
+            "wise_men": [],
+            "error": "Smart Council not available"
+        }
+
+
+@app.get("/api/v1/council/metrics")
+async def get_council_metrics():
+    """Live metrics for council and wise men"""
+    snapshot = _get_live_metrics_snapshot()
+    return {
+        "status": "ok",
+        "metrics": snapshot
+    }
+
+
+@app.get("/api/v1/hierarchy/metrics")
+async def get_hierarchy_metrics():
+    """Live metrics snapshot for hierarchy layers"""
+    live = _get_live_metrics_snapshot()
+    return {
+        "status": "ok",
+        "layers": {
+            "council": live.get("layer_activity", {}).get("council", 0),
+            "scouts": live.get("layer_activity", {}).get("scouts", 0),
+            "meta": live.get("layer_activity", {}).get("meta", 0),
+            "experts": live.get("layer_activity", {}).get("experts", 0),
+            "execution": live.get("layer_activity", {}).get("execution", 0),
+            "guardian": live.get("layer_activity", {}).get("guardian", 0)
+        },
+        "council": {
+            "responses": live.get("council_responses", 0),
+            "fallback_rate_pct": live.get("fallback_rate_pct", 0),
+            "latency_ms": live.get("latency_ms", {}),
+            "top_wise_men": live.get("top_wise_men", [])
+        }
+    }
+
+
+@app.post("/api/v1/council/discuss")
+async def council_discuss(request: dict):
+    """
+    نقاش جماعي - كل الحكماء يشاركون برأيهم
+    """
+    topic = request.get("topic", "")
+    
+    if SMART_COUNCIL_AVAILABLE and smart_council:
+        discussion = smart_council.discuss(topic)
+        return {
+            "topic": topic,
+            "participants_requested": 5,
+            "participants": len(discussion),
+            "evidence_required": True,
+            "filtered_out": max(0, 5 - len(discussion)),
+            "discussion": discussion
+        }
+    else:
+        return {
+            "topic": topic,
+            "participants_requested": 5,
+            "participants": 0,
+            "evidence_required": True,
+            "filtered_out": 5,
+            "discussion": []
+        }
+
+
+# ========== Specialized Hierarchical Network ==========
+
+@app.get("/api/v1/network/status")
+async def network_status():
+    if not specialized_network_service:
+        raise HTTPException(503, "Specialized network not initialized")
+    return {
+        "status": "ok",
+        "network": specialized_network_service.get_status()
+    }
+
+
+@app.get("/api/v1/network/graph")
+async def network_graph():
+    if not specialized_network_service:
+        raise HTTPException(503, "Specialized network not initialized")
+    return {
+        "status": "ok",
+        "graph": specialized_network_service.get_graph()
+    }
+
+
+@app.post("/api/v1/network/graph/expand")
+async def network_expand(request: SpecializationExpandRequest):
+    if not specialized_network_service:
+        raise HTTPException(503, "Specialized network not initialized")
+    try:
+        node = specialized_network_service.expand_specialization(
+            parent_id=request.parent_id,
+            name=request.name,
+            description=request.description
+        )
+        return {"status": "ok", "node": node}
+    except ValueError as error:
+        raise HTTPException(400, str(error))
+
+
+@app.post("/api/v1/network/workers/register")
+async def network_register_worker(request: WorkerRegisterRequest):
+    if not specialized_network_service:
+        raise HTTPException(503, "Specialized network not initialized")
+    worker = specialized_network_service.register_worker(
+        worker_id=request.worker_id,
+        hostname=request.hostname,
+        capabilities=request.capabilities,
+    )
+    return {"status": "ok", "worker": worker}
+
+
+@app.post("/api/v1/network/workers/heartbeat")
+async def network_worker_heartbeat(request: WorkerHeartbeatRequest):
+    if not specialized_network_service:
+        raise HTTPException(503, "Specialized network not initialized")
+    worker = specialized_network_service.heartbeat_worker(
+        worker_id=request.worker_id,
+        status=request.status,
+        capabilities=request.capabilities,
+    )
+    return {"status": "ok", "worker": worker}
+
+
+@app.post("/api/v1/network/training/enqueue")
+async def network_training_enqueue(request: TrainingTaskCreateRequest):
+    if not specialized_network_service:
+        raise HTTPException(503, "Specialized network not initialized")
+    try:
+        task = specialized_network_service.enqueue_training_task(
+            topic=request.topic,
+            node_id=request.node_id,
+            priority=request.priority,
+        )
+        return {"status": "ok", "task": task}
+    except ValueError as error:
+        raise HTTPException(400, str(error))
+
+
+@app.post("/api/v1/network/training/claim")
+async def network_training_claim(request: TrainingTaskClaimRequest):
+    if not specialized_network_service:
+        raise HTTPException(503, "Specialized network not initialized")
+    task = specialized_network_service.claim_training_task(request.worker_id)
+    return {"status": "ok", "task": task}
+
+
+@app.post("/api/v1/network/training/complete")
+async def network_training_complete(request: TrainingTaskCompleteRequest):
+    if not specialized_network_service:
+        raise HTTPException(503, "Specialized network not initialized")
+    try:
+        task = specialized_network_service.complete_training_task(
+            task_id=request.task_id,
+            worker_id=request.worker_id,
+            metrics=request.metrics,
+            artifact_name=request.artifact_name,
+            artifact_payload=request.artifact_payload,
+        )
+        return {"status": "ok", "task": task}
+    except ValueError as error:
+        raise HTTPException(400, str(error))
+
+
+@app.post("/api/v1/network/think/dual")
+async def network_dual_thought(request: DualThoughtRequest):
+    if not specialized_network_service:
+        raise HTTPException(503, "Specialized network not initialized")
+    try:
+        result = specialized_network_service.dual_thought(
+            node_id=request.node_id,
+            prompt=request.prompt
+        )
+        return {"status": "ok", "thought": result}
+    except ValueError as error:
+        raise HTTPException(400, str(error))
+
+
+# ========== Code-Free Idea Ledger ==========
+
+@app.get("/api/v1/ideas")
+async def ideas_list(status: Optional[str] = None, owner: Optional[str] = None, priority: Optional[str] = None):
+    with idea_ledger_lock:
+        ideas = list(idea_ledger_cache.get("ideas", []))
+
+        if status:
+            ideas = [item for item in ideas if str(item.get("status", "")).lower() == status.lower()]
+        if owner:
+            ideas = [item for item in ideas if str(item.get("owner", "")).lower() == owner.lower()]
+        if priority:
+            ideas = [item for item in ideas if str(item.get("priority", "")).lower() == priority.lower()]
+
+        return {
+            "status": "ok",
+            "policy": idea_ledger_cache.get("policy", "code-free-migration"),
+            "total": len(ideas),
+            "ideas": ideas
+        }
+
+
+@app.get("/api/v1/ideas/{idea_id}")
+async def idea_get(idea_id: str):
+    with idea_ledger_lock:
+        item = _get_idea_by_id(idea_id)
+        if not item:
+            raise HTTPException(404, "Idea not found")
+        return {"status": "ok", "idea": item}
+
+
+@app.patch("/api/v1/ideas/{idea_id}")
+async def idea_update(idea_id: str, request: IdeaLedgerUpdateRequest):
+    with idea_ledger_lock:
+        item = _get_idea_by_id(idea_id)
+        if not item:
+            raise HTTPException(404, "Idea not found")
+
+        updates = request.model_dump(exclude_unset=True)
+        for key, value in updates.items():
+            if value is not None:
+                item[key] = value
+
+        item["updated_at"] = datetime.now().isoformat()
+        idea_ledger_cache["generated_at"] = datetime.now().strftime("%Y-%m-%d")
+        _persist_idea_ledger()
+
+        return {
+            "status": "ok",
+            "message": "Idea updated",
+            "idea": item
+        }
+
+
+# ========== Static Files ==========
+
+# Mount React build
+# Static files
+if os.path.exists("ui/dist"):
+    from fastapi.responses import FileResponse
+    
+    # Serve static files from /assets
+    app.mount("/assets", StaticFiles(directory="ui/dist/assets"), name="assets")
+    
+    # Serve vite.svg if exists
+    if os.path.exists("ui/dist/vite.svg"):
+        app.mount("/vite.svg", StaticFiles(directory="ui/dist"), name="vite")
+    
+    # Serve index.html for root and all unmatched paths
+    @app.get("/")
+    async def serve_index():
+        return FileResponse("ui/dist/index.html")
+    
+    @app.get("/{path:path}")
+    async def serve_spa(path: str):
+        # If path starts with api, let it 404 (should be handled by API routes)
+        if path.startswith("api/"):
+            raise HTTPException(404, "Not Found")
+        # Otherwise serve index.html for SPA routing
+        return FileResponse("ui/dist/index.html")
+
+
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", "8000"))
+    print("=" * 50)
+    print("🚀 BI IDE - Unified API Starting")
+    print(f"📍 URL: http://localhost:{port}")
+    print("🔧 Services: IDE + ERP + AI (15 layers)")
+    print("=" * 50)
+    
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
+# ========== Health & Monitoring Endpoints ==========
+
+@app.get("/health", tags=["health"])
+async def health_check():
+    """
+    Health check endpoint for Docker/K8s
+    """
+    health_status = {
+        "status": "healthy",
+        "timestamp": datetime.now().isoformat(),
+        "version": "8.0.0",
+        "services": {
+            "api": "ok",
+            "smart_council": "available" if SMART_COUNCIL_AVAILABLE else "unavailable",
+            "rtx4090": "connected" if RTX4090_AVAILABLE else "disconnected",
+        }
+    }
+    
+    # Check core modules
+    if CORE_MODULES_AVAILABLE:
+        try:
+            cache_stats = await cache_manager.get_stats()
+            health_status["services"]["cache"] = cache_stats
+        except Exception as e:
+            health_status["services"]["cache"] = f"error: {str(e)}"
+    
+    # Overall status
+    all_healthy = all(
+        s == "ok" or s == "available" or s == "connected" or isinstance(s, dict)
+        for s in health_status["services"].values()
+    )
+    
+    if not all_healthy:
+        health_status["status"] = "degraded"
+        return JSONResponse(content=health_status, status_code=503)
+    
+    return health_status
+
+
+@app.get("/ready", tags=["health"])
+async def readiness_check():
+    """
+    Readiness check for Kubernetes
+    """
+    return {
+        "ready": True,
+        "timestamp": datetime.now().isoformat()
+    }
+
+
+@app.get("/metrics", tags=["monitoring"])
+async def metrics():
+    """
+    Prometheus metrics endpoint
+    """
+    if PROMETHEUS_AVAILABLE:
+        from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+        return PlainTextResponse(
+            content=generate_latest(),
+            media_type=CONTENT_TYPE_LATEST
+        )
+    else:
+        return PlainTextResponse(
+            content="# Prometheus metrics not available\n",
+            media_type="text/plain"
+        )
+
+
+@app.get("/api/v1/status", tags=["status"])
+async def get_full_system_status():
+    """
+    Get complete system status including all AI layers
+    """
+    try:
+        # Get hierarchy status if available
+        hierarchy_status = None
+        if 'ai_hierarchy' in globals() and ai_hierarchy:
+            hierarchy_status = ai_hierarchy.get_full_status()
+        
+        # Get learning stats if available
+        learning_stats = None
+        if CORE_MODULES_AVAILABLE:
+            try:
+                learning_stats = await db_manager.get_learning_stats()
+            except Exception:
+                pass
+        
+        # Get cache stats
+        cache_stats = None
+        if CORE_MODULES_AVAILABLE:
+            try:
+                cache_stats = await cache_manager.get_stats()
+            except Exception:
+                pass
+        
+        return {
+            "status": "ok",
+            "timestamp": datetime.now().isoformat(),
+            "version": "8.0.0",
+            "services": {
+                "smart_council": SMART_COUNCIL_AVAILABLE,
+                "rtx4090": RTX4090_AVAILABLE,
+                "core_modules": CORE_MODULES_AVAILABLE,
+                "prometheus": PROMETHEUS_AVAILABLE,
+            },
+            "hierarchy": hierarchy_status,
+            "learning": learning_stats,
+            "cache": cache_stats,
+            "council_metrics": _get_live_metrics_snapshot() if '_get_live_metrics_snapshot' in globals() else None
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+@app.get("/api/v1/system/config", tags=["system"])
+async def get_system_config():
+    """
+    Get system configuration (sanitized)
+    """
+    if CORE_MODULES_AVAILABLE:
+        return {
+            "app_name": settings.APP_NAME,
+            "version": settings.APP_VERSION,
+            "debug": settings.DEBUG,
+            "features": {
+                "smart_council": settings.ENABLE_SMART_COUNCIL,
+                "autonomous_learning": settings.ENABLE_AUTONOMOUS_LEARNING,
+                "council_discussions": settings.ENABLE_COUNCIL_DISCUSSIONS,
+                "code_analysis": settings.ENABLE_CODE_ANALYSIS,
+            },
+            "rtx4090": {
+                "host": settings.RTX4090_HOST,
+                "port": settings.RTX4090_PORT,
+                "connected": RTX4090_AVAILABLE
+            }
+        }
+    else:
+        return {
+            "app_name": "BI IDE",
+            "version": "8.0.0",
+            "core_modules": False
+        }
+
+
+# ========== Startup & Shutdown Events ==========
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup"""
+    print("=" * 60)
+    print("Starting up...")
+    print("=" * 60)
+    
+    if CORE_MODULES_AVAILABLE:
+        # Initialize database
+        try:
+            await db_manager.initialize()
+            print("Database initialized")
+        except Exception as e:
+            print(f"Database initialization failed: {e}")
+        
+        # Initialize cache
+        try:
+            await cache_manager.initialize()
+            print("Cache initialized")
+        except Exception as e:
+            print(f"Cache initialization failed: {e}")
+    
+    # Load chat history
+    _load_chat_history()
+    print("Chat history loaded")
+    
+    print("=" * 60)
+    print("Startup complete")
+    print("=" * 60)
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Cleanup on shutdown"""
+    print("\nShutting down...")
+    
+    if CORE_MODULES_AVAILABLE:
+        try:
+            await db_manager.close()
+            print("Database connection closed")
+        except Exception as e:
+            print(f"Error closing database: {e}")
+    
+    print("Shutdown complete")

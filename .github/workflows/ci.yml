@@ -1,0 +1,77 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+      
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          
+      - name: Run linting
+        run: |
+          pip install ruff black mypy
+          ruff check .
+          black --check .
+          mypy core/ hierarchy/ --ignore-missing-imports
+          
+      - name: Run tests
+        run: |
+          pip install pytest pytest-asyncio pytest-cov
+          pytest --cov=core --cov=hierarchy --cov-report=xml
+          
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build Docker images
+        run: |
+          docker build -t bi-ide-api:latest -f Dockerfile .
+          docker build -t bi-ide-ui:latest -f ui/Dockerfile ./ui
+          docker build -t bi-ide-worker:latest -f Dockerfile.worker .
+
+  deploy:
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production..."
+          # Add your deployment commands here
