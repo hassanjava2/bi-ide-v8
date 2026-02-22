@@ -1,0 +1,65 @@
+name: Deploy to Hostinger VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            APP_DIR="${{ secrets.VPS_APP_DIR }}"
+            REPO_URL="${{ secrets.VPS_REPO_URL }}"
+            BRANCH="${{ secrets.VPS_BRANCH }}"
+
+            if [ -z "$APP_DIR" ]; then
+              echo "VPS_APP_DIR secret is required"
+              exit 1
+            fi
+
+            if [ -z "$REPO_URL" ]; then
+              echo "VPS_REPO_URL secret is required"
+              exit 1
+            fi
+
+            if [ -z "$BRANCH" ]; then
+              BRANCH="main"
+            fi
+
+            mkdir -p "$(dirname "$APP_DIR")"
+
+            if [ ! -d "$APP_DIR/.git" ]; then
+              git clone --branch "$BRANCH" "$REPO_URL" "$APP_DIR"
+            fi
+
+            cd "$APP_DIR"
+            git fetch origin "$BRANCH"
+            git reset --hard "origin/$BRANCH"
+
+            python3 -m venv .venv
+            source .venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+
+            if command -v alembic >/dev/null 2>&1; then
+              alembic upgrade head || true
+            fi
+
+            sudo systemctl restart bi-ide-api
+            sudo systemctl --no-pager --full status bi-ide-api | head -n 40
+
+            curl -fsS http://127.0.0.1:8000/health >/dev/null
+            echo "Deploy successful"
