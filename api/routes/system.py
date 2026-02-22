@@ -3,6 +3,7 @@ System Status Routes - نقاط النهاية لحالة النظام
 """
 
 import os
+import asyncio
 from datetime import datetime
 from typing import Optional
 
@@ -14,6 +15,18 @@ router = APIRouter(prefix="/api/v1", tags=["system"])
 @router.get("/status")
 async def get_full_system_status():
     """حالة النظام الكاملة"""
+    async def _run(label: str, awaitable, timeout_sec: float):
+        try:
+            return await asyncio.wait_for(awaitable, timeout=timeout_sec)
+        except Exception:
+            return None
+
+    async def _to_thread(func, *args, timeout_sec: float = 2.0, **kwargs):
+        try:
+            return await asyncio.wait_for(asyncio.to_thread(func, *args, **kwargs), timeout=timeout_sec)
+        except Exception:
+            return None
+
     # Import dependencies at call-time to avoid circular imports
     try:
         from core.config import settings
@@ -31,8 +44,9 @@ async def get_full_system_status():
 
     try:
         from api.routes.council import get_live_metrics_snapshot, RTX4090_URL, _check_rtx4090
-        rtx_available = _check_rtx4090()
-        live_metrics = get_live_metrics_snapshot()
+        # These can block (requests + retry sleeps). Run off the event loop and bound time.
+        rtx_available = bool(await _to_thread(_check_rtx4090, timeout_sec=float(os.getenv("STATUS_RTX_TIMEOUT", "2"))))
+        live_metrics = await _to_thread(get_live_metrics_snapshot, timeout_sec=float(os.getenv("STATUS_METRICS_TIMEOUT", "1")))
     except Exception:
         rtx_available = False
         live_metrics = None
@@ -41,7 +55,11 @@ async def get_full_system_status():
     learning_stats = None
     if core_available:
         try:
-            learning_stats = await db_manager.get_learning_stats()
+            learning_stats = await _run(
+                "learning_stats",
+                db_manager.get_learning_stats(),
+                float(os.getenv("STATUS_DB_TIMEOUT", "2")),
+            )
         except Exception:
             pass
 
@@ -49,7 +67,11 @@ async def get_full_system_status():
     cache_stats = None
     if core_available:
         try:
-            cache_stats = await cache_manager.get_stats()
+            cache_stats = await _run(
+                "cache_stats",
+                cache_manager.get_stats(),
+                float(os.getenv("STATUS_CACHE_TIMEOUT", "2")),
+            )
         except Exception:
             pass
 
@@ -58,7 +80,11 @@ async def get_full_system_status():
     try:
         from hierarchy import ai_hierarchy
         if ai_hierarchy:
-            hierarchy_status = ai_hierarchy.get_full_status()
+            # Can be CPU-heavy; keep status endpoint responsive.
+            hierarchy_status = await _to_thread(
+                ai_hierarchy.get_full_status,
+                timeout_sec=float(os.getenv("STATUS_HIERARCHY_TIMEOUT", "2")),
+            )
     except Exception:
         pass
 

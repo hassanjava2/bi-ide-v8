@@ -2,6 +2,7 @@
 Caching Layer - طبقة التخزين المؤقت
 Supports Redis and in-memory fallback
 """
+import asyncio
 import sys
 sys.path.insert(0, '.')
 import encoding_fix
@@ -42,8 +43,16 @@ class CacheManager:
             return
         
         try:
-            self.redis_client = redis.from_url(self.redis_url, decode_responses=False)
-            self.redis_client.ping()
+            redis_connect_timeout = float(os.getenv("REDIS_CONNECT_TIMEOUT", "2"))
+            redis_socket_timeout = float(os.getenv("REDIS_SOCKET_TIMEOUT", "2"))
+
+            self.redis_client = redis.from_url(
+                self.redis_url,
+                decode_responses=False,
+                socket_connect_timeout=redis_connect_timeout,
+                socket_timeout=redis_socket_timeout,
+            )
+            await asyncio.to_thread(self.redis_client.ping)
             logger.info(f"Redis cache connected: {self.redis_url}")
         except Exception as e:
             logger.warning(f"Redis connection failed, using in-memory cache: {e}")

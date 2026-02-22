@@ -2,6 +2,7 @@
 Database Layer - طبقة قاعدة البيانات
 Supports PostgreSQL and SQLite
 """
+import asyncio
 import os
 import json
 from datetime import datetime
@@ -89,13 +90,45 @@ class DatabaseManager:
         """Initialize database connection"""
         # Sync engine for migrations
         sync_url = self.database_url.replace("+aiosqlite", "").replace("+asyncpg", "")
-        self.engine = create_engine(sync_url, echo=False)
-        
-        # Create tables
-        Base.metadata.create_all(self.engine)
-        
+
+        db_connect_timeout = int(os.getenv("DB_CONNECT_TIMEOUT", "5"))
+
+        def _sync_connect_args(url: str) -> Dict[str, Any]:
+            if url.startswith("sqlite"):
+                return {"check_same_thread": False}
+            if url.startswith("postgresql"):
+                # psycopg2 respects connect_timeout (seconds)
+                return {"connect_timeout": db_connect_timeout}
+            return {}
+
+        def _async_connect_args(url: str) -> Dict[str, Any]:
+            if url.startswith("sqlite"):
+                return {"check_same_thread": False}
+            if url.startswith("postgresql"):
+                # asyncpg uses 'timeout' (seconds)
+                return {"timeout": db_connect_timeout}
+            return {}
+
+        def _init_sync_engine_and_create_tables():
+            self.engine = create_engine(
+                sync_url,
+                echo=False,
+                connect_args=_sync_connect_args(sync_url),
+                pool_pre_ping=True,
+            )
+            # NOTE: create_all may perform network I/O (e.g., Postgres) and can block.
+            Base.metadata.create_all(self.engine)
+
+        # Run potentially-blocking DB initialization off the event loop.
+        await asyncio.to_thread(_init_sync_engine_and_create_tables)
+
         # Async engine for operations
-        self.async_engine = create_async_engine(self.database_url, echo=False)
+        self.async_engine = create_async_engine(
+            self.database_url,
+            echo=False,
+            connect_args=_async_connect_args(self.database_url),
+            pool_pre_ping=True,
+        )
         self.AsyncSessionLocal = async_sessionmaker(
             self.async_engine,
             class_=AsyncSession,

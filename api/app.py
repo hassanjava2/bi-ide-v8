@@ -5,6 +5,7 @@ BI IDE v8 - App Factory
 
 import sys
 import os
+import asyncio
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -27,6 +28,18 @@ def create_app() -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        async def _run_step(label: str, coro, timeout_sec: float):
+            try:
+                await asyncio.wait_for(coro, timeout=timeout_sec)
+                print(f"✅ {label}")
+                return True
+            except asyncio.TimeoutError:
+                print(f"⚠️ {label}: timed out after {timeout_sec}s")
+                return False
+            except Exception as e:
+                print(f"⚠️ {label}: {e}")
+                return False
+
         print("=" * 60)
         print("🚀 Starting BI IDE v8 — Unified API")
         print("=" * 60)
@@ -36,11 +49,17 @@ def create_app() -> FastAPI:
             from core.database import db_manager
             from core.cache import cache_manager
 
-            await db_manager.initialize()
-            print("✅ Database initialized")
+            await _run_step(
+                "Database initialized",
+                db_manager.initialize(),
+                float(os.getenv("STARTUP_DB_TIMEOUT", "20")),
+            )
 
-            await cache_manager.initialize()
-            print("✅ Cache initialized")
+            await _run_step(
+                "Cache initialized",
+                cache_manager.initialize(),
+                float(os.getenv("STARTUP_CACHE_TIMEOUT", "10")),
+            )
         except Exception as e:
             print(f"⚠️ Core modules init: {e}")
 
@@ -54,8 +73,11 @@ def create_app() -> FastAPI:
                 from hierarchy import ai_hierarchy
                 hierarchy = ai_hierarchy
                 if hierarchy:
-                    await hierarchy.initialize()
-                    print("🧠 AI Hierarchy initialized (15 layers)")
+                    ok = await _run_step(
+                        "AI Hierarchy initialized (15 layers)",
+                        hierarchy.initialize(),
+                        float(os.getenv("STARTUP_HIERARCHY_TIMEOUT", "45")),
+                    )
             except Exception as e:
                 print(f"⚠️ AI Hierarchy: {e}")
 
@@ -84,9 +106,12 @@ def create_app() -> FastAPI:
             from erp.erp_db_service import get_erp_db_service
             from api.routes.erp import set_erp_db_service
             erp_db = get_erp_db_service(hierarchy)
-            await erp_db.initialize()
+            await _run_step(
+                "ERP Database Service ready (DB-backed)",
+                erp_db.initialize(),
+                float(os.getenv("STARTUP_ERP_DB_TIMEOUT", "20")),
+            )
             set_erp_db_service(erp_db)
-            print("🏢 ERP Database Service ready (DB-backed)")
         except Exception as e:
             print(f"⚠️ ERP DB Service: {e} — using in-memory fallback")
 
@@ -117,7 +142,11 @@ def create_app() -> FastAPI:
         # Checkpoint sync
         try:
             from api.routes.checkpoints import start_checkpoint_sync
-            await start_checkpoint_sync()
+            await _run_step(
+                "Checkpoint sync started",
+                start_checkpoint_sync(),
+                float(os.getenv("STARTUP_CHECKPOINT_SYNC_TIMEOUT", "75")),
+            )
         except Exception as e:
             print(f"⚠️ Checkpoint sync: {e}")
 
