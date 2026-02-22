@@ -56,16 +56,17 @@ def create_app() -> FastAPI:
             from core.database import db_manager
             from core.cache import cache_manager
 
-            await _run_step(
+            # Do not block server startup on DB/Redis. Initialize in background.
+            _spawn_step(
                 "Database initialized",
                 db_manager.initialize(),
-                float(os.getenv("STARTUP_DB_TIMEOUT", "20")),
+                float(os.getenv("STARTUP_DB_TIMEOUT", "60")),
             )
 
-            await _run_step(
+            _spawn_step(
                 "Cache initialized",
                 cache_manager.initialize(),
-                float(os.getenv("STARTUP_CACHE_TIMEOUT", "10")),
+                float(os.getenv("STARTUP_CACHE_TIMEOUT", "20")),
             )
         except Exception as e:
             print(f"⚠️ Core modules init: {e}")
@@ -160,7 +161,7 @@ def create_app() -> FastAPI:
             print(f"⚠️ Checkpoint sync: {e}")
 
         print("=" * 60)
-        print("✅ All services initialized")
+        print("✅ Startup tasks scheduled (API is ready to accept requests)")
         print("=" * 60)
 
         yield
