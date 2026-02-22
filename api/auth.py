@@ -122,10 +122,13 @@ def authenticate_user(username: str, password: str) -> Optional[Dict]:
     """Authenticate a user with username and password"""
     user = DEFAULT_USERS.get(username)
     if not user:
+        if os.getenv("AUTH_DEBUG") == "1":
+            print("AUTH_DEBUG authenticate_user: unknown username", username)
         return None
 
     # Self-heal the president password hash if ADMIN_PASSWORD changed.
     # This avoids getting stuck with a stale bcrypt hash when the .env password is rotated.
+    rehashed = False
     if username == "president":
         try:
             import hashlib
@@ -136,6 +139,24 @@ def authenticate_user(username: str, password: str) -> Optional[Dict]:
         if user.get("hashed_password") is None or (current_fp and user.get("_pw_fingerprint") != current_fp):
             user["hashed_password"] = _hash_password(_settings.ADMIN_PASSWORD)
             user["_pw_fingerprint"] = current_fp
+            rehashed = True
+
+    if os.getenv("AUTH_DEBUG") == "1":
+        try:
+            hp = user.get("hashed_password")
+            print(
+                "AUTH_DEBUG authenticate_user:",
+                {
+                    "username": username,
+                    "bcrypt": BCRYPT_AVAILABLE,
+                    "rehashed": rehashed,
+                    "stored_fp8": (user.get("_pw_fingerprint") or "")[:8],
+                    "hash_prefix": (hp or "")[:4],
+                    "pw_len": len(password or ""),
+                },
+            )
+        except Exception as e:
+            print("AUTH_DEBUG authenticate_user log failed:", str(e))
 
     if not _verify_password(password, user["hashed_password"]):
         return None

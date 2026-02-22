@@ -2,6 +2,8 @@
 Auth Routes - نقاط النهاية للمصادقة
 """
 
+import os
+
 from datetime import timedelta
 
 from fastapi import APIRouter, HTTPException, status
@@ -22,6 +24,21 @@ async def login(request: LoginRequest):
     Authenticate and get access token.
     تسجيل الدخول والحصول على رمز الوصول.
     """
+    if os.getenv("AUTH_DEBUG") == "1":
+        try:
+            from core.config import get_settings
+            s = get_settings()
+            print(
+                "AUTH_DEBUG login attempt:",
+                {
+                    "username": request.username,
+                    "password_len": len(request.password or ""),
+                    "admin_password_match": (request.password == s.ADMIN_PASSWORD),
+                },
+            )
+        except Exception as e:
+            print("AUTH_DEBUG login debug failed:", str(e))
+
     user = authenticate_user(request.username, request.password)
     if not user:
         raise HTTPException(
