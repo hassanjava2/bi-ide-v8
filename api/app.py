@@ -56,6 +56,12 @@ def create_app() -> FastAPI:
 
             return asyncio.create_task(_runner())
 
+        def _spawn_sync_step(label: str, func, timeout_sec: float):
+            async def _coro():
+                await asyncio.to_thread(func)
+
+            return _spawn_step(label, lambda: _coro(), timeout_sec)
+
         async def _run_step(label: str, coro, timeout_sec: float):
             try:
                 await asyncio.wait_for(coro, timeout=timeout_sec)
@@ -102,73 +108,109 @@ def create_app() -> FastAPI:
                 from hierarchy import ai_hierarchy
                 hierarchy = ai_hierarchy
                 if hierarchy:
-                    # IMPORTANT: hierarchy initialization can be CPU/blocking; don't block server startup.
+                    # IMPORTANT: hierarchy initialization may contain blocking calls; keep it off main loop.
                     _spawn_step(
                         "AI Hierarchy initialized (15 layers)",
                         lambda: hierarchy.initialize(),
-                        float(os.getenv("STARTUP_HIERARCHY_TIMEOUT", "120")),
+                        float(os.getenv("STARTUP_HIERARCHY_TIMEOUT", "180")),
                         run_in_thread=True,
                     )
             except Exception as e:
-                print(f"⚠️ AI Hierarchy: {e}")
+                print(f"⚠️ AI Hierarchy import: {e}")
 
         # IDE Service
         try:
-            from ide.ide_service import get_ide_service
-            from api.routes.ide import set_ide_service
-            ide_service = get_ide_service(hierarchy)
-            set_ide_service(ide_service)
-            print("💻 IDE Service ready")
+            def _init_ide():
+                from ide.ide_service import get_ide_service
+                from api.routes.ide import set_ide_service
+                ide_service = get_ide_service(hierarchy)
+                set_ide_service(ide_service)
+
+            _spawn_sync_step(
+                "IDE Service ready",
+                _init_ide,
+                float(os.getenv("STARTUP_IDE_TIMEOUT", "60")),
+            )
         except Exception as e:
-            print(f"⚠️ IDE Service: {e}")
+            print(f"⚠️ IDE Service schedule: {e}")
 
         # ERP Service (in-memory fallback)
         try:
-            from erp.erp_service import get_erp_service
-            from api.routes.erp import set_erp_service
-            erp_service = get_erp_service(hierarchy)
-            set_erp_service(erp_service)
-            print("🏢 ERP Service (in-memory) ready")
+            def _init_erp_memory():
+                from erp.erp_service import get_erp_service
+                from api.routes.erp import set_erp_service
+                erp_service = get_erp_service(hierarchy)
+                set_erp_service(erp_service)
+
+            _spawn_sync_step(
+                "ERP Service (in-memory) ready",
+                _init_erp_memory,
+                float(os.getenv("STARTUP_ERP_TIMEOUT", "60")),
+            )
         except Exception as e:
-            print(f"⚠️ ERP Service: {e}")
+            print(f"⚠️ ERP Service schedule: {e}")
 
         # ERP Database Service (PostgreSQL/SQLite)
         try:
             from erp.erp_db_service import get_erp_db_service
             from api.routes.erp import set_erp_db_service
-            erp_db = get_erp_db_service(hierarchy)
-            await _run_step(
+
+            async def _init_erp_db():
+                erp_db = get_erp_db_service(hierarchy)
+                await erp_db.initialize()
+                set_erp_db_service(erp_db)
+
+            _spawn_step(
                 "ERP Database Service ready (DB-backed)",
-                erp_db.initialize(),
-                float(os.getenv("STARTUP_ERP_DB_TIMEOUT", "20")),
+                lambda: _init_erp_db(),
+                float(os.getenv("STARTUP_ERP_DB_TIMEOUT", "60")),
             )
-            set_erp_db_service(erp_db)
         except Exception as e:
-            print(f"⚠️ ERP DB Service: {e} — using in-memory fallback")
+            print(f"⚠️ ERP DB Service schedule: {e} — using in-memory fallback")
 
         # Specialized Network
         try:
-            from hierarchy.specialized_ai_network import get_specialized_network_service
-            from api.routes.network import set_network_service
-            network_service = get_specialized_network_service()
-            set_network_service(network_service)
-            print("🧬 Specialized AI Network ready")
+            def _init_network():
+                from hierarchy.specialized_ai_network import get_specialized_network_service
+                from api.routes.network import set_network_service
+                network_service = get_specialized_network_service()
+                set_network_service(network_service)
+
+            _spawn_sync_step(
+                "Specialized AI Network ready",
+                _init_network,
+                float(os.getenv("STARTUP_NETWORK_TIMEOUT", "60")),
+            )
         except Exception as e:
-            print(f"⚠️ Network Service: {e}")
+            print(f"⚠️ Network Service schedule: {e}")
 
         # Council
         try:
-            from api.routes.council import init_council
-            init_council()
+            def _init_council():
+                from api.routes.council import init_council
+                init_council()
+
+            _spawn_sync_step(
+                "Council initialized",
+                _init_council,
+                float(os.getenv("STARTUP_COUNCIL_TIMEOUT", "60")),
+            )
         except Exception as e:
-            print(f"⚠️ Council init: {e}")
+            print(f"⚠️ Council schedule: {e}")
 
         # Ideas
         try:
-            from api.routes.ideas import init_ideas
-            init_ideas()
+            def _init_ideas():
+                from api.routes.ideas import init_ideas
+                init_ideas()
+
+            _spawn_sync_step(
+                "Ideas initialized",
+                _init_ideas,
+                float(os.getenv("STARTUP_IDEAS_TIMEOUT", "60")),
+            )
         except Exception as e:
-            print(f"⚠️ Ideas init: {e}")
+            print(f"⚠️ Ideas schedule: {e}")
 
         # Checkpoint sync
         try:
