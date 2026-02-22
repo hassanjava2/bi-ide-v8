@@ -107,6 +107,13 @@ def get_settings() -> Settings:
     """Get cached settings instance"""
     settings = Settings()
 
+    # Normalize secrets loaded from env/.env to avoid CRLF/whitespace surprises.
+    # Common failure mode: .env edited with Windows line endings resulting in '\r' in values.
+    if isinstance(settings.SECRET_KEY, str):
+        settings.SECRET_KEY = settings.SECRET_KEY.strip()
+    if isinstance(settings.ADMIN_PASSWORD, str):
+        settings.ADMIN_PASSWORD = settings.ADMIN_PASSWORD.strip()
+
     insecure_secret_values = {
         "",
         "your-secret-key-change-this",
