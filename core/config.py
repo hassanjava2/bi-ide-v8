@@ -8,6 +8,9 @@ from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 
+_ENV_FILE = os.environ.get("ENV_FILE", ".env")
+
+
 class Settings(BaseSettings):
     """Application settings from environment variables"""
     
@@ -75,7 +78,7 @@ class Settings(BaseSettings):
     HUGGINGFACE_TOKEN: Optional[str] = None
     
     class Config:
-        env_file = ".env"
+        env_file = _ENV_FILE
         case_sensitive = True
         extra = "ignore"
     
