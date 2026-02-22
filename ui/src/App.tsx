@@ -26,6 +26,12 @@ function App() {
     setIsLoading(false)
   }, [])
 
+  useEffect(() => {
+    const onLogout = () => setIsLoggedIn(false)
+    window.addEventListener('bi:auth:logout', onLogout as EventListener)
+    return () => window.removeEventListener('bi:auth:logout', onLogout as EventListener)
+  }, [])
+
   const handleLogin = () => {
     // Token is already stored by the login API call
     setIsLoggedIn(true)

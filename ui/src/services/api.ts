@@ -48,11 +48,17 @@ async function fetchApi(endpoint: string, options?: RequestInit) {
     headers,
   });
 
-  // Auto-logout on 401
+  // 401 handling:
+  // - For login: return a normal error (invalid credentials) without reloading.
+  // - For other endpoints: clear token and notify the app to show Login.
   if (res.status === 401) {
-    clearAuth();
-    window.location.reload();
-    throw new Error('Session expired');
+    if (!endpoint.startsWith('/api/v1/auth/login')) {
+      clearAuth();
+      window.dispatchEvent(new CustomEvent('bi:auth:logout'));
+    }
+
+    const errorData = await res.json().catch(() => null);
+    throw new Error(errorData?.detail || errorData?.message || 'Unauthorized');
   }
 
   if (!res.ok) {
