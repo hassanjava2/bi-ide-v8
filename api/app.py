@@ -6,6 +6,7 @@ BI IDE v8 - App Factory
 import sys
 import os
 import asyncio
+import threading
 
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,12 +29,32 @@ def create_app() -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        def _spawn_step(label: str, coro, timeout_sec: float):
-            async def _runner():
-                await _run_step(label, coro, timeout_sec)
+        def _spawn_step(label: str, step_factory, timeout_sec: float, *, run_in_thread: bool = False):
+            """Schedule a startup step without blocking request handling.
 
-            task = asyncio.create_task(_runner())
-            return task
+            If run_in_thread=True, runs the coroutine in a dedicated daemon thread
+            with its own event loop. This avoids blocking the main asyncio loop if
+            the step contains accidental blocking calls (time.sleep, requests, etc).
+            """
+
+            if run_in_thread:
+                def _thread_runner():
+                    try:
+                        asyncio.run(asyncio.wait_for(step_factory(), timeout=timeout_sec))
+                        print(f"✅ {label}")
+                    except asyncio.TimeoutError:
+                        print(f"⚠️ {label}: timed out after {timeout_sec}s")
+                    except Exception as e:
+                        print(f"⚠️ {label}: {e}")
+
+                t = threading.Thread(target=_thread_runner, daemon=True)
+                t.start()
+                return t
+
+            async def _runner():
+                await _run_step(label, step_factory(), timeout_sec)
+
+            return asyncio.create_task(_runner())
 
         async def _run_step(label: str, coro, timeout_sec: float):
             try:
@@ -59,13 +80,13 @@ def create_app() -> FastAPI:
             # Do not block server startup on DB/Redis. Initialize in background.
             _spawn_step(
                 "Database initialized",
-                db_manager.initialize(),
+                lambda: db_manager.initialize(),
                 float(os.getenv("STARTUP_DB_TIMEOUT", "60")),
             )
 
             _spawn_step(
                 "Cache initialized",
-                cache_manager.initialize(),
+                lambda: cache_manager.initialize(),
                 float(os.getenv("STARTUP_CACHE_TIMEOUT", "20")),
             )
         except Exception as e:
@@ -84,8 +105,9 @@ def create_app() -> FastAPI:
                     # IMPORTANT: hierarchy initialization can be CPU/blocking; don't block server startup.
                     _spawn_step(
                         "AI Hierarchy initialized (15 layers)",
-                        hierarchy.initialize(),
+                        lambda: hierarchy.initialize(),
                         float(os.getenv("STARTUP_HIERARCHY_TIMEOUT", "120")),
+                        run_in_thread=True,
                     )
             except Exception as e:
                 print(f"⚠️ AI Hierarchy: {e}")
@@ -154,8 +176,9 @@ def create_app() -> FastAPI:
             # Can involve slow network I/O; run in background so API becomes responsive immediately.
             _spawn_step(
                 "Checkpoint sync started",
-                start_checkpoint_sync(),
+                lambda: start_checkpoint_sync(),
                 float(os.getenv("STARTUP_CHECKPOINT_SYNC_TIMEOUT", "120")),
+                run_in_thread=True,
             )
         except Exception as e:
             print(f"⚠️ Checkpoint sync: {e}")

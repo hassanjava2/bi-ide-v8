@@ -174,9 +174,18 @@ class CacheManager:
         
         if self.redis_client:
             try:
-                info = self.redis_client.info()
+                async def _fetch():
+                    def _sync_fetch():
+                        info = self.redis_client.info()
+                        keys = self.redis_client.dbsize()
+                        return info, keys
+
+                    return await asyncio.to_thread(_sync_fetch)
+
+                timeout_sec = float(os.getenv("REDIS_STATS_TIMEOUT", "1.5"))
+                info, keys = await asyncio.wait_for(_fetch(), timeout=timeout_sec)
                 stats["redis_memory_used"] = info.get("used_memory_human", "N/A")
-                stats["redis_keys"] = self.redis_client.dbsize()
+                stats["redis_keys"] = keys
             except Exception as e:
                 stats["redis_error"] = str(e)
         
