@@ -28,6 +28,13 @@ def create_app() -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        def _spawn_step(label: str, coro, timeout_sec: float):
+            async def _runner():
+                await _run_step(label, coro, timeout_sec)
+
+            task = asyncio.create_task(_runner())
+            return task
+
         async def _run_step(label: str, coro, timeout_sec: float):
             try:
                 await asyncio.wait_for(coro, timeout=timeout_sec)
@@ -73,10 +80,11 @@ def create_app() -> FastAPI:
                 from hierarchy import ai_hierarchy
                 hierarchy = ai_hierarchy
                 if hierarchy:
-                    ok = await _run_step(
+                    # IMPORTANT: hierarchy initialization can be CPU/blocking; don't block server startup.
+                    _spawn_step(
                         "AI Hierarchy initialized (15 layers)",
                         hierarchy.initialize(),
-                        float(os.getenv("STARTUP_HIERARCHY_TIMEOUT", "45")),
+                        float(os.getenv("STARTUP_HIERARCHY_TIMEOUT", "120")),
                     )
             except Exception as e:
                 print(f"⚠️ AI Hierarchy: {e}")
@@ -142,10 +150,11 @@ def create_app() -> FastAPI:
         # Checkpoint sync
         try:
             from api.routes.checkpoints import start_checkpoint_sync
-            await _run_step(
+            # Can involve slow network I/O; run in background so API becomes responsive immediately.
+            _spawn_step(
                 "Checkpoint sync started",
                 start_checkpoint_sync(),
-                float(os.getenv("STARTUP_CHECKPOINT_SYNC_TIMEOUT", "75")),
+                float(os.getenv("STARTUP_CHECKPOINT_SYNC_TIMEOUT", "120")),
             )
         except Exception as e:
             print(f"⚠️ Checkpoint sync: {e}")
