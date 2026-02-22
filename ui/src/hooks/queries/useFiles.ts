@@ -314,7 +314,7 @@ export function useSaveFile() {
 
   return useMutation<{ success: boolean }, Error, SaveFileRequest>({
     mutationFn: saveFileContent,
-    onSuccess: (_, variables) => {
+    onSuccess: (_data: { success: boolean }, variables: SaveFileRequest) => {
       queryClient.invalidateQueries({ queryKey: FILES_KEYS.file(variables.fileId) })
       queryClient.invalidateQueries({ queryKey: FILES_KEYS.tree() })
       queryClient.invalidateQueries({ queryKey: FILES_KEYS.git.status() })

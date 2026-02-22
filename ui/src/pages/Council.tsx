@@ -68,7 +68,7 @@ interface WiseManCardProps {
   status: string
 }
 
-const WiseManCard = memo(function WiseManCard({ id, name, specialty, status }: WiseManCardProps) {
+const WiseManCard = memo(function WiseManCard({ name, specialty, status }: WiseManCardProps) {
   const statusColor = useMemo(() => {
     switch (status) {
       case 'speaking': return 'bg-green-400 animate-pulse'

@@ -26,7 +26,7 @@ const defaultQueryOptions: DefaultOptions = {
     gcTime: 1000 * 60 * 5,
     // Retry failed requests 2 times with exponential backoff
     retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
     // Refetch on window focus for real-time updates
     refetchOnWindowFocus: true,
     // Refetch when reconnecting

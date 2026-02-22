@@ -20,7 +20,7 @@ export type DebouncedRefactorCallbacks = {
   flush: () => void;
 };
 
-const DEFAULT_SUMMARY: RefactorSummary = { warnings: 0, infos: 0, total: 0 };
+export const DEFAULT_SUMMARY: RefactorSummary = { warnings: 0, infos: 0, total: 0 };
 
 /**
  * Hook for debounced refactor suggestions with aggressive 2000ms delay.

@@ -1,6 +1,6 @@
-import { useCallback, useRef, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
-export type DebouncedFunction<T extends (...args: Parameters<T>) => ReturnType<T>> = {
+export type DebouncedFunction<T extends (...args: any[]) => any> = {
   (...args: Parameters<T>): void;
   cancel: () => void;
   flush: () => void;
@@ -32,7 +32,7 @@ export type DebouncedFunction<T extends (...args: Parameters<T>) => ReturnType<T
  * // Execute immediately if pending
  * debouncedSearch.flush();
  */
-export function useDebouncedCallback<T extends (...args: Parameters<T>) => ReturnType<T>>(
+export function useDebouncedCallback<T extends (...args: any[]) => any>(
   fn: T,
   delay = 500
 ): DebouncedFunction<T> {

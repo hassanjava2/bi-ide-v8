@@ -20,7 +20,7 @@ const fetchSystemStatus = async (): Promise<SystemStatus> => {
   return api.getSystemStatus()
 }
 
-interface UseSystemStatusOptions {
+export interface UseSystemStatusOptions {
   /** Enable automatic polling (default: true) */
   poll?: boolean
   /** Polling interval in milliseconds (default: 10000) */

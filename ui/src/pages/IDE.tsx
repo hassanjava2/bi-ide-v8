@@ -269,7 +269,7 @@ const IDEHeader = memo(function IDEHeader({ selectedFileName, saveMessage, onSav
           </div>
           <div>
             <h1 className="text-xl font-bold text-white">بيئة التطوير</h1>
-            <p className="text-sm text-gray-400">مع مساعد AI مدمج</p>
+            <p className="text-sm text-gray-400">{selectedFileName ? `ملف: ${selectedFileName}` : 'مع مساعد AI مدمج'}</p>
           </div>
         </div>
         <div className="flex gap-2">

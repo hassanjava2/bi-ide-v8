@@ -33,7 +33,7 @@ export type DebouncedDiagnosticsCallbacks = {
   flush: () => void;
 };
 
-const DEFAULT_SUMMARY: DiagnosticsSummary = { errors: 0, warnings: 0, infos: 0, total: 0 };
+export const DEFAULT_SUMMARY: DiagnosticsSummary = { errors: 0, warnings: 0, infos: 0, total: 0 };
 
 /**
  * Hook for debounced code diagnostics with aggressive 1500ms delay.

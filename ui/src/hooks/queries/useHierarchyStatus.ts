@@ -20,14 +20,14 @@ const HIERARCHY_KEYS = {
 }
 
 // Types
-interface LayerStatus {
+export interface LayerStatus {
   name: string
   active: boolean
   health: number
   last_activity?: string
 }
 
-interface HierarchyStatus {
+export interface HierarchyStatus {
   status: string
   layers: Record<string, LayerStatus>
   president: {
@@ -63,18 +63,18 @@ interface HierarchyStatus {
   }
 }
 
-interface HierarchyMetrics {
+export interface HierarchyMetrics {
   layers: Record<string, number>
   [key: string]: any
 }
 
-interface ExecuteCommandRequest {
+export interface ExecuteCommandRequest {
   command: string
   alertLevel: AlertLevel
   context?: Record<string, any>
 }
 
-interface ExecuteCommandResponse {
+export interface ExecuteCommandResponse {
   success: boolean
   result?: string
   error?: string
@@ -200,11 +200,4 @@ export function useRefreshHierarchy() {
 }
 
 export { HIERARCHY_KEYS }
-export type { 
-  LayerStatus, 
-  HierarchyStatus, 
-  HierarchyMetrics,
-  ExecuteCommandRequest,
-  ExecuteCommandResponse 
-}
 export default useHierarchyStatus

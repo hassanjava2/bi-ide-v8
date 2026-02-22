@@ -1,13 +1,11 @@
 import { FileCode } from 'lucide-react'
-import { memo, useCallback, type KeyboardEvent, type MouseEvent, type RefObject } from 'react'
+import { memo, useCallback, type KeyboardEvent, type MouseEvent, type Ref } from 'react'
 
 interface CodeEditorProps {
-  editorRef: RefObject<HTMLTextAreaElement | null>
+  editorRef: Ref<HTMLTextAreaElement>
   content: string
   selectedFileName: string
   saveMessage: string
-  selectionStart: number
-  selectionEnd: number
   onContentChange: (content: string) => void
   onSelectionChange: (start: number, end: number) => void
   onMouseUp: (event: MouseEvent<HTMLTextAreaElement>) => void
@@ -19,8 +17,6 @@ export const CodeEditor = memo(function CodeEditor({
   content,
   selectedFileName,
   saveMessage,
-  selectionStart,
-  selectionEnd,
   onContentChange,
   onSelectionChange,
   onMouseUp,

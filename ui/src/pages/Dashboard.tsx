@@ -4,7 +4,7 @@ import {
   Shield, Zap, MessageSquare, AlertCircle,
   Layers, Lock, Scale, Globe, Infinity
 } from 'lucide-react'
-import { useSystemStatus, useCouncilMetrics, useHierarchyStatus } from '../hooks/queries'
+import { useSystemStatus, useCouncilMetrics, useHierarchyStatus, type HierarchyStatus } from '../hooks/queries'
 import LiveMetricsPanel from '../components/LiveMetricsPanel'
 
 const stats = [
@@ -31,7 +31,6 @@ export default function Dashboard() {
   } = useSystemStatus({ poll: true, pollInterval: 10000 })
   
   const { 
-    data: councilMetrics, 
     isLoading: councilLoading 
   } = useCouncilMetrics({ poll: true, pollInterval: 30000 })
   
@@ -89,7 +88,7 @@ export default function Dashboard() {
     )
   }
 
-  const hierarchy = status?.hierarchy || hierarchyData || {}
+  const hierarchy: Partial<HierarchyStatus> = hierarchyData ?? {}
 
   return (
     <div className="space-y-6">
