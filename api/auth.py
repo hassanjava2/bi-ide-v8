@@ -41,6 +41,7 @@ DEFAULT_USERS: Dict[str, Dict] = {
     "president": {
         "username": "president",
         "hashed_password": None,  # Set on first startup
+        "_pw_fingerprint": None,  # Internal: track current ADMIN_PASSWORD without storing it
         "role": "admin",
         "full_name": "الرئيس",
     }
@@ -73,8 +74,14 @@ def _init_default_users():
     """Initialize default users with hashed passwords"""
     default_password = _settings.ADMIN_PASSWORD
     for username, user_data in DEFAULT_USERS.items():
-        if user_data["hashed_password"] is None:
+        if user_data.get("hashed_password") is None:
             user_data["hashed_password"] = _hash_password(default_password)
+        # Store a fingerprint so we can detect password changes later (without keeping plaintext)
+        try:
+            import hashlib
+            user_data["_pw_fingerprint"] = hashlib.sha256(default_password.encode("utf-8")).hexdigest()
+        except Exception:
+            user_data["_pw_fingerprint"] = None
 
 
 # Initialize on module load
@@ -116,6 +123,20 @@ def authenticate_user(username: str, password: str) -> Optional[Dict]:
     user = DEFAULT_USERS.get(username)
     if not user:
         return None
+
+    # Self-heal the president password hash if ADMIN_PASSWORD changed.
+    # This avoids getting stuck with a stale bcrypt hash when the .env password is rotated.
+    if username == "president":
+        try:
+            import hashlib
+            current_fp = hashlib.sha256(_settings.ADMIN_PASSWORD.encode("utf-8")).hexdigest()
+        except Exception:
+            current_fp = None
+
+        if user.get("hashed_password") is None or (current_fp and user.get("_pw_fingerprint") != current_fp):
+            user["hashed_password"] = _hash_password(_settings.ADMIN_PASSWORD)
+            user["_pw_fingerprint"] = current_fp
+
     if not _verify_password(password, user["hashed_password"]):
         return None
     return user
