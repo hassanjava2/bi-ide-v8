@@ -1,0 +1,70 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-30T18:40:30.876Z",
+  "categories": {
+    "أنواع المبيعات": [
+      "B2B - مبيعات الشركات للشركات",
+      "B2C - مبيعات للمستهلك",
+      "B2G - مبيعات للحكومة",
+      "D2C - البيع المباشر",
+      "Inside Sales - المبيعات الداخلية",
+      "Outside Sales - المبيعات الميدانية",
+      "Channel Sales - مبيعات القنوات"
+    ],
+    "منهجيات البيع": [
+      "SPIN Selling",
+      "BANT Framework",
+      "MEDDIC",
+      "Challenger Sale",
+      "Sandler Selling",
+      "Solution Selling"
+    ],
+    "دورة المبيعات": [
+      "التنقيب Prospecting",
+      "التأهيل Qualification",
+      "الاكتشاف Discovery",
+      "العرض Presentation",
+      "العرض السعري Proposal",
+      "التفاوض Negotiation",
+      "الإغلاق Closing",
+      "المتابعة Follow-up"
+    ],
+    "إدارة الفريق": [
+      "هيكل الفريق وأدواره",
+      "الأهداف والحصص Quotas",
+      "نظام التعويضات",
+      "التدريب والتطوير",
+      "إدارة الأداء",
+      "التحفيز"
+    ],
+    "الأدوات والتقنيات": [
+      "CRM Systems",
+      "Sales Enablement Tools",
+      "Prospecting Tools",
+      "Communication Tools",
+      "Analytics Tools"
+    ],
+    "التحليلات": [
+      "مقاييس الإيرادات (MRR, ARR, ACV)",
+      "مقاييس Pipeline",
+      "مقاييس الكفاءة",
+      "التنبؤ Forecasting",
+      "التقارير ولوحات القيادة"
+    ],
+    "السيناريوهات المتقدمة": [
+      "صفقات Enterprise المعقدة",
+      "استبدال المنافسين",
+      "إحياء صفقات متوقفة",
+      "مبيعات B2G الحكومية",
+      "التوسع الدولي"
+    ]
+  },
+  "totalExamples": 59,
+  "statistics": {
+    "qa": 27,
+    "conversations": 20,
+    "scenarios": 4,
+    "caseStudies": 3,
+    "exercises": 5
+  }
+}

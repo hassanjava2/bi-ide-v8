@@ -10,39 +10,25 @@ import IDE from './pages/IDE'
 import Training from './pages/Training'
 import Settings from './pages/Settings'
 import MetaControl from './pages/MetaControl'
-import { isAuthenticated as checkAuth, clearAuth } from './services/api'
+import { ProtectedRoute } from './components/Auth/ProtectedRoute'
+import { useAuth } from './hooks/useAuth'
 import { useLiveData } from './hooks/useLiveData'
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const { isAuthenticated, loading, logout } = useAuth()
+  const [isAppReady, setIsAppReady] = useState(false)
 
   // Use live data hook for system status via WebSocket
   const { systemStatus, isConnected, isFallback } = useLiveData()
 
   useEffect(() => {
-    // التحقق من تسجيل الدخول عبر JWT
-    setIsLoggedIn(checkAuth())
-    setIsLoading(false)
-  }, [])
+    // Wait for auth check to complete
+    if (!loading) {
+      setIsAppReady(true)
+    }
+  }, [loading])
 
-  useEffect(() => {
-    const onLogout = () => setIsLoggedIn(false)
-    window.addEventListener('bi:auth:logout', onLogout as EventListener)
-    return () => window.removeEventListener('bi:auth:logout', onLogout as EventListener)
-  }, [])
-
-  const handleLogin = () => {
-    // Token is already stored by the login API call
-    setIsLoggedIn(true)
-  }
-
-  const handleLogout = () => {
-    clearAuth()
-    setIsLoggedIn(false)
-  }
-
-  if (isLoading) {
+  if (!isAppReady) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -53,25 +39,58 @@ function App() {
     )
   }
 
-  if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />
+  if (!isAuthenticated) {
+    return <Login onLogin={() => {}} />
   }
 
   return (
     <Layout 
       systemStatus={systemStatus} 
       connectionStatus={{ isConnected, isFallback }}
-      onLogout={handleLogout}
+      onLogout={logout}
     >
       <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/council" element={<Council />} />
-        <Route path="/erp" element={<ERP />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/ide" element={<IDE />} />
-        <Route path="/training" element={<Training />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/meta" element={<MetaControl />} />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/council" element={
+          <ProtectedRoute>
+            <Council />
+          </ProtectedRoute>
+        } />
+        <Route path="/erp" element={
+          <ProtectedRoute>
+            <ERP />
+          </ProtectedRoute>
+        } />
+        <Route path="/community" element={
+          <ProtectedRoute>
+            <Community />
+          </ProtectedRoute>
+        } />
+        <Route path="/ide" element={
+          <ProtectedRoute>
+            <IDE />
+          </ProtectedRoute>
+        } />
+        <Route path="/training" element={
+          <ProtectedRoute>
+            <Training />
+          </ProtectedRoute>
+        } />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        } />
+        <Route path="/meta" element={
+          <ProtectedRoute requiredRole="admin">
+            <MetaControl />
+          </ProtectedRoute>
+        } />
+        <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

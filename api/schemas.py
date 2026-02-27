@@ -3,7 +3,7 @@ API Schemas - Pydantic models for request/response validation
 نماذج التحقق من البيانات
 """
 
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from typing import Dict, List, Optional, Any
 
 
@@ -96,14 +96,74 @@ class DebugStopRequest(BaseModel):
 
 # ========== ERP Schemas ==========
 
+class InvoiceItem(BaseModel):
+    product_id: Optional[str] = None
+    # Accept both legacy keys (name/price) and canonical keys (description/unit_price)
+    description: Optional[str] = None
+    name: Optional[str] = None
+    quantity: int
+    unit_price: Optional[float] = None
+    price: Optional[float] = None
+
+    @model_validator(mode="after")
+    def _normalize_legacy_fields(self):
+        if self.description is None and self.name:
+            self.description = self.name
+        if self.unit_price is None and self.price is not None:
+            self.unit_price = self.price
+
+        if not self.description:
+            raise ValueError("InvoiceItem requires description or name")
+        if self.unit_price is None:
+            raise ValueError("InvoiceItem requires unit_price or price")
+        return self
+
+
 class InvoiceCreateRequest(BaseModel):
     customer_name: str
     customer_id: str
-    amount: float
-    tax: float
+    invoice_number: Optional[str] = None
+    amount: Optional[float] = 0
+    subtotal: Optional[float] = 0
+    tax: Optional[float] = 0
+    tax_amount: Optional[float] = 0
     total: float
-    items: List[Dict]
+    items: List[InvoiceItem] = []
     notes: Optional[str] = ""
+    due_date: Optional[str] = None
+
+
+class TransactionRequest(BaseModel):
+    debit_account_id: str
+    credit_account_id: str
+    amount: float
+    description: str
+    reference: Optional[str] = ""
+
+
+class StockAdjustmentRequest(BaseModel):
+    product_id: str
+    quantity_change: int
+    reason: str
+    reference: Optional[str] = ""
+
+
+class PayrollRequest(BaseModel):
+    employee_id: str
+    month: int
+    year: int
+    overtime_hours: Optional[float] = 0
+    deductions: Optional[Dict[str, float]] = None
+
+
+class CustomerCreateRequest(BaseModel):
+    customer_code: str
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = ""
+    address: Optional[str] = ""
+    customer_type: Optional[str] = "regular"
+    credit_limit: Optional[float] = 0
 
 
 # ========== Network Schemas ==========
@@ -170,5 +230,16 @@ class LoginRequest(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
+class RefreshTokenResponse(BaseModel):
+    access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     expires_in: int

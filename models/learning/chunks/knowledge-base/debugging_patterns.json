@@ -1,0 +1,548 @@
+[
+  {
+    "type": "conversation",
+    "scenario": "TypeError في تطبيق React",
+    "messages": [
+      {
+        "role": "user",
+        "message": "عندي خطأ TypeError: Cannot read properties of undefined (reading 'map') في React"
+      },
+      {
+        "role": "assistant",
+        "message": "هذا الخطأ شائع جداً في React! دعني أساعدك في حله:\n\n**السبب المحتمل:**\nأنت تحاول استخدام `.map()` على قيمة `undefined` - يعني البيانات لم تُحمّل بعد أو الـ API أرجع بنية مختلفة.\n\n**الحلول:**\n\n1. **أضف قيمة افتراضية:**\n```javascript\n// قبل (خطأ)\n{data.items.map(item => <div>{item.name}</div>)}\n\n// بعد (صحيح)\n{(data?.items ?? []).map(item => <div>{item.name}</div>)}\n```\n\n2. **تحقق قبل الـ render:**\n```javascript\nif (!data || !data.items) {\n    return <div>جاري التحميل...</div>;\n}\nreturn data.items.map(item => <div>{item.name}</div>);\n```\n\n3. **في useState أعط قيمة ابتدائية:**\n```javascript\nconst [items, setItems] = useState([]); // مصفوفة فارغة وليس undefined\n```\n\n**للتشخيص:** أضف `console.log(data)` قبل الـ map لترى البنية الفعلية.\n\nأرني الكود وسأساعدك أكثر!"
+      }
+    ],
+    "tags": [
+      "react",
+      "typescript",
+      "map",
+      "undefined"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "conversation",
+    "scenario": "مشكلة async/await",
+    "messages": [
+      {
+        "role": "user",
+        "message": "الدالة ترجع Promise بدل القيمة الفعلية"
+      },
+      {
+        "role": "assistant",
+        "message": "هذه مشكلة شائعة مع async/await! دعني أشرح:\n\n**المشكلة:**\n```javascript\n// هذا يرجع Promise\nfunction getData() {\n    return fetch('/api/data').then(r => r.json());\n}\nconst result = getData();\nconsole.log(result); // Promise {<pending>}\n```\n\n**الحلول:**\n\n1. **استخدم await:**\n```javascript\nasync function main() {\n    const result = await getData();\n    console.log(result); // البيانات الفعلية\n}\n```\n\n2. **استخدم .then():**\n```javascript\ngetData().then(result => {\n    console.log(result);\n});\n```\n\n3. **في React useEffect:**\n```javascript\nuseEffect(() => {\n    const fetchData = async () => {\n        const data = await getData();\n        setData(data);\n    };\n    fetchData();\n}, []);\n```\n\n**قاعدة ذهبية:** كل دالة تحتوي await يجب أن تكون async، وكل استدعاء لدالة async يحتاج await أو .then()"
+      }
+    ],
+    "tags": [
+      "async",
+      "await",
+      "promise"
+    ],
+    "difficulty": "beginner"
+  },
+  {
+    "type": "conversation",
+    "scenario": "Memory Leak في useEffect",
+    "messages": [
+      {
+        "role": "user",
+        "message": "Warning: Can't perform a React state update on an unmounted component"
+      },
+      {
+        "role": "assistant",
+        "message": "هذا تحذير Memory Leak! يحدث عندما تحاول تحديث state بعد أن أُزيل المكون.\n\n**السبب:**\nلديك async operation (مثل fetch) تكتمل بعد إزالة المكون.\n\n**الحل - استخدم cleanup:**\n\n```javascript\nuseEffect(() => {\n    let isMounted = true; // علم للتتبع\n    \n    async function fetchData() {\n        const response = await fetch('/api/data');\n        const data = await response.json();\n        \n        // تحقق قبل التحديث\n        if (isMounted) {\n            setData(data);\n        }\n    }\n    \n    fetchData();\n    \n    // Cleanup function\n    return () => {\n        isMounted = false;\n    };\n}, []);\n```\n\n**أو استخدم AbortController:**\n\n```javascript\nuseEffect(() => {\n    const controller = new AbortController();\n    \n    fetch('/api/data', { signal: controller.signal })\n        .then(r => r.json())\n        .then(setData)\n        .catch(err => {\n            if (err.name !== 'AbortError') {\n                console.error(err);\n            }\n        });\n    \n    return () => controller.abort();\n}, []);\n```\n\n**لا تنسَ أيضاً تنظيف:**\n- `setInterval` → `clearInterval`\n- `setTimeout` → `clearTimeout`\n- Event listeners → `removeEventListener`"
+      }
+    ],
+    "tags": [
+      "react",
+      "useEffect",
+      "memory-leak",
+      "cleanup"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "conversation",
+    "scenario": "IndentationError",
+    "messages": [
+      {
+        "role": "user",
+        "message": "عندي IndentationError: unexpected indent في Python"
+      },
+      {
+        "role": "assistant",
+        "message": "أخطاء المسافات البادئة شائعة في Python! دعني أشرح:\n\n**الأسباب الشائعة:**\n\n1. **خلط Tabs مع Spaces:**\n```python\n# خطأ - tab ثم spaces\ndef function():\n\tprint(\"tab\")\n    print(\"spaces\")  # IndentationError!\n```\n\n2. **مسافات غير متساوية:**\n```python\n# خطأ\nif True:\n    print(\"4 مسافات\")\n      print(\"6 مسافات\")  # IndentationError!\n```\n\n3. **مسافة في بداية السطر الأول:**\n```python\n# خطأ\n def function():  # مسافة قبل def!\n    pass\n```\n\n**الحلول:**\n\n1. **اجعل المحرر يُظهر الـ whitespace:**\n   - VS Code: Settings → Render Whitespace → all\n   - أو اضغط Ctrl+Shift+P → \"Toggle Render Whitespace\"\n\n2. **حوّل Tabs لـ Spaces:**\n   - VS Code: انقر على \"Tab Size\" في شريط الحالة\n\n3. **استخدم formatter:**\n```bash\npip install black\nblack your_file.py\n```\n\n4. **القاعدة الذهبية:** دائماً استخدم 4 مسافات للـ indentation في Python"
+      }
+    ],
+    "tags": [
+      "python",
+      "indentation",
+      "whitespace"
+    ],
+    "difficulty": "beginner"
+  },
+  {
+    "type": "conversation",
+    "scenario": "CORS Error",
+    "messages": [
+      {
+        "role": "user",
+        "message": "Access to fetch at 'http://api.example.com' from origin 'http://localhost:3000' has been blocked by CORS policy"
+      },
+      {
+        "role": "assistant",
+        "message": "CORS (Cross-Origin Resource Sharing) خطأ يحدث عندما تطلب بيانات من domain مختلف.\n\n**فهم المشكلة:**\n- المتصفح يحمي المستخدم بمنع الطلبات لـ domains مختلفة\n- الـ API يجب أن يسمح لموقعك بالوصول\n\n**الحلول:**\n\n**1. حل من السيرفر (الأفضل):**\n```javascript\n// Express.js\nconst cors = require('cors');\n\n// السماح لكل المواقع (للتطوير فقط)\napp.use(cors());\n\n// السماح لمواقع محددة (للإنتاج)\napp.use(cors({\n    origin: ['http://localhost:3000', 'https://mysite.com'],\n    methods: ['GET', 'POST', 'PUT', 'DELETE'],\n    credentials: true\n}));\n```\n\n**2. استخدام Proxy (للتطوير):**\n\nفي `package.json` (Create React App):\n```json\n{\n    \"proxy\": \"http://api.example.com\"\n}\n```\n\nفي `vite.config.js`:\n```javascript\nexport default {\n    server: {\n        proxy: {\n            '/api': {\n                target: 'http://api.example.com',\n                changeOrigin: true\n            }\n        }\n    }\n}\n```\n\n**3. للـ APIs العامة:**\nبعض APIs تحتاج headers خاصة:\n```javascript\nfetch(url, {\n    headers: {\n        'Content-Type': 'application/json',\n        // بعض APIs تحتاج هذا\n        'Access-Control-Allow-Origin': '*'\n    }\n});\n```\n\n**تحذير:** لا تستخدم CORS proxies عشوائية في الإنتاج - هي للتطوير فقط!"
+      }
+    ],
+    "tags": [
+      "cors",
+      "fetch",
+      "api",
+      "network"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "conversation",
+    "scenario": "Infinite Loop في React",
+    "messages": [
+      {
+        "role": "user",
+        "message": "التطبيق يتجمد ويظهر Maximum update depth exceeded"
+      },
+      {
+        "role": "assistant",
+        "message": "هذا خطأ حلقة لا نهائية في React! دعني أشرح الأسباب والحلول:\n\n**الأسباب الشائعة:**\n\n**1. setState في render مباشرة:**\n```javascript\n// ❌ خطأ - يسبب حلقة لا نهائية\nfunction Component() {\n    const [count, setCount] = useState(0);\n    setCount(count + 1); // هذا يُنفذ كل render!\n    return <div>{count}</div>;\n}\n\n// ✅ صحيح - في event handler\nfunction Component() {\n    const [count, setCount] = useState(0);\n    return (\n        <button onClick={() => setCount(count + 1)}>\n            {count}\n        </button>\n    );\n}\n```\n\n**2. useEffect بدون dependencies أو بتبعيات خاطئة:**\n```javascript\n// ❌ خطأ - يُنفذ كل render\nuseEffect(() => {\n    setData(processData());\n}); // نسيت []\n\n// ❌ خطأ - data تتغير فيُنفذ مرة أخرى\nuseEffect(() => {\n    setData([...data, newItem]);\n}, [data]); // data في dependencies\n\n// ✅ صحيح\nuseEffect(() => {\n    setData(processData());\n}, []); // مرة واحدة\n\nuseEffect(() => {\n    setData(prev => [...prev, newItem]);\n}, [newItem]); // استخدم functional update\n```\n\n**3. Object/Array جديد في كل render:**\n```javascript\n// ❌ خطأ - object جديد كل مرة\nuseEffect(() => {\n    fetchData(options);\n}, [{ limit: 10 }]); // object جديد = تبعية جديدة\n\n// ✅ صحيح\nconst options = useMemo(() => ({ limit: 10 }), []);\nuseEffect(() => {\n    fetchData(options);\n}, [options]);\n```\n\n**للتشخيص:** أضف `console.log('render')` في المكون لترى كم مرة يُعاد الـ render"
+      }
+    ],
+    "tags": [
+      "react",
+      "infinite-loop",
+      "useEffect",
+      "useState"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "conversation",
+    "scenario": "Query بطيء",
+    "messages": [
+      {
+        "role": "user",
+        "message": "الـ SQL query تأخذ وقت طويل جداً"
+      },
+      {
+        "role": "assistant",
+        "message": "Query بطيء؟ دعني أساعدك في تحسينه:\n\n**خطوات التشخيص:**\n\n**1. استخدم EXPLAIN:**\n```sql\nEXPLAIN ANALYZE SELECT * FROM users WHERE email = 'test@email.com';\n```\n\n**2. تحقق من الـ Indexes:**\n```sql\n-- أضف index للحقول المستخدمة في WHERE\nCREATE INDEX idx_users_email ON users(email);\n\n-- للبحث بأكثر من حقل\nCREATE INDEX idx_orders_user_date ON orders(user_id, created_at);\n```\n\n**3. مشاكل شائعة وحلولها:**\n\n**❌ SELECT * بدل حقول محددة:**\n```sql\n-- بطيء\nSELECT * FROM users;\n\n-- أسرع\nSELECT id, name, email FROM users;\n```\n\n**❌ LIKE مع % في البداية:**\n```sql\n-- بطيء جداً - لا يستخدم index\nSELECT * FROM users WHERE email LIKE '%@gmail.com';\n\n-- أسرع - يستخدم index\nSELECT * FROM users WHERE email LIKE 'ahmed%';\n```\n\n**❌ Functions على columns:**\n```sql\n-- بطيء - لا يستخدم index\nSELECT * FROM orders WHERE YEAR(created_at) = 2024;\n\n-- أسرع\nSELECT * FROM orders \nWHERE created_at >= '2024-01-01' \n  AND created_at < '2025-01-01';\n```\n\n**❌ N+1 Query Problem:**\n```sql\n-- بدل: query لكل user\n-- استخدم JOIN:\nSELECT users.*, orders.total \nFROM users \nLEFT JOIN orders ON users.id = orders.user_id;\n```\n\n**4. نصائح عامة:**\n- حدد عدد النتائج: `LIMIT 100`\n- استخدم Pagination بدل جلب كل شيء\n- فكر في Caching للـ queries المتكررة"
+      }
+    ],
+    "tags": [
+      "sql",
+      "performance",
+      "optimization",
+      "index"
+    ],
+    "difficulty": "advanced"
+  },
+  {
+    "type": "conversation",
+    "scenario": "this undefined في JavaScript",
+    "messages": [
+      {
+        "role": "user",
+        "message": "this.state is undefined داخل callback function"
+      },
+      {
+        "role": "assistant",
+        "message": "مشكلة `this` context! من أكثر المشاكل شيوعاً في JavaScript:\n\n**فهم المشكلة:**\n```javascript\nclass Button {\n    constructor() {\n        this.label = \"Click me\";\n    }\n    \n    handleClick() {\n        console.log(this.label); // undefined!\n    }\n    \n    setup() {\n        // this في handleClick يشير لـ button element، لا للـ class\n        document.addEventListener('click', this.handleClick);\n    }\n}\n```\n\n**الحلول:**\n\n**1. Arrow Function (الأسهل):**\n```javascript\nclass Button {\n    handleClick = () => {\n        console.log(this.label); // يعمل! arrow function ترث this\n    }\n}\n```\n\n**2. Bind في Constructor:**\n```javascript\nclass Button {\n    constructor() {\n        this.handleClick = this.handleClick.bind(this);\n    }\n}\n```\n\n**3. Arrow Function في الاستدعاء:**\n```javascript\ndocument.addEventListener('click', () => this.handleClick());\n// أو\ndocument.addEventListener('click', (e) => this.handleClick(e));\n```\n\n**في React:**\n```javascript\n// Class Component\nclass MyComponent extends React.Component {\n    constructor(props) {\n        super(props);\n        this.handleClick = this.handleClick.bind(this);\n    }\n    \n    // أو استخدم arrow function مباشرة\n    handleClick = () => {\n        this.setState({ clicked: true });\n    }\n}\n\n// Functional Component (لا مشكلة this!)\nfunction MyComponent() {\n    const [clicked, setClicked] = useState(false);\n    const handleClick = () => setClicked(true);\n}\n```\n\n**نصيحة:** استخدم Functional Components مع Hooks لتجنب مشاكل this تماماً!"
+      }
+    ],
+    "tags": [
+      "javascript",
+      "this",
+      "context",
+      "class",
+      "callback"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "conversation",
+    "scenario": "ImportError",
+    "messages": [
+      {
+        "role": "user",
+        "message": "ModuleNotFoundError: No module named 'requests'"
+      },
+      {
+        "role": "assistant",
+        "message": "خطأ استيراد Module! دعني أساعدك:\n\n**الأسباب والحلول:**\n\n**1. المكتبة غير مثبتة:**\n```bash\npip install requests\n```\n\n**2. بيئة افتراضية غير مُفعّلة:**\n```bash\n# تأكد من تفعيل الـ venv\n# Windows\n.\\venv\\Scripts\\activate\n\n# Linux/Mac\nsource venv/bin/activate\n\n# ثم ثبت\npip install requests\n```\n\n**3. نسخة Python خاطئة:**\n```bash\n# تحقق من النسخة\npython --version\npip --version\n\n# قد تحتاج pip3\npip3 install requests\n\n# أو\npython3 -m pip install requests\n```\n\n**4. مشكلة في PATH:**\n```bash\n# تأكد أن pip يشير للـ Python الصحيح\nwhich pip\nwhich python\n\n# استخدم python -m للتأكد\npython -m pip install requests\n```\n\n**5. اسم ملفك يتعارض مع المكتبة:**\n```python\n# ❌ إذا سميت ملفك requests.py\n# Python يحاول استيراد ملفك بدل المكتبة!\n# غيّر اسم الملف\n```\n\n**6. تحقق من التثبيت:**\n```bash\npip list | grep requests\n# أو\npip show requests\n```\n\n**7. في VS Code:**\n- تأكد أن الـ Python Interpreter الصحيح مُختار\n- Ctrl+Shift+P → \"Python: Select Interpreter\"\n\n**8. إنشاء requirements.txt:**\n```bash\npip freeze > requirements.txt\n# للتثبيت لاحقاً\npip install -r requirements.txt\n```"
+      }
+    ],
+    "tags": [
+      "python",
+      "import",
+      "pip",
+      "module",
+      "venv"
+    ],
+    "difficulty": "beginner"
+  },
+  {
+    "type": "conversation",
+    "scenario": "JSON Parse Error",
+    "messages": [
+      {
+        "role": "user",
+        "message": "SyntaxError: Unexpected token < in JSON at position 0"
+      },
+      {
+        "role": "assistant",
+        "message": "هذا الخطأ يعني أن الاستجابة ليست JSON صالح!\n\n**الرمز < يشير غالباً إلى:**\n- صفحة HTML (مثل 404 page)\n- رسالة خطأ من السيرفر\n\n**التشخيص:**\n```javascript\n// بدل هذا\nconst data = await response.json();\n\n// جرب هذا للتشخيص\nconst text = await response.text();\nconsole.log('Response:', text);\nconsole.log('Status:', response.status);\n```\n\n**الأسباب الشائعة:**\n\n**1. URL خاطئ:**\n```javascript\n// ❌ ربما يرجع 404 HTML page\nfetch('/api/userss'); // typo!\n\n// ✅\nfetch('/api/users');\n```\n\n**2. السيرفر لا يعمل:**\n```javascript\n// تحقق من status\nconst response = await fetch('/api/data');\nif (!response.ok) {\n    throw new Error(`HTTP ${response.status}`);\n}\nconst data = await response.json();\n```\n\n**3. الـ API يرجع HTML بدل JSON:**\n```javascript\n// تحقق من Content-Type\nconst contentType = response.headers.get('content-type');\nif (!contentType?.includes('application/json')) {\n    throw new Error('Response is not JSON');\n}\n```\n\n**4. الحل الآمن:**\n```javascript\nasync function fetchJSON(url) {\n    const response = await fetch(url);\n    \n    // تحقق من النجاح\n    if (!response.ok) {\n        const text = await response.text();\n        throw new Error(`HTTP ${response.status}: ${text}`);\n    }\n    \n    // تحقق من النوع\n    const contentType = response.headers.get('content-type');\n    if (!contentType?.includes('application/json')) {\n        const text = await response.text();\n        throw new Error(`Expected JSON, got: ${text.substring(0, 100)}`);\n    }\n    \n    return response.json();\n}\n```\n\n**نصيحة:** افتح Network tab في DevTools وانظر الاستجابة الفعلية!"
+      }
+    ],
+    "tags": [
+      "javascript",
+      "json",
+      "fetch",
+      "api"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "expert_conversation",
+    "title": "تصحيح Memory Leak معقد",
+    "messages": [
+      {
+        "role": "user",
+        "message": "التطبيق يستهلك RAM بشكل متزايد مع الوقت حتى يتوقف"
+      },
+      {
+        "role": "assistant",
+        "message": "Memory Leak! دعني أساعدك في تشخيصه:\n\n**1. أدوات التشخيص:**\n\n```bash\n# Node.js - تفعيل heap profiling\nnode --inspect --max-old-space-size=4096 app.js\n\n# Chrome DevTools\n# افتح chrome://inspect\n# Memory tab → Take heap snapshot\n```\n\n**2. الأسباب الشائعة:**\n\n**أ. Event Listeners غير مُزالة:**\n```javascript\n// ❌ Memory leak\nclass Service {\n    start() {\n        emitter.on('data', this.handleData);\n    }\n    // نسيت إزالة listener!\n}\n\n// ✅ الحل\nclass Service {\n    start() {\n        this.boundHandler = this.handleData.bind(this);\n        emitter.on('data', this.boundHandler);\n    }\n    stop() {\n        emitter.off('data', this.boundHandler);\n    }\n}\n```\n\n**ب. Closures تحتفظ بـ references:**\n```javascript\n// ❌ largeData يبقى في الذاكرة\nfunction processData() {\n    const largeData = loadHugeFile();\n    return function() {\n        console.log(largeData.length); // closure!\n    };\n}\n\n// ✅ الحل - احتفظ فقط بما تحتاج\nfunction processData() {\n    const largeData = loadHugeFile();\n    const length = largeData.length;\n    return function() {\n        console.log(length);\n    };\n}\n```\n\n**ج. Cache بدون limit:**\n```javascript\n// ❌ يكبر للأبد\nconst cache = new Map();\n\n// ✅ LRU Cache مع حد\nconst LRU = require('lru-cache');\nconst cache = new LRU({ max: 500 });\n```\n\n**3. كيفية التشخيص:**\n1. خذ heap snapshot في البداية\n2. استخدم التطبيق\n3. خذ snapshot ثاني\n4. قارن - ابحث عن objects تتزايد\n\n**أرسل لي output من:**\n```javascript\nconsole.log(process.memoryUsage());\n```"
+      }
+    ],
+    "tags": [
+      "memory",
+      "leak",
+      "profiling",
+      "heap"
+    ],
+    "difficulty": "expert"
+  },
+  {
+    "type": "expert_conversation",
+    "title": "Race Condition في Production",
+    "messages": [
+      {
+        "role": "user",
+        "message": "أحياناً نحصل على بيانات خاطئة في الطلبات، لكن لا أستطيع إعادة إنتاج المشكلة"
+      },
+      {
+        "role": "assistant",
+        "message": "هذه علامات Race Condition! صعبة التشخيص لأنها تعتمد على timing.\n\n**1. كيف تحدث:**\n\n```\nRequest 1: Read → Process → Write\nRequest 2:    Read → Process → Write\n                ↑ يقرأ بيانات قديمة!\n```\n\n**2. أماكن البحث الشائعة:**\n\n**أ. Read-Modify-Write بدون lock:**\n```javascript\n// ❌ Race condition\nasync function incrementCounter(id) {\n    const doc = await Counter.findById(id);\n    doc.value += 1;\n    await doc.save();\n}\n\n// ✅ Atomic operation\nawait Counter.updateOne(\n    { _id: id },\n    { $inc: { value: 1 } }\n);\n```\n\n**ب. Double submission:**\n```javascript\n// ❌ طلبين متزامنين\nasync function createOrder(userId, items) {\n    const existing = await Order.findOne({ userId, status: 'pending' });\n    if (!existing) {\n        await Order.create({ userId, items }); // قد يُنشأ مرتين!\n    }\n}\n\n// ✅ Unique constraint + upsert\nawait Order.updateOne(\n    { userId, status: 'pending' },\n    { $setOnInsert: { items } },\n    { upsert: true }\n);\n```\n\n**ج. Cache inconsistency:**\n```javascript\n// ❌ Cache قد يكون stale\nconst user = cache.get(userId) || await fetchUser(userId);\n\n// ✅ Read-through cache مع TTL قصير\n```\n\n**3. كيفية التشخيص:**\n\n1. **أضف logging مفصل:**\n```javascript\nconsole.log(`[${Date.now()}] [${requestId}] Step: ${step}`);\n```\n\n2. **استخدم distributed tracing:**\n   - OpenTelemetry\n   - Jaeger\n   - Zipkin\n\n3. **اختبار بـ concurrent requests:**\n```bash\n# أرسل 100 request متزامن\nfor i in {1..100}; do curl http://api/endpoint & done\n```\n\n**4. الحلول العامة:**\n- Optimistic locking (version field)\n- Pessimistic locking (SELECT FOR UPDATE)\n- Idempotency keys\n- Message queues للعمليات المهمة"
+      }
+    ],
+    "tags": [
+      "race-condition",
+      "concurrency",
+      "database",
+      "locking"
+    ],
+    "difficulty": "expert"
+  },
+  {
+    "type": "expert_conversation",
+    "title": "تصحيح Performance Bottleneck",
+    "messages": [
+      {
+        "role": "user",
+        "message": "الـ API بطيء جداً، أحياناً يأخذ 10 ثواني"
+      },
+      {
+        "role": "assistant",
+        "message": "دعنا نحدد مصدر البطء بشكل منهجي:\n\n**1. قياس الوقت في كل مرحلة:**\n\n```javascript\nconst { performance } = require('perf_hooks');\n\nasync function trackedEndpoint(req, res) {\n    const timings = {};\n    const mark = (name) => timings[name] = performance.now();\n    \n    mark('start');\n    \n    // Database query\n    mark('db_start');\n    const users = await User.find({ active: true });\n    mark('db_end');\n    \n    // Processing\n    mark('process_start');\n    const processed = processUsers(users);\n    mark('process_end');\n    \n    // Response\n    res.json({\n        data: processed,\n        _timings: {\n            total: timings.process_end - timings.start,\n            database: timings.db_end - timings.db_start,\n            processing: timings.process_end - timings.process_start\n        }\n    });\n}\n```\n\n**2. الأسباب الشائعة للبطء:**\n\n**أ. Database queries غير محسنة:**\n```javascript\n// ❌ بطيء - full table scan\nconst users = await User.find({ email: /@gmail.com$/ });\n\n// ✅ أسرع - استخدم index\ndb.users.createIndex({ email: 1 });\n// أو اجعل query يستخدم index\nconst users = await User.find({ email_domain: 'gmail.com' });\n```\n\n**ب. N+1 queries:**\n```javascript\n// ❌ 101 query لـ 100 user\nfor (const user of users) {\n    user.orders = await Order.find({ userId: user.id });\n}\n\n// ✅ Query واحد\nconst orders = await Order.find({ userId: { $in: userIds } });\n```\n\n**ج. Blocking operations:**\n```javascript\n// ❌ يحجب Event Loop\nconst hash = crypto.pbkdf2Sync(...);\n\n// ✅ Async\nconst hash = await crypto.pbkdf2(...);\n```\n\n**3. أدوات التشخيص:**\n\n```bash\n# Database query analysis\nEXPLAIN ANALYZE SELECT * FROM users WHERE ...\n\n# Node.js profiling\nnode --prof app.js\nnode --prof-process isolate-*.log > profile.txt\n\n# APM tools\n# - New Relic\n# - Datadog\n# - Elastic APM\n```\n\n**4. Checklist للتحسين:**\n- [ ] Indexes على الحقول المستخدمة في WHERE\n- [ ] Pagination بدل جلب كل شيء\n- [ ] Caching للبيانات المتكررة\n- [ ] Connection pooling\n- [ ] Compression للـ responses الكبيرة\n- [ ] CDN للـ static assets\n\n**أرسل لي الـ query البطيء وسأساعدك أكثر!**"
+      }
+    ],
+    "tags": [
+      "performance",
+      "optimization",
+      "database",
+      "profiling"
+    ],
+    "difficulty": "advanced"
+  },
+  {
+    "type": "conversation",
+    "scenario": "TypeError في تطبيق React",
+    "messages": [
+      {
+        "role": "user",
+        "message": "عندي خطأ TypeError: Cannot read properties of undefined (reading 'map') في React"
+      },
+      {
+        "role": "assistant",
+        "message": "هذا الخطأ شائع جداً في React! دعني أساعدك في حله:\n\n**السبب المحتمل:**\nأنت تحاول استخدام `.map()` على قيمة `undefined` - يعني البيانات لم تُحمّل بعد أو الـ API أرجع بنية مختلفة.\n\n**الحلول:**\n\n1. **أضف قيمة افتراضية:**\n```javascript\n// قبل (خطأ)\n{data.items.map(item => <div>{item.name}</div>)}\n\n// بعد (صحيح)\n{(data?.items ?? []).map(item => <div>{item.name}</div>)}\n```\n\n2. **تحقق قبل الـ render:**\n```javascript\nif (!data || !data.items) {\n    return <div>جاري التحميل...</div>;\n}\nreturn data.items.map(item => <div>{item.name}</div>);\n```\n\n3. **في useState أعط قيمة ابتدائية:**\n```javascript\nconst [items, setItems] = useState([]); // مصفوفة فارغة وليس undefined\n```\n\n**للتشخيص:** أضف `console.log(data)` قبل الـ map لترى البنية الفعلية.\n\nأرني الكود وسأساعدك أكثر!"
+      }
+    ],
+    "tags": [
+      "react",
+      "typescript",
+      "map",
+      "undefined"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "conversation",
+    "scenario": "مشكلة async/await",
+    "messages": [
+      {
+        "role": "user",
+        "message": "الدالة ترجع Promise بدل القيمة الفعلية"
+      },
+      {
+        "role": "assistant",
+        "message": "هذه مشكلة شائعة مع async/await! دعني أشرح:\n\n**المشكلة:**\n```javascript\n// هذا يرجع Promise\nfunction getData() {\n    return fetch('/api/data').then(r => r.json());\n}\nconst result = getData();\nconsole.log(result); // Promise {<pending>}\n```\n\n**الحلول:**\n\n1. **استخدم await:**\n```javascript\nasync function main() {\n    const result = await getData();\n    console.log(result); // البيانات الفعلية\n}\n```\n\n2. **استخدم .then():**\n```javascript\ngetData().then(result => {\n    console.log(result);\n});\n```\n\n3. **في React useEffect:**\n```javascript\nuseEffect(() => {\n    const fetchData = async () => {\n        const data = await getData();\n        setData(data);\n    };\n    fetchData();\n}, []);\n```\n\n**قاعدة ذهبية:** كل دالة تحتوي await يجب أن تكون async، وكل استدعاء لدالة async يحتاج await أو .then()"
+      }
+    ],
+    "tags": [
+      "async",
+      "await",
+      "promise"
+    ],
+    "difficulty": "beginner"
+  },
+  {
+    "type": "conversation",
+    "scenario": "Memory Leak في useEffect",
+    "messages": [
+      {
+        "role": "user",
+        "message": "Warning: Can't perform a React state update on an unmounted component"
+      },
+      {
+        "role": "assistant",
+        "message": "هذا تحذير Memory Leak! يحدث عندما تحاول تحديث state بعد أن أُزيل المكون.\n\n**السبب:**\nلديك async operation (مثل fetch) تكتمل بعد إزالة المكون.\n\n**الحل - استخدم cleanup:**\n\n```javascript\nuseEffect(() => {\n    let isMounted = true; // علم للتتبع\n    \n    async function fetchData() {\n        const response = await fetch('/api/data');\n        const data = await response.json();\n        \n        // تحقق قبل التحديث\n        if (isMounted) {\n            setData(data);\n        }\n    }\n    \n    fetchData();\n    \n    // Cleanup function\n    return () => {\n        isMounted = false;\n    };\n}, []);\n```\n\n**أو استخدم AbortController:**\n\n```javascript\nuseEffect(() => {\n    const controller = new AbortController();\n    \n    fetch('/api/data', { signal: controller.signal })\n        .then(r => r.json())\n        .then(setData)\n        .catch(err => {\n            if (err.name !== 'AbortError') {\n                console.error(err);\n            }\n        });\n    \n    return () => controller.abort();\n}, []);\n```\n\n**لا تنسَ أيضاً تنظيف:**\n- `setInterval` → `clearInterval`\n- `setTimeout` → `clearTimeout`\n- Event listeners → `removeEventListener`"
+      }
+    ],
+    "tags": [
+      "react",
+      "useEffect",
+      "memory-leak",
+      "cleanup"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "conversation",
+    "scenario": "IndentationError",
+    "messages": [
+      {
+        "role": "user",
+        "message": "عندي IndentationError: unexpected indent في Python"
+      },
+      {
+        "role": "assistant",
+        "message": "أخطاء المسافات البادئة شائعة في Python! دعني أشرح:\n\n**الأسباب الشائعة:**\n\n1. **خلط Tabs مع Spaces:**\n```python\n# خطأ - tab ثم spaces\ndef function():\n\tprint(\"tab\")\n    print(\"spaces\")  # IndentationError!\n```\n\n2. **مسافات غير متساوية:**\n```python\n# خطأ\nif True:\n    print(\"4 مسافات\")\n      print(\"6 مسافات\")  # IndentationError!\n```\n\n3. **مسافة في بداية السطر الأول:**\n```python\n# خطأ\n def function():  # مسافة قبل def!\n    pass\n```\n\n**الحلول:**\n\n1. **اجعل المحرر يُظهر الـ whitespace:**\n   - VS Code: Settings → Render Whitespace → all\n   - أو اضغط Ctrl+Shift+P → \"Toggle Render Whitespace\"\n\n2. **حوّل Tabs لـ Spaces:**\n   - VS Code: انقر على \"Tab Size\" في شريط الحالة\n\n3. **استخدم formatter:**\n```bash\npip install black\nblack your_file.py\n```\n\n4. **القاعدة الذهبية:** دائماً استخدم 4 مسافات للـ indentation في Python"
+      }
+    ],
+    "tags": [
+      "python",
+      "indentation",
+      "whitespace"
+    ],
+    "difficulty": "beginner"
+  },
+  {
+    "type": "conversation",
+    "scenario": "CORS Error",
+    "messages": [
+      {
+        "role": "user",
+        "message": "Access to fetch at 'http://api.example.com' from origin 'http://localhost:3000' has been blocked by CORS policy"
+      },
+      {
+        "role": "assistant",
+        "message": "CORS (Cross-Origin Resource Sharing) خطأ يحدث عندما تطلب بيانات من domain مختلف.\n\n**فهم المشكلة:**\n- المتصفح يحمي المستخدم بمنع الطلبات لـ domains مختلفة\n- الـ API يجب أن يسمح لموقعك بالوصول\n\n**الحلول:**\n\n**1. حل من السيرفر (الأفضل):**\n```javascript\n// Express.js\nconst cors = require('cors');\n\n// السماح لكل المواقع (للتطوير فقط)\napp.use(cors());\n\n// السماح لمواقع محددة (للإنتاج)\napp.use(cors({\n    origin: ['http://localhost:3000', 'https://mysite.com'],\n    methods: ['GET', 'POST', 'PUT', 'DELETE'],\n    credentials: true\n}));\n```\n\n**2. استخدام Proxy (للتطوير):**\n\nفي `package.json` (Create React App):\n```json\n{\n    \"proxy\": \"http://api.example.com\"\n}\n```\n\nفي `vite.config.js`:\n```javascript\nexport default {\n    server: {\n        proxy: {\n            '/api': {\n                target: 'http://api.example.com',\n                changeOrigin: true\n            }\n        }\n    }\n}\n```\n\n**3. للـ APIs العامة:**\nبعض APIs تحتاج headers خاصة:\n```javascript\nfetch(url, {\n    headers: {\n        'Content-Type': 'application/json',\n        // بعض APIs تحتاج هذا\n        'Access-Control-Allow-Origin': '*'\n    }\n});\n```\n\n**تحذير:** لا تستخدم CORS proxies عشوائية في الإنتاج - هي للتطوير فقط!"
+      }
+    ],
+    "tags": [
+      "cors",
+      "fetch",
+      "api",
+      "network"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "conversation",
+    "scenario": "Infinite Loop في React",
+    "messages": [
+      {
+        "role": "user",
+        "message": "التطبيق يتجمد ويظهر Maximum update depth exceeded"
+      },
+      {
+        "role": "assistant",
+        "message": "هذا خطأ حلقة لا نهائية في React! دعني أشرح الأسباب والحلول:\n\n**الأسباب الشائعة:**\n\n**1. setState في render مباشرة:**\n```javascript\n// ❌ خطأ - يسبب حلقة لا نهائية\nfunction Component() {\n    const [count, setCount] = useState(0);\n    setCount(count + 1); // هذا يُنفذ كل render!\n    return <div>{count}</div>;\n}\n\n// ✅ صحيح - في event handler\nfunction Component() {\n    const [count, setCount] = useState(0);\n    return (\n        <button onClick={() => setCount(count + 1)}>\n            {count}\n        </button>\n    );\n}\n```\n\n**2. useEffect بدون dependencies أو بتبعيات خاطئة:**\n```javascript\n// ❌ خطأ - يُنفذ كل render\nuseEffect(() => {\n    setData(processData());\n}); // نسيت []\n\n// ❌ خطأ - data تتغير فيُنفذ مرة أخرى\nuseEffect(() => {\n    setData([...data, newItem]);\n}, [data]); // data في dependencies\n\n// ✅ صحيح\nuseEffect(() => {\n    setData(processData());\n}, []); // مرة واحدة\n\nuseEffect(() => {\n    setData(prev => [...prev, newItem]);\n}, [newItem]); // استخدم functional update\n```\n\n**3. Object/Array جديد في كل render:**\n```javascript\n// ❌ خطأ - object جديد كل مرة\nuseEffect(() => {\n    fetchData(options);\n}, [{ limit: 10 }]); // object جديد = تبعية جديدة\n\n// ✅ صحيح\nconst options = useMemo(() => ({ limit: 10 }), []);\nuseEffect(() => {\n    fetchData(options);\n}, [options]);\n```\n\n**للتشخيص:** أضف `console.log('render')` في المكون لترى كم مرة يُعاد الـ render"
+      }
+    ],
+    "tags": [
+      "react",
+      "infinite-loop",
+      "useEffect",
+      "useState"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "conversation",
+    "scenario": "Query بطيء",
+    "messages": [
+      {
+        "role": "user",
+        "message": "الـ SQL query تأخذ وقت طويل جداً"
+      },
+      {
+        "role": "assistant",
+        "message": "Query بطيء؟ دعني أساعدك في تحسينه:\n\n**خطوات التشخيص:**\n\n**1. استخدم EXPLAIN:**\n```sql\nEXPLAIN ANALYZE SELECT * FROM users WHERE email = 'test@email.com';\n```\n\n**2. تحقق من الـ Indexes:**\n```sql\n-- أضف index للحقول المستخدمة في WHERE\nCREATE INDEX idx_users_email ON users(email);\n\n-- للبحث بأكثر من حقل\nCREATE INDEX idx_orders_user_date ON orders(user_id, created_at);\n```\n\n**3. مشاكل شائعة وحلولها:**\n\n**❌ SELECT * بدل حقول محددة:**\n```sql\n-- بطيء\nSELECT * FROM users;\n\n-- أسرع\nSELECT id, name, email FROM users;\n```\n\n**❌ LIKE مع % في البداية:**\n```sql\n-- بطيء جداً - لا يستخدم index\nSELECT * FROM users WHERE email LIKE '%@gmail.com';\n\n-- أسرع - يستخدم index\nSELECT * FROM users WHERE email LIKE 'ahmed%';\n```\n\n**❌ Functions على columns:**\n```sql\n-- بطيء - لا يستخدم index\nSELECT * FROM orders WHERE YEAR(created_at) = 2024;\n\n-- أسرع\nSELECT * FROM orders \nWHERE created_at >= '2024-01-01' \n  AND created_at < '2025-01-01';\n```\n\n**❌ N+1 Query Problem:**\n```sql\n-- بدل: query لكل user\n-- استخدم JOIN:\nSELECT users.*, orders.total \nFROM users \nLEFT JOIN orders ON users.id = orders.user_id;\n```\n\n**4. نصائح عامة:**\n- حدد عدد النتائج: `LIMIT 100`\n- استخدم Pagination بدل جلب كل شيء\n- فكر في Caching للـ queries المتكررة"
+      }
+    ],
+    "tags": [
+      "sql",
+      "performance",
+      "optimization",
+      "index"
+    ],
+    "difficulty": "advanced"
+  },
+  {
+    "type": "conversation",
+    "scenario": "this undefined في JavaScript",
+    "messages": [
+      {
+        "role": "user",
+        "message": "this.state is undefined داخل callback function"
+      },
+      {
+        "role": "assistant",
+        "message": "مشكلة `this` context! من أكثر المشاكل شيوعاً في JavaScript:\n\n**فهم المشكلة:**\n```javascript\nclass Button {\n    constructor() {\n        this.label = \"Click me\";\n    }\n    \n    handleClick() {\n        console.log(this.label); // undefined!\n    }\n    \n    setup() {\n        // this في handleClick يشير لـ button element، لا للـ class\n        document.addEventListener('click', this.handleClick);\n    }\n}\n```\n\n**الحلول:**\n\n**1. Arrow Function (الأسهل):**\n```javascript\nclass Button {\n    handleClick = () => {\n        console.log(this.label); // يعمل! arrow function ترث this\n    }\n}\n```\n\n**2. Bind في Constructor:**\n```javascript\nclass Button {\n    constructor() {\n        this.handleClick = this.handleClick.bind(this);\n    }\n}\n```\n\n**3. Arrow Function في الاستدعاء:**\n```javascript\ndocument.addEventListener('click', () => this.handleClick());\n// أو\ndocument.addEventListener('click', (e) => this.handleClick(e));\n```\n\n**في React:**\n```javascript\n// Class Component\nclass MyComponent extends React.Component {\n    constructor(props) {\n        super(props);\n        this.handleClick = this.handleClick.bind(this);\n    }\n    \n    // أو استخدم arrow function مباشرة\n    handleClick = () => {\n        this.setState({ clicked: true });\n    }\n}\n\n// Functional Component (لا مشكلة this!)\nfunction MyComponent() {\n    const [clicked, setClicked] = useState(false);\n    const handleClick = () => setClicked(true);\n}\n```\n\n**نصيحة:** استخدم Functional Components مع Hooks لتجنب مشاكل this تماماً!"
+      }
+    ],
+    "tags": [
+      "javascript",
+      "this",
+      "context",
+      "class",
+      "callback"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "conversation",
+    "scenario": "ImportError",
+    "messages": [
+      {
+        "role": "user",
+        "message": "ModuleNotFoundError: No module named 'requests'"
+      },
+      {
+        "role": "assistant",
+        "message": "خطأ استيراد Module! دعني أساعدك:\n\n**الأسباب والحلول:**\n\n**1. المكتبة غير مثبتة:**\n```bash\npip install requests\n```\n\n**2. بيئة افتراضية غير مُفعّلة:**\n```bash\n# تأكد من تفعيل الـ venv\n# Windows\n.\\venv\\Scripts\\activate\n\n# Linux/Mac\nsource venv/bin/activate\n\n# ثم ثبت\npip install requests\n```\n\n**3. نسخة Python خاطئة:**\n```bash\n# تحقق من النسخة\npython --version\npip --version\n\n# قد تحتاج pip3\npip3 install requests\n\n# أو\npython3 -m pip install requests\n```\n\n**4. مشكلة في PATH:**\n```bash\n# تأكد أن pip يشير للـ Python الصحيح\nwhich pip\nwhich python\n\n# استخدم python -m للتأكد\npython -m pip install requests\n```\n\n**5. اسم ملفك يتعارض مع المكتبة:**\n```python\n# ❌ إذا سميت ملفك requests.py\n# Python يحاول استيراد ملفك بدل المكتبة!\n# غيّر اسم الملف\n```\n\n**6. تحقق من التثبيت:**\n```bash\npip list | grep requests\n# أو\npip show requests\n```\n\n**7. في VS Code:**\n- تأكد أن الـ Python Interpreter الصحيح مُختار\n- Ctrl+Shift+P → \"Python: Select Interpreter\"\n\n**8. إنشاء requirements.txt:**\n```bash\npip freeze > requirements.txt\n# للتثبيت لاحقاً\npip install -r requirements.txt\n```"
+      }
+    ],
+    "tags": [
+      "python",
+      "import",
+      "pip",
+      "module",
+      "venv"
+    ],
+    "difficulty": "beginner"
+  },
+  {
+    "type": "conversation",
+    "scenario": "JSON Parse Error",
+    "messages": [
+      {
+        "role": "user",
+        "message": "SyntaxError: Unexpected token < in JSON at position 0"
+      },
+      {
+        "role": "assistant",
+        "message": "هذا الخطأ يعني أن الاستجابة ليست JSON صالح!\n\n**الرمز < يشير غالباً إلى:**\n- صفحة HTML (مثل 404 page)\n- رسالة خطأ من السيرفر\n\n**التشخيص:**\n```javascript\n// بدل هذا\nconst data = await response.json();\n\n// جرب هذا للتشخيص\nconst text = await response.text();\nconsole.log('Response:', text);\nconsole.log('Status:', response.status);\n```\n\n**الأسباب الشائعة:**\n\n**1. URL خاطئ:**\n```javascript\n// ❌ ربما يرجع 404 HTML page\nfetch('/api/userss'); // typo!\n\n// ✅\nfetch('/api/users');\n```\n\n**2. السيرفر لا يعمل:**\n```javascript\n// تحقق من status\nconst response = await fetch('/api/data');\nif (!response.ok) {\n    throw new Error(`HTTP ${response.status}`);\n}\nconst data = await response.json();\n```\n\n**3. الـ API يرجع HTML بدل JSON:**\n```javascript\n// تحقق من Content-Type\nconst contentType = response.headers.get('content-type');\nif (!contentType?.includes('application/json')) {\n    throw new Error('Response is not JSON');\n}\n```\n\n**4. الحل الآمن:**\n```javascript\nasync function fetchJSON(url) {\n    const response = await fetch(url);\n    \n    // تحقق من النجاح\n    if (!response.ok) {\n        const text = await response.text();\n        throw new Error(`HTTP ${response.status}: ${text}`);\n    }\n    \n    // تحقق من النوع\n    const contentType = response.headers.get('content-type');\n    if (!contentType?.includes('application/json')) {\n        const text = await response.text();\n        throw new Error(`Expected JSON, got: ${text.substring(0, 100)}`);\n    }\n    \n    return response.json();\n}\n```\n\n**نصيحة:** افتح Network tab في DevTools وانظر الاستجابة الفعلية!"
+      }
+    ],
+    "tags": [
+      "javascript",
+      "json",
+      "fetch",
+      "api"
+    ],
+    "difficulty": "intermediate"
+  },
+  {
+    "type": "expert_conversation",
+    "title": "تصحيح Memory Leak معقد",
+    "messages": [
+      {
+        "role": "user",
+        "message": "التطبيق يستهلك RAM بشكل متزايد مع الوقت حتى يتوقف"
+      },
+      {
+        "role": "assistant",
+        "message": "Memory Leak! دعني أساعدك في تشخيصه:\n\n**1. أدوات التشخيص:**\n\n```bash\n# Node.js - تفعيل heap profiling\nnode --inspect --max-old-space-size=4096 app.js\n\n# Chrome DevTools\n# افتح chrome://inspect\n# Memory tab → Take heap snapshot\n```\n\n**2. الأسباب الشائعة:**\n\n**أ. Event Listeners غير مُزالة:**\n```javascript\n// ❌ Memory leak\nclass Service {\n    start() {\n        emitter.on('data', this.handleData);\n    }\n    // نسيت إزالة listener!\n}\n\n// ✅ الحل\nclass Service {\n    start() {\n        this.boundHandler = this.handleData.bind(this);\n        emitter.on('data', this.boundHandler);\n    }\n    stop() {\n        emitter.off('data', this.boundHandler);\n    }\n}\n```\n\n**ب. Closures تحتفظ بـ references:**\n```javascript\n// ❌ largeData يبقى في الذاكرة\nfunction processData() {\n    const largeData = loadHugeFile();\n    return function() {\n        console.log(largeData.length); // closure!\n    };\n}\n\n// ✅ الحل - احتفظ فقط بما تحتاج\nfunction processData() {\n    const largeData = loadHugeFile();\n    const length = largeData.length;\n    return function() {\n        console.log(length);\n    };\n}\n```\n\n**ج. Cache بدون limit:**\n```javascript\n// ❌ يكبر للأبد\nconst cache = new Map();\n\n// ✅ LRU Cache مع حد\nconst LRU = require('lru-cache');\nconst cache = new LRU({ max: 500 });\n```\n\n**3. كيفية التشخيص:**\n1. خذ heap snapshot في البداية\n2. استخدم التطبيق\n3. خذ snapshot ثاني\n4. قارن - ابحث عن objects تتزايد\n\n**أرسل لي output من:**\n```javascript\nconsole.log(process.memoryUsage());\n```"
+      }
+    ],
+    "tags": [
+      "memory",
+      "leak",
+      "profiling",
+      "heap"
+    ],
+    "difficulty": "expert"
+  },
+  {
+    "type": "expert_conversation",
+    "title": "Race Condition في Production",
+    "messages": [
+      {
+        "role": "user",
+        "message": "أحياناً نحصل على بيانات خاطئة في الطلبات، لكن لا أستطيع إعادة إنتاج المشكلة"
+      },
+      {
+        "role": "assistant",
+        "message": "هذه علامات Race Condition! صعبة التشخيص لأنها تعتمد على timing.\n\n**1. كيف تحدث:**\n\n```\nRequest 1: Read → Process → Write\nRequest 2:    Read → Process → Write\n                ↑ يقرأ بيانات قديمة!\n```\n\n**2. أماكن البحث الشائعة:**\n\n**أ. Read-Modify-Write بدون lock:**\n```javascript\n// ❌ Race condition\nasync function incrementCounter(id) {\n    const doc = await Counter.findById(id);\n    doc.value += 1;\n    await doc.save();\n}\n\n// ✅ Atomic operation\nawait Counter.updateOne(\n    { _id: id },\n    { $inc: { value: 1 } }\n);\n```\n\n**ب. Double submission:**\n```javascript\n// ❌ طلبين متزامنين\nasync function createOrder(userId, items) {\n    const existing = await Order.findOne({ userId, status: 'pending' });\n    if (!existing) {\n        await Order.create({ userId, items }); // قد يُنشأ مرتين!\n    }\n}\n\n// ✅ Unique constraint + upsert\nawait Order.updateOne(\n    { userId, status: 'pending' },\n    { $setOnInsert: { items } },\n    { upsert: true }\n);\n```\n\n**ج. Cache inconsistency:**\n```javascript\n// ❌ Cache قد يكون stale\nconst user = cache.get(userId) || await fetchUser(userId);\n\n// ✅ Read-through cache مع TTL قصير\n```\n\n**3. كيفية التشخيص:**\n\n1. **أضف logging مفصل:**\n```javascript\nconsole.log(`[${Date.now()}] [${requestId}] Step: ${step}`);\n```\n\n2. **استخدم distributed tracing:**\n   - OpenTelemetry\n   - Jaeger\n   - Zipkin\n\n3. **اختبار بـ concurrent requests:**\n```bash\n# أرسل 100 request متزامن\nfor i in {1..100}; do curl http://api/endpoint & done\n```\n\n**4. الحلول العامة:**\n- Optimistic locking (version field)\n- Pessimistic locking (SELECT FOR UPDATE)\n- Idempotency keys\n- Message queues للعمليات المهمة"
+      }
+    ],
+    "tags": [
+      "race-condition",
+      "concurrency",
+      "database",
+      "locking"
+    ],
+    "difficulty": "expert"
+  },
+  {
+    "type": "expert_conversation",
+    "title": "تصحيح Performance Bottleneck",
+    "messages": [
+      {
+        "role": "user",
+        "message": "الـ API بطيء جداً، أحياناً يأخذ 10 ثواني"
+      },
+      {
+        "role": "assistant",
+        "message": "دعنا نحدد مصدر البطء بشكل منهجي:\n\n**1. قياس الوقت في كل مرحلة:**\n\n```javascript\nconst { performance } = require('perf_hooks');\n\nasync function trackedEndpoint(req, res) {\n    const timings = {};\n    const mark = (name) => timings[name] = performance.now();\n    \n    mark('start');\n    \n    // Database query\n    mark('db_start');\n    const users = await User.find({ active: true });\n    mark('db_end');\n    \n    // Processing\n    mark('process_start');\n    const processed = processUsers(users);\n    mark('process_end');\n    \n    // Response\n    res.json({\n        data: processed,\n        _timings: {\n            total: timings.process_end - timings.start,\n            database: timings.db_end - timings.db_start,\n            processing: timings.process_end - timings.process_start\n        }\n    });\n}\n```\n\n**2. الأسباب الشائعة للبطء:**\n\n**أ. Database queries غير محسنة:**\n```javascript\n// ❌ بطيء - full table scan\nconst users = await User.find({ email: /@gmail.com$/ });\n\n// ✅ أسرع - استخدم index\ndb.users.createIndex({ email: 1 });\n// أو اجعل query يستخدم index\nconst users = await User.find({ email_domain: 'gmail.com' });\n```\n\n**ب. N+1 queries:**\n```javascript\n// ❌ 101 query لـ 100 user\nfor (const user of users) {\n    user.orders = await Order.find({ userId: user.id });\n}\n\n// ✅ Query واحد\nconst orders = await Order.find({ userId: { $in: userIds } });\n```\n\n**ج. Blocking operations:**\n```javascript\n// ❌ يحجب Event Loop\nconst hash = crypto.pbkdf2Sync(...);\n\n// ✅ Async\nconst hash = await crypto.pbkdf2(...);\n```\n\n**3. أدوات التشخيص:**\n\n```bash\n# Database query analysis\nEXPLAIN ANALYZE SELECT * FROM users WHERE ...\n\n# Node.js profiling\nnode --prof app.js\nnode --prof-process isolate-*.log > profile.txt\n\n# APM tools\n# - New Relic\n# - Datadog\n# - Elastic APM\n```\n\n**4. Checklist للتحسين:**\n- [ ] Indexes على الحقول المستخدمة في WHERE\n- [ ] Pagination بدل جلب كل شيء\n- [ ] Caching للبيانات المتكررة\n- [ ] Connection pooling\n- [ ] Compression للـ responses الكبيرة\n- [ ] CDN للـ static assets\n\n**أرسل لي الـ query البطيء وسأساعدك أكثر!**"
+      }
+    ],
+    "tags": [
+      "performance",
+      "optimization",
+      "database",
+      "profiling"
+    ],
+    "difficulty": "advanced"
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "originalFile": "D:\\bi ide\\models\\advanced-learning-state.json",
+  "optimizedAt": "2026-02-02T11:18:10.498Z",
+  "originalSize": 5663569,
+  "structure": {
+    "type": "object",
+    "isArray": false,
+    "keys": [
+      "understanding",
+      "memory",
+      "adaptiveLearning",
+      "neuralNetwork",
+      "reinforcement",
+      "stats"
+    ],
+    "totalRecords": 21,
+    "nestedStructures": {
+      "understanding": {
+        "type": "object",
+        "count": 2
+      },
+      "memory": {
+        "type": "object",
+        "count": 2
+      },
+      "adaptiveLearning": {
+        "type": "object",
+        "count": 3
+      },
+      "neuralNetwork": {
+        "type": "object",
+        "count": 3
+      },
+      "reinforcement": {
+        "type": "object",
+        "count": 2
+      },
+      "stats": {
+        "type": "object",
+        "count": 9
+      }
+    }
+  },
+  "chunksCount": 6,
+  "indexes": [
+    "byTopic",
+    "byCategory",
+    "byDate",
+    "byQuality"
+  ]
+}

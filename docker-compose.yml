@@ -1,157 +1,108 @@
 version: '3.8'
 
+# BI-IDE v8 Development Docker Compose
+# =====================================
+
 services:
-  # Main API Service
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: bi-ide-api
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-bi_ide_user}:${POSTGRES_PASSWORD:-change_me_strong_password}@db:5432/${POSTGRES_DB:-bi_ide}
-      - REDIS_URL=redis://redis:6379/0
-      - PYTHONIOENCODING=utf-8
-      - LOG_LEVEL=${LOG_LEVEL:-INFO}
-      - DEBUG=${DEBUG:-false}
-      - SECRET_KEY=${SECRET_KEY:-change-this-in-production-immediately}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-change-this-password}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
-      - RTX4090_HOST=${RTX4090_HOST:-}
-      - RTX4090_PORT=${RTX4090_PORT:-8080}
-      - AI_CORE_HOST=${AI_CORE_HOST:-}
-      - AUTO_SYNC_CHECKPOINTS=${AUTO_SYNC_CHECKPOINTS:-0}
-    volumes:
-      - ./data:/app/data
-      - ./learning_data:/app/learning_data
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - bi-ide-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # UI Service
-  ui:
-    build:
-      context: ./ui
-      dockerfile: Dockerfile
-    container_name: bi-ide-ui
-    ports:
-      - "3000:80"
-    depends_on:
-      - api
-    networks:
-      - bi-ide-network
-    restart: unless-stopped
-
   # PostgreSQL Database
   db:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: bi-ide-db
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-bi_ide_user}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-change_me_strong_password}
-      - POSTGRES_DB=${POSTGRES_DB:-bi_ide}
+      POSTGRES_USER: bi_ide
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-bi_ide_dev}
+      POSTGRES_DB: bi_ide
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    # ⚠️ Don't expose DB port in production!
-    # ports:
-    #   - "5432:5432"
-    networks:
-      - bi-ide-network
-    restart: unless-stopped
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bi_ide_user}"]
+      test: ["CMD-SHELL", "pg_isready -U bi_ide"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - bi-ide-network
 
-  # Redis Cache & Queue
+  # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: bi-ide-redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
-    # ⚠️ Don't expose Redis port in production!
-    # ports:
-    #   - "6379:6379"
+    ports:
+      - "6379:6379"
     volumes:
       - redis_data:/data
-    networks:
-      - bi-ide-network
-    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - bi-ide-network
 
-  # Celery Worker (Background Tasks)
-  worker:
+  # Backend API
+  api:
     build:
       context: .
-      dockerfile: Dockerfile.worker
-    container_name: bi-ide-worker
+      dockerfile: Dockerfile
+    container_name: bi-ide-api
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-bi_ide_user}:${POSTGRES_PASSWORD:-change_me_strong_password}@db:5432/${POSTGRES_DB:-bi_ide}
+      - DATABASE_URL=postgresql+asyncpg://bi_ide:${DB_PASSWORD:-bi_ide_dev}@db:5432/bi_ide
       - REDIS_URL=redis://redis:6379/0
-      - PYTHONIOENCODING=utf-8
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-in-production}
+      - DEBUG=true
+      - ENVIRONMENT=development
     volumes:
-      - ./data:/app/data
-      - ./learning_data:/app/learning_data
+      - ./:/app
+      - /app/.venv
+      - ./uploads:/app/uploads
+    ports:
+      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+    command: uvicorn api.app:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - bi-ide-network
-    restart: unless-stopped
 
-  # Prometheus Monitoring
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: bi-ide-prometheus
-    ports:
-      - "9090:9090"
+  # Frontend (optional - for development)
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: bi-ide-ui
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    networks:
-      - bi-ide-network
-    restart: unless-stopped
-
-  # Grafana Dashboard
-  grafana:
-    image: grafana/grafana:latest
-    container_name: bi-ide-grafana
+      - ./ui:/app
+      - /app/node_modules
     ports:
-      - "3001:3000"
+      - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana:/etc/grafana/provisioning
-    depends_on:
-      - prometheus
+      - REACT_APP_API_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true
+    command: npm run dev -- --host 0.0.0.0
     networks:
       - bi-ide-network
-    restart: unless-stopped
+
+  # Nginx (API Gateway)
+  nginx:
+    image: nginx:alpine
+    container_name: bi-ide-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ui/dist:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+    networks:
+      - bi-ide-network
 
 volumes:
   postgres_data:
   redis_data:
-  prometheus_data:
-  grafana_data:
 
 networks:
   bi-ide-network:

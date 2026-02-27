@@ -1,0 +1,38 @@
+[
+  {
+    "index": 0,
+    "key": "understanding",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\advanced-learning-state\\understanding.json",
+    "count": 2
+  },
+  {
+    "index": 1,
+    "key": "memory",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\advanced-learning-state\\memory.json",
+    "count": 2
+  },
+  {
+    "index": 2,
+    "key": "adaptiveLearning",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\advanced-learning-state\\adaptiveLearning.json",
+    "count": 3
+  },
+  {
+    "index": 3,
+    "key": "neuralNetwork",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\advanced-learning-state\\neuralNetwork.json",
+    "count": 3
+  },
+  {
+    "index": 4,
+    "key": "reinforcement",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\advanced-learning-state\\reinforcement.json",
+    "count": 2
+  },
+  {
+    "index": 5,
+    "key": "stats",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\advanced-learning-state\\stats.json",
+    "count": 9
+  }
+]

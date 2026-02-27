@@ -1,0 +1,27 @@
+[Unit]
+Description=Bi IDE Hostinger Pulse Training (150min on / 45min throttle)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/bi-ide-training
+ExecStart=/opt/bi-ide-training/training/hostinger-pulse-train.sh
+Restart=always
+RestartSec=10
+
+# تقييد بسيط للضغط (يمكن تعديلها)
+Nice=10
+
+# Environment overrides (عدلها حسب السيرفر)
+Environment=PULSE_TRAIN_MINUTES=150
+Environment=PULSE_REST_MINUTES=45
+Environment=CPU_THREADS=6
+Environment=NUM_WORKERS=4
+Environment=ARTIFACT_PART_MB=500
+
+# Logs
+StandardOutput=append:/opt/bi-ide-training/training/output/hostinger-pulse.log
+StandardError=append:/opt/bi-ide-training/training/output/hostinger-pulse.err.log
+
+[Install]
+WantedBy=multi-user.target

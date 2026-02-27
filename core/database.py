@@ -5,15 +5,20 @@ Supports PostgreSQL and SQLite
 import asyncio
 import os
 import json
-from datetime import datetime
+import tempfile
+import time
+from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from sqlalchemy import create_engine, Column, String, Integer, Float, DateTime, Text, JSON
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import DeclarativeBase, sessionmaker, Session
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+
+# SQLAlchemy 2.0 style Base class
+class Base(DeclarativeBase):
+    pass
 
 # Database URL from environment
 DATABASE_URL = os.getenv(
@@ -21,7 +26,7 @@ DATABASE_URL = os.getenv(
     "sqlite+aiosqlite:///./data/bi_ide.db"  # Default to SQLite for local dev
 )
 
-Base = declarative_base()
+# Base is now defined above using SQLAlchemy 2.0 DeclarativeBase
 
 
 # Models
@@ -35,8 +40,8 @@ class KnowledgeEntry(Base):
     embedding = Column(JSON)  # Vector embedding
     source = Column(String)
     confidence = Column(Float, default=0.0)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     metadata_json = Column(JSON, default=dict)
 
 
@@ -50,7 +55,7 @@ class LearningExperience(Base):
     action = Column(Text)
     outcome = Column(Text)
     reward = Column(Float)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
 class CouncilDiscussion(Base):
@@ -62,7 +67,7 @@ class CouncilDiscussion(Base):
     wise_men_input = Column(JSON)  # Dict of wise_man -> opinion
     consensus_score = Column(Float)
     final_decision = Column(Text)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
 class SystemMetrics(Base):
@@ -73,7 +78,7 @@ class SystemMetrics(Base):
     metric_name = Column(String, index=True)
     value = Column(Float)
     labels = Column(JSON)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
 class DatabaseManager:
@@ -85,17 +90,62 @@ class DatabaseManager:
         self.async_engine = None
         self.SessionLocal = None
         self.AsyncSessionLocal = None
+
+        # Lifecycle coordination (prevents init/close races during tests)
+        self._init_lock = asyncio.Lock()
+        self._close_lock = asyncio.Lock()
+        self._init_future: Optional[asyncio.Future] = None
         
     async def initialize(self):
         """Initialize database connection"""
+        # Coalesce concurrent initialize() calls into one.
+        created_by_me = False
+        async with self._init_lock:
+            if self.AsyncSessionLocal and self.async_engine and self.engine:
+                return
+
+            if self._init_future is None:
+                loop = asyncio.get_running_loop()
+                self._init_future = loop.create_future()
+                created_by_me = True
+
+            init_future = self._init_future
+
+        if not created_by_me:
+            # Someone else is initializing; wait for completion.
+            await init_future
+            return
+
+        if init_future.done():
+            return
+
         # Sync engine for migrations
         sync_url = self.database_url.replace("+aiosqlite", "").replace("+asyncpg", "")
+
+        # SQLite in-memory is fragile with multiple connections (sync + async) and background startup tasks.
+        # For tests/dev that set :memory:, use a per-process temporary file for stability.
+        if sync_url.startswith("sqlite") and ":memory:" in sync_url:
+            tmp_dir = Path(os.getenv("BI_IDE_TMP_DB_DIR") or tempfile.gettempdir())
+            tmp_dir.mkdir(parents=True, exist_ok=True)
+            db_path = tmp_dir / f"bi_ide_test_{os.getpid()}_{time.time_ns()}.db"
+            try:
+                if db_path.exists():
+                    db_path.unlink()
+            except Exception:
+                pass
+            sync_url = f"sqlite:///{db_path.as_posix()}"
+            self.database_url = f"sqlite+aiosqlite:///{db_path.as_posix()}"
 
         db_connect_timeout = int(os.getenv("DB_CONNECT_TIMEOUT", "5"))
 
         def _sync_connect_args(url: str) -> Dict[str, Any]:
             if url.startswith("sqlite"):
-                return {"check_same_thread": False}
+                # Add timeout to prevent "database is locked" errors
+                args: Dict[str, Any] = {
+                    "check_same_thread": False,
+                    "timeout": 30,  # 30 seconds timeout
+                }
+                return args
             if url.startswith("postgresql"):
                 # psycopg2 respects connect_timeout (seconds)
                 return {"connect_timeout": db_connect_timeout}
@@ -103,13 +153,33 @@ class DatabaseManager:
 
         def _async_connect_args(url: str) -> Dict[str, Any]:
             if url.startswith("sqlite"):
-                return {"check_same_thread": False}
+                # Add timeout to prevent "database is locked" errors
+                args: Dict[str, Any] = {
+                    "check_same_thread": False,
+                    "timeout": 30,  # 30 seconds timeout
+                }
+                return args
             if url.startswith("postgresql"):
                 # asyncpg uses 'timeout' (seconds)
                 return {"timeout": db_connect_timeout}
             return {}
 
         def _init_sync_engine_and_create_tables():
+            # Ensure all tables are registered on Base.metadata before create_all.
+            # Importing modules here avoids circular imports at module load time.
+            try:
+                import core.user_models  # noqa: F401
+            except Exception:
+                pass
+            try:
+                import community.models  # noqa: F401
+            except Exception:
+                pass
+            try:
+                import erp.models.database_models  # noqa: F401
+            except Exception:
+                pass
+
             self.engine = create_engine(
                 sync_url,
                 echo=False,
@@ -119,23 +189,35 @@ class DatabaseManager:
             # NOTE: create_all may perform network I/O (e.g., Postgres) and can block.
             Base.metadata.create_all(self.engine)
 
-        # Run potentially-blocking DB initialization off the event loop.
-        await asyncio.to_thread(_init_sync_engine_and_create_tables)
+        try:
+            # Run potentially-blocking DB initialization off the event loop.
+            await asyncio.to_thread(_init_sync_engine_and_create_tables)
 
-        # Async engine for operations
-        self.async_engine = create_async_engine(
-            self.database_url,
-            echo=False,
-            connect_args=_async_connect_args(self.database_url),
-            pool_pre_ping=True,
-        )
-        self.AsyncSessionLocal = async_sessionmaker(
-            self.async_engine,
-            class_=AsyncSession,
-            expire_on_commit=False
-        )
-        
-        print(f"Database initialized: {self.database_url}")
+            # Async engine for operations
+            self.async_engine = create_async_engine(
+                self.database_url,
+                echo=False,
+                connect_args=_async_connect_args(self.database_url),
+                pool_pre_ping=True,
+            )
+            self.AsyncSessionLocal = async_sessionmaker(
+                self.async_engine,
+                class_=AsyncSession,
+                expire_on_commit=False
+            )
+
+            print(f"Database initialized: {self.database_url}")
+
+            if not init_future.done():
+                init_future.set_result(True)
+        except Exception as e:
+            if not init_future.done():
+                init_future.set_exception(e)
+            # Allow a future re-attempt if init failed
+            async with self._init_lock:
+                if self._init_future is init_future:
+                    self._init_future = None
+            raise
     
     @asynccontextmanager
     async def get_session(self):
@@ -171,7 +253,7 @@ class DatabaseManager:
                 existing.content = content
                 existing.embedding = embedding
                 existing.confidence = confidence
-                existing.updated_at = datetime.utcnow()
+                existing.updated_at = datetime.now(timezone.utc)
             else:
                 # Create new
                 entry = KnowledgeEntry(
@@ -260,11 +342,32 @@ class DatabaseManager:
     
     async def close(self):
         """Close database connections"""
-        if self.async_engine:
-            await self.async_engine.dispose()
-        if self.engine:
-            self.engine.dispose()
+        async with self._close_lock:
+            # If initialization is in-flight, wait for it to complete before disposing engines.
+            init_future = self._init_future
+            if init_future is not None and not init_future.done():
+                try:
+                    await init_future
+                except Exception:
+                    # Even if init failed, continue with best-effort cleanup.
+                    pass
+
+            if self.async_engine:
+                await self.async_engine.dispose()
+            if self.engine:
+                self.engine.dispose()
 
 
 # Global instance
 db_manager = DatabaseManager()
+
+
+# FastAPI dependency for database sessions
+async def get_db() -> AsyncSession:
+    """FastAPI dependency for database sessions"""
+    async with db_manager.get_session() as session:
+        yield session
+
+
+# Alias for compatibility
+get_async_session = get_db

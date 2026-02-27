@@ -12,7 +12,6 @@
 - يحلمون بأفضل المستقبلات
 - يحفزون على النمو
 """
-import sys; sys.path.insert(0, '.'); import encoding_fix; encoding_fix.safe_print("")
 
 from enum import Enum
 from dataclasses import dataclass, field

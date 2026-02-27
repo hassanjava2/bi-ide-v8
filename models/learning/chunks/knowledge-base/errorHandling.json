@@ -1,0 +1,822 @@
+{
+  "database": {
+    "javascript": {
+      "syntaxErrors": [
+        {
+          "pattern": {},
+          "errorType": "SyntaxError",
+          "causes": [
+            "قوس مفقود أو زائد",
+            "فاصلة منقوطة مفقودة",
+            "علامة اقتباس غير مغلقة",
+            "كلمة محجوزة مستخدمة كاسم متغير"
+          ],
+          "solutions": [
+            "تحقق من تطابق الأقواس {} [] ()",
+            "أضف الفاصلة المنقوطة ; في نهاية السطر",
+            "تأكد من إغلاق جميع علامات الاقتباس",
+            "استخدم اسم متغير مختلف"
+          ],
+          "examples": [
+            {
+              "wrong": "function test( {\n    console.log(\"hello\");\n}",
+              "correct": "function test() {\n    console.log(\"hello\");\n}",
+              "explanation": "القوس الدائري غير مغلق في تعريف الدالة"
+            },
+            {
+              "wrong": "const obj = { name: \"test\" age: 25 }",
+              "correct": "const obj = { name: \"test\", age: 25 }",
+              "explanation": "فاصلة مفقودة بين خصائص الكائن"
+            }
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "SyntaxError",
+          "causes": [
+            "قوس أو block غير مغلق"
+          ],
+          "solutions": [
+            "أضف القوس المغلق المفقود"
+          ],
+          "autoFix": true
+        },
+        {
+          "pattern": {},
+          "errorType": "SyntaxError",
+          "causes": [
+            "قوس دائري مفقود في استدعاء الدالة"
+          ],
+          "solutions": [
+            "أضف ) في نهاية استدعاء الدالة"
+          ]
+        }
+      ],
+      "referenceErrors": [
+        {
+          "pattern": {},
+          "errorType": "ReferenceError",
+          "causes": [
+            "المتغير غير معرّف",
+            "خطأ إملائي في اسم المتغير",
+            "المتغير خارج النطاق (scope)",
+            "الملف/المكتبة غير مستوردة"
+          ],
+          "solutions": [
+            "عرّف المتغير قبل استخدامه: const {name} = value;",
+            "تحقق من الإملاء الصحيح",
+            "انقل التعريف للنطاق الصحيح",
+            "استورد المكتبة: import/require"
+          ],
+          "examples": [
+            {
+              "wrong": "console.log(userName);\nconst userName = \"Ahmed\";",
+              "correct": "const userName = \"Ahmed\";\nconsole.log(userName);",
+              "explanation": "استخدام المتغير قبل تعريفه (Temporal Dead Zone)"
+            }
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "ReferenceError",
+          "causes": [
+            "استخدام let/const قبل التعريف"
+          ],
+          "solutions": [
+            "انقل استخدام المتغير بعد تعريفه"
+          ]
+        }
+      ],
+      "typeErrors": [
+        {
+          "pattern": {},
+          "errorType": "TypeError",
+          "severity": "high",
+          "causes": [
+            "الكائن undefined أو null",
+            "الخاصية غير موجودة",
+            "البيانات لم تُحمّل بعد (async)",
+            "مسار الكائن خاطئ"
+          ],
+          "solutions": [
+            "استخدم Optional Chaining: obj?.property",
+            "تحقق من وجود الكائن قبل الوصول: if (obj) { }",
+            "استخدم قيمة افتراضية: obj?.prop ?? defaultValue",
+            "تأكد من تحميل البيانات قبل استخدامها"
+          ],
+          "examples": [
+            {
+              "wrong": "const user = getUser();\nconsole.log(user.name);",
+              "correct": "const user = getUser();\nconsole.log(user?.name ?? 'Unknown');",
+              "explanation": "استخدام Optional Chaining للتعامل مع القيم الفارغة"
+            },
+            {
+              "wrong": "const data = await fetchData();\nconsole.log(data.items.length);",
+              "correct": "const data = await fetchData();\nif (data?.items) {\n    console.log(data.items.length);\n}",
+              "explanation": "التحقق من وجود البيانات قبل الوصول إليها"
+            }
+          ],
+          "preventionTips": [
+            "استخدم TypeScript للكشف المبكر",
+            "أضف validation للـ API responses",
+            "استخدم default values في destructuring"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "TypeError",
+          "causes": [
+            "المتغير ليس دالة",
+            "الدالة غير معرّفة في الكائن",
+            "خطأ في الاستيراد",
+            "overwrite للمتغير بقيمة أخرى"
+          ],
+          "solutions": [
+            "تحقق من نوع المتغير: typeof x === 'function'",
+            "تأكد من الاستيراد الصحيح",
+            "تحقق من اسم الدالة"
+          ],
+          "examples": [
+            {
+              "wrong": "const map = {};\n[1,2,3].map(x => x * 2);  // صحيح\nmap(x => x * 2);  // خطأ - map هنا كائن",
+              "correct": "const arr = [1, 2, 3];\narr.map(x => x * 2);",
+              "explanation": "التأكد من أن المتغير هو array وليس object"
+            }
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "TypeError",
+          "causes": [
+            "محاولة تعيين قيمة لخاصية في كائن غير موجود"
+          ],
+          "solutions": [
+            "تأكد من وجود الكائن الأب",
+            "أنشئ الكائن أولاً: obj = obj || {}"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "TypeError",
+          "causes": [
+            "محاولة تغيير قيمة const"
+          ],
+          "solutions": [
+            "استخدم let بدلاً من const إذا كنت تحتاج لتغيير القيمة"
+          ]
+        }
+      ],
+      "rangeErrors": [
+        {
+          "pattern": {},
+          "errorType": "RangeError",
+          "severity": "critical",
+          "causes": [
+            "Infinite recursion",
+            "استدعاء دالة لنفسها بدون شرط توقف",
+            "حلقة لا نهائية في الأحداث"
+          ],
+          "solutions": [
+            "أضف شرط توقف (base case) للـ recursion",
+            "تحقق من منطق الحلقات",
+            "استخدم iteration بدلاً من recursion"
+          ],
+          "examples": [
+            {
+              "wrong": "function factorial(n) {\n    return n * factorial(n - 1);  // لا يوجد شرط توقف!\n}",
+              "correct": "function factorial(n) {\n    if (n <= 1) return 1;  // شرط التوقف\n    return n * factorial(n - 1);\n}",
+              "explanation": "إضافة base case لإيقاف الـ recursion"
+            }
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "RangeError",
+          "causes": [
+            "حجم مصفوفة سالب أو كبير جداً"
+          ],
+          "solutions": [
+            "تحقق من قيمة الحجم قبل إنشاء المصفوفة"
+          ]
+        }
+      ],
+      "asyncErrors": [
+        {
+          "pattern": {},
+          "errorType": "UnhandledPromiseRejection",
+          "severity": "high",
+          "causes": [
+            "Promise rejected بدون catch",
+            "async function بدون try-catch",
+            "خطأ في await بدون معالجة"
+          ],
+          "solutions": [
+            "أضف .catch() للـ Promise",
+            "استخدم try-catch مع async/await",
+            "أضف global error handler"
+          ],
+          "examples": [
+            {
+              "wrong": "async function fetchData() {\n    const response = await fetch(url);\n    return response.json();\n}",
+              "correct": "async function fetchData() {\n    try {\n        const response = await fetch(url);\n        if (!response.ok) {\n            throw new Error(`HTTP ${response.status}`);\n        }\n        return await response.json();\n    } catch (error) {\n        console.error('Fetch error:', error);\n        throw error;  // أو return default value\n    }\n}",
+              "explanation": "معالجة شاملة للأخطاء في async functions"
+            }
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "SyntaxError",
+          "causes": [
+            "استخدام await خارج async function"
+          ],
+          "solutions": [
+            "أضف async قبل الدالة",
+            "استخدم .then() بدلاً من await",
+            "استخدم top-level await (ES modules)"
+          ]
+        }
+      ],
+      "moduleErrors": [
+        {
+          "pattern": {},
+          "errorType": "ModuleNotFoundError",
+          "causes": [
+            "المكتبة غير مثبتة",
+            "مسار الملف خاطئ",
+            "خطأ إملائي في اسم المكتبة"
+          ],
+          "solutions": [
+            "ثبّت المكتبة: npm install {module}",
+            "تحقق من المسار النسبي",
+            "تحقق من package.json"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "ModuleError",
+          "causes": [
+            "استخدام ES modules في CommonJS"
+          ],
+          "solutions": [
+            "أضف \"type\": \"module\" في package.json",
+            "استخدم require() بدلاً من import",
+            "غيّر امتداد الملف إلى .mjs"
+          ]
+        }
+      ]
+    },
+    "python": {
+      "syntaxErrors": [
+        {
+          "pattern": {},
+          "errorType": "IndentationError",
+          "causes": [
+            "خطأ في المسافات البادئة"
+          ],
+          "solutions": [
+            "استخدم 4 مسافات للـ indentation",
+            "لا تخلط بين tabs و spaces",
+            "تأكد من تناسق المسافات في كل block"
+          ],
+          "examples": [
+            {
+              "wrong": "def hello():\nprint(\"Hello\")",
+              "correct": "def hello():\n    print(\"Hello\")",
+              "explanation": "يجب إضافة 4 مسافات بعد تعريف الدالة"
+            }
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "SyntaxError",
+          "causes": [
+            "قوسين غير متطابقين",
+            "نقطتان مفقودتان (:)",
+            "خطأ في تعبير"
+          ],
+          "solutions": [
+            "تحقق من الأقواس",
+            "أضف : بعد if/for/def/class",
+            "تحقق من syntax الصحيح"
+          ]
+        }
+      ],
+      "typeErrors": [
+        {
+          "pattern": {},
+          "errorType": "TypeError",
+          "causes": [
+            "استخدام عملية غير مدعومة على النوع"
+          ],
+          "solutions": [
+            "تحقق من نوع المتغير: type(x)",
+            "حوّل للنوع الصحيح",
+            "استخدم العملية المناسبة للنوع"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "TypeError",
+          "causes": [
+            "عملية بين أنواع غير متوافقة"
+          ],
+          "solutions": [
+            "حوّل الأنواع قبل العملية: str(), int(), float()"
+          ]
+        }
+      ],
+      "attributeErrors": [
+        {
+          "pattern": {},
+          "errorType": "AttributeError",
+          "causes": [
+            "الخاصية/الدالة غير موجودة",
+            "خطأ إملائي",
+            "الكائن من نوع مختلف"
+          ],
+          "solutions": [
+            "تحقق من اسم الخاصية: dir(obj)",
+            "تأكد من نوع الكائن",
+            "استخدم hasattr() للتحقق"
+          ],
+          "examples": [
+            {
+              "wrong": "my_list = [1, 2, 3]\nmy_list.add(4)",
+              "correct": "my_list = [1, 2, 3]\nmy_list.append(4)",
+              "explanation": "list تستخدم append() وليس add()"
+            }
+          ]
+        }
+      ],
+      "keyErrors": [
+        {
+          "pattern": {},
+          "errorType": "KeyError",
+          "causes": [
+            "المفتاح غير موجود في القاموس"
+          ],
+          "solutions": [
+            "استخدم .get() مع قيمة افتراضية",
+            "تحقق بـ 'key' in dict",
+            "استخدم try-except"
+          ],
+          "examples": [
+            {
+              "wrong": "user = {'name': 'Ahmed'}\nprint(user['email'])",
+              "correct": "user = {'name': 'Ahmed'}\nprint(user.get('email', 'No email'))",
+              "explanation": "استخدام .get() لتجنب KeyError"
+            }
+          ]
+        }
+      ],
+      "indexErrors": [
+        {
+          "pattern": {},
+          "errorType": "IndexError",
+          "causes": [
+            "الفهرس خارج حدود القائمة"
+          ],
+          "solutions": [
+            "تحقق من طول القائمة: len(list)",
+            "استخدم try-except",
+            "استخدم فهرس سالب للوصول من النهاية"
+          ]
+        }
+      ],
+      "importErrors": [
+        {
+          "pattern": {},
+          "errorType": "ModuleNotFoundError",
+          "causes": [
+            "المكتبة غير مثبتة"
+          ],
+          "solutions": [
+            "ثبّت المكتبة: pip install {module}"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "ImportError",
+          "causes": [
+            "الاسم غير موجود في المكتبة",
+            "circular import"
+          ],
+          "solutions": [
+            "تحقق من الاسم الصحيح",
+            "أعد ترتيب الـ imports",
+            "استخدم import في داخل الدالة"
+          ]
+        }
+      ]
+    },
+    "html": {
+      "structureErrors": [
+        {
+          "pattern": {},
+          "errorType": "StructureError",
+          "causes": [
+            "وسم HTML غير مغلق"
+          ],
+          "solutions": [
+            "أغلق الوسم بـ </tagname>"
+          ],
+          "examples": [
+            {
+              "wrong": "<div>\n    <p>نص\n</div>",
+              "correct": "<div>\n    <p>نص</p>\n</div>",
+              "explanation": "وسم <p> يجب إغلاقه بـ </p>"
+            }
+          ]
+        }
+      ]
+    },
+    "css": {
+      "syntaxErrors": [
+        {
+          "pattern": {},
+          "errorType": "CSSError",
+          "causes": [
+            "خاصية CSS غير صحيحة أو قيمة خاطئة"
+          ],
+          "solutions": [
+            "تحقق من اسم الخاصية وقيمتها الصحيحة"
+          ]
+        }
+      ]
+    },
+    "react": {
+      "commonErrors": [
+        {
+          "pattern": {},
+          "errorType": "ReactError",
+          "causes": [
+            "محاولة عرض object مباشرة"
+          ],
+          "solutions": [
+            "حوّل الكائن لنص: JSON.stringify(obj)",
+            "اعرض خصائص محددة: obj.name",
+            "استخدم .map() للمصفوفات"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "ReactWarning",
+          "causes": [
+            "عناصر القائمة بدون key فريد"
+          ],
+          "solutions": [
+            "أضف key={uniqueId} لكل عنصر في .map()"
+          ],
+          "examples": [
+            {
+              "wrong": "items.map(item => <li>{item.name}</li>)",
+              "correct": "items.map(item => <li key={item.id}>{item.name}</li>)",
+              "explanation": "إضافة key فريد لكل عنصر في القائمة"
+            }
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "ReactError",
+          "severity": "critical",
+          "causes": [
+            "setState في render بدون شرط",
+            "dependency array خاطئ في useEffect",
+            "infinite loop في الأحداث"
+          ],
+          "solutions": [
+            "أضف شرط قبل setState",
+            "راجع dependency array في useEffect",
+            "استخدم useCallback للدوال"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "ReactHooksError",
+          "causes": [
+            "استخدام Hook خارج component أو في شرط"
+          ],
+          "solutions": [
+            "استدعِ Hooks في المستوى الأعلى فقط",
+            "لا تضع Hooks داخل if أو loops"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "ReactError",
+          "causes": [
+            "تحديث state أثناء render"
+          ],
+          "solutions": [
+            "انقل التحديث إلى useEffect"
+          ]
+        }
+      ]
+    },
+    "nodejs": {
+      "commonErrors": [
+        {
+          "pattern": {},
+          "errorType": "FileSystemError",
+          "causes": [
+            "الملف أو المجلد غير موجود"
+          ],
+          "solutions": [
+            "تحقق من المسار",
+            "أنشئ الملف/المجلد أولاً",
+            "استخدم fs.existsSync() للتحقق"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "PermissionError",
+          "causes": [
+            "لا توجد صلاحيات كافية"
+          ],
+          "solutions": [
+            "شغّل كـ Administrator أو غيّر الصلاحيات"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "NetworkError",
+          "causes": [
+            "المنفذ مستخدم بالفعل"
+          ],
+          "solutions": [
+            "استخدم منفذ آخر",
+            "أوقف العملية التي تستخدم المنفذ"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "NetworkError",
+          "causes": [
+            "فشل الاتصال بالخادم"
+          ],
+          "solutions": [
+            "تحقق من الاتصال بالإنترنت",
+            "تحقق من عنوان الخادم",
+            "أضف timeout ومحاولات إعادة"
+          ]
+        }
+      ]
+    },
+    "sql": {
+      "syntaxErrors": [
+        {
+          "pattern": {},
+          "errorType": "SQLSyntaxError",
+          "causes": [
+            "خطأ في صياغة SQL"
+          ],
+          "solutions": [
+            "راجع syntax الصحيح للأمر"
+          ]
+        }
+      ],
+      "constraintErrors": [
+        {
+          "pattern": {},
+          "errorType": "ConstraintError",
+          "causes": [
+            "قيمة مكررة في عمود unique"
+          ],
+          "solutions": [
+            "استخدم INSERT ... ON CONFLICT",
+            "تحقق من القيمة قبل الإدراج"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "ForeignKeyError",
+          "causes": [
+            "انتهاك قيد المفتاح الأجنبي"
+          ],
+          "solutions": [
+            "تأكد من وجود القيمة في الجدول المرجعي",
+            "استخدم ON DELETE CASCADE"
+          ]
+        }
+      ]
+    },
+    "git": {
+      "commonErrors": [
+        {
+          "pattern": {},
+          "errorType": "GitPushError",
+          "causes": [
+            "الـ remote يحتوي commits جديدة"
+          ],
+          "solutions": [
+            "git pull --rebase origin branch",
+            "git fetch && git merge"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "MergeConflict",
+          "causes": [
+            "تعارض في الملفات"
+          ],
+          "solutions": [
+            "افتح الملفات وحل التعارضات يدوياً",
+            "استخدم git mergetool",
+            "اختر الإصدار المناسب"
+          ]
+        },
+        {
+          "pattern": {},
+          "errorType": "GitInitError",
+          "causes": [
+            "المجلد ليس repository"
+          ],
+          "solutions": [
+            "git init لبدء repository جديد"
+          ]
+        }
+      ]
+    }
+  },
+  "patterns": {
+    "autoFixPatterns": [
+      {
+        "name": "Missing Semicolon",
+        "detect": {},
+        "languages": [
+          "javascript",
+          "typescript",
+          "java",
+          "c",
+          "cpp"
+        ]
+      },
+      {
+        "name": "Unclosed String",
+        "detect": {},
+        "languages": [
+          "javascript",
+          "python",
+          "java"
+        ]
+      },
+      {
+        "name": "Missing Parenthesis",
+        "detect": {},
+        "languages": [
+          "all"
+        ]
+      },
+      {
+        "name": "var to const/let",
+        "detect": {},
+        "languages": [
+          "javascript"
+        ]
+      },
+      {
+        "name": "Console.log cleanup",
+        "detect": {},
+        "languages": [
+          "javascript",
+          "typescript"
+        ],
+        "suggestRemove": true
+      }
+    ],
+    "badPractices": [
+      {
+        "name": "eval() usage",
+        "pattern": {},
+        "severity": "critical",
+        "message": "تجنب استخدام eval() لأسباب أمنية",
+        "alternative": "استخدم JSON.parse() أو Function constructor"
+      },
+      {
+        "name": "innerHTML with user input",
+        "pattern": {},
+        "severity": "high",
+        "message": "خطر XSS! لا تستخدم innerHTML مع مدخلات المستخدم",
+        "alternative": "استخدم textContent أو sanitize HTML"
+      },
+      {
+        "name": "Synchronous XMLHttpRequest",
+        "pattern": {},
+        "severity": "medium",
+        "message": "Sync XHR يؤثر على الأداء",
+        "alternative": "استخدم fetch() أو async XHR"
+      },
+      {
+        "name": "== instead of ===",
+        "pattern": {},
+        "severity": "low",
+        "message": "استخدم === للمقارنة الصارمة",
+        "alternative": "استبدل == بـ ==="
+      },
+      {
+        "name": "Callback Hell",
+        "pattern": {},
+        "severity": "medium",
+        "message": "Callback hell - صعوبة في القراءة",
+        "alternative": "استخدم async/await أو Promises"
+      }
+    ],
+    "performanceIssues": [
+      {
+        "name": "Multiple DOM queries in loop",
+        "pattern": {},
+        "message": "استعلام DOM متكرر يؤثر على الأداء",
+        "solution": "احفظ reference خارج الحلقة"
+      },
+      {
+        "name": "Array inside render (React)",
+        "pattern": {},
+        "message": "إنشاء array في كل render",
+        "solution": "استخدم useMemo أو انقل خارج Component"
+      },
+      {
+        "name": "Unbounded regex",
+        "pattern": {},
+        "message": "RegExp بدون حدود قد يكون بطيئاً",
+        "solution": "أضف حدود للـ regex أو استخدم literal"
+      }
+    ]
+  },
+  "strategies": {
+    "general": [
+      {
+        "step": 1,
+        "name": "قراءة رسالة الخطأ بعناية",
+        "description": "فهم نوع الخطأ والسطر الذي حدث فيه",
+        "tips": [
+          "ابحث عن اسم الملف ورقم السطر",
+          "حدد نوع الخطأ (TypeError, SyntaxError, etc.)",
+          "اقرأ الـ stack trace من الأسفل للأعلى"
+        ]
+      },
+      {
+        "step": 2,
+        "name": "عزل المشكلة",
+        "description": "تحديد أصغر جزء من الكود يسبب المشكلة",
+        "tips": [
+          "علّق أجزاء من الكود لتحديد المشكلة",
+          "استخدم console.log لتتبع القيم",
+          "جرب الكود في بيئة معزولة"
+        ]
+      },
+      {
+        "step": 3,
+        "name": "تتبع القيم",
+        "description": "طباعة القيم قبل وبعد كل عملية",
+        "tips": [
+          "console.log('variable:', variable)",
+          "استخدم debugger statement",
+          "استخدم breakpoints في DevTools"
+        ]
+      },
+      {
+        "step": 4,
+        "name": "البحث عن الحل",
+        "description": "البحث في الوثائق أو Stack Overflow",
+        "tips": [
+          "انسخ رسالة الخطأ كاملة",
+          "أضف اسم اللغة/المكتبة للبحث",
+          "ابحث عن الأسباب الشائعة"
+        ]
+      },
+      {
+        "step": 5,
+        "name": "اختبار الحل",
+        "description": "تطبيق الحل والتأكد من عمله",
+        "tips": [
+          "جرب الحل في بيئة اختبار أولاً",
+          "تأكد من عدم ظهور أخطاء جديدة",
+          "اختبر الحالات الحدية"
+        ]
+      }
+    ],
+    "byErrorType": {
+      "syntaxError": [
+        "تحقق من الأقواس والفواصل",
+        "ابحث عن علامات اقتباس غير مغلقة",
+        "استخدم code formatter"
+      ],
+      "referenceError": [
+        "تأكد من تعريف المتغير قبل استخدامه",
+        "تحقق من النطاق (scope)",
+        "راجع الاستيرادات"
+      ],
+      "typeError": [
+        "تحقق من نوع المتغير: typeof x",
+        "استخدم Optional Chaining: ?.",
+        "أضف type checking"
+      ],
+      "networkError": [
+        "تحقق من الاتصال بالإنترنت",
+        "راجع عنوان URL",
+        "تحقق من CORS"
+      ]
+    }
+  },
+  "lastUpdated": "2026-01-30T19:37:32.106Z"
+}

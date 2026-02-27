@@ -1,0 +1,413 @@
+groups:
+  # ============================================
+  # Critical Alerts - Immediate Response Required
+  # ============================================
+  - name: critical_alerts
+    interval: 10s
+    rules:
+      # Service Down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} has been down for more than 1 minute."
+          runbook_url: "https://wiki.bi-ide.com/runbooks/service-down"
+          action: "Check service status and logs immediately"
+
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+            /
+            sum(rate(http_requests_total[5m])) by (service)
+          ) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+          category: reliability
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }} for service {{ $labels.service }}"
+          action: "Check application logs and recent deployments"
+
+      # Database Connection Failure
+      - alert: DatabaseConnectionFailure
+        expr: pg_up == 0
+        for: 30s
+        labels:
+          severity: critical
+          category: database
+        annotations:
+          summary: "PostgreSQL connection failure"
+          description: "Cannot connect to PostgreSQL database"
+          action: "Check database server and network connectivity"
+
+      # Disk Full
+      - alert: DiskFull
+        expr: |
+          (
+            node_filesystem_avail_bytes{fstype!="tmpfs",fstype!="ramfs"}
+            /
+            node_filesystem_size_bytes{fstype!="tmpfs",fstype!="ramfs"}
+          ) < 0.05
+        for: 1m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Disk space critical on {{ $labels.instance }}"
+          description: "Disk usage is above 95% on {{ $labels.device }}"
+          action: "Free up disk space or expand volume"
+
+      # Memory Full
+      - alert: MemoryFull
+        expr: |
+          (
+            node_memory_MemAvailable_bytes
+            /
+            node_memory_MemTotal_bytes
+          ) < 0.05
+        for: 2m
+        labels:
+          severity: critical
+          category: infrastructure
+        annotations:
+          summary: "Memory critical on {{ $labels.instance }}"
+          description: "Available memory is below 5%"
+          action: "Investigate memory usage and restart services if needed"
+
+  # ============================================
+  # High Severity Alerts - Response within 15 min
+  # ============================================
+  - name: high_alerts
+    interval: 30s
+    rules:
+      # High Latency
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          ) > 2
+        for: 3m
+        labels:
+          severity: high
+          category: performance
+        annotations:
+          summary: "High latency on {{ $labels.service }}"
+          description: "99th percentile latency is {{ $value }}s"
+          action: "Check database performance and slow queries"
+
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: high
+          category: infrastructure
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}% for more than 5 minutes"
+          action: "Scale up or optimize resource-intensive processes"
+
+      # Pod Crash Looping
+      - alert: PodCrashLooping
+        expr: |
+          rate(kube_pod_container_status_restarts_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: high
+          category: kubernetes
+        annotations:
+          summary: "Pod {{ $labels.pod }} is crash looping"
+          description: "Pod has restarted {{ $value }} times in 15 minutes"
+          action: "Check pod logs and resource limits"
+
+      # Certificate Expiry
+      - alert: CertificateExpiringSoon
+        expr: |
+          (
+            probe_ssl_earliest_cert_expiry - time()
+          ) < 86400 * 7
+        for: 1h
+        labels:
+          severity: high
+          category: security
+        annotations:
+          summary: "TLS certificate expiring soon"
+          description: "Certificate expires in {{ $value | humanizeDuration }}"
+          action: "Renew TLS certificate immediately"
+
+      # Redis Memory High
+      - alert: RedisMemoryHigh
+        expr: |
+          redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: high
+          category: cache
+        annotations:
+          summary: "Redis memory usage critical"
+          description: "Redis is using {{ $value | humanizePercentage }} of max memory"
+          action: "Evict old keys or scale Redis cluster"
+
+  # ============================================
+  # Business Metrics Alerts
+  # ============================================
+  - name: business_alerts
+    interval: 60s
+    rules:
+      # Low User Signups
+      - alert: LowUserSignups
+        expr: |
+          sum(increase(user_signups_total[1h])) < 10
+        for: 2h
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "Low user signup rate"
+          description: "Only {{ $value }} signups in the last hour"
+          action: "Check marketing campaigns and application health"
+
+      # High Churn Rate
+      - alert: HighChurnRate
+        expr: |
+          (
+            sum(increase(user_deletions_total[1d]))
+            /
+            sum(increase(user_signups_total[1d]))
+          ) > 0.1
+        for: 1d
+        labels:
+          severity: warning
+          category: business
+        annotations:
+          summary: "High user churn rate"
+          description: "Churn rate is {{ $value | humanizePercentage }}"
+          action: "Investigate user satisfaction and product issues"
+
+      # Failed Payment Rate
+      - alert: HighPaymentFailureRate
+        expr: |
+          (
+            sum(rate(payments_failed_total[1h]))
+            /
+            sum(rate(payments_total[1h]))
+          ) > 0.1
+        for: 15m
+        labels:
+          severity: high
+          category: business
+        annotations:
+          summary: "High payment failure rate"
+          description: "{{ $value | humanizePercentage }} of payments are failing"
+          action: "Check payment processor integration"
+
+      # AI API Quota
+      - alert: AICostSpike
+        expr: |
+          (
+            sum(increase(ai_api_cost_dollars[1h]))
+            >
+            2 * avg_over_time(sum(increase(ai_api_cost_dollars[1h]))[7d:1h])
+          )
+        for: 30m
+        labels:
+          severity: warning
+          category: ai
+        annotations:
+          summary: "AI API cost spike detected"
+          description: "AI costs are 2x normal usage"
+          action: "Investigate unusual AI usage patterns"
+
+  # ============================================
+  # Security Alerts
+  # ============================================
+  - name: security_alerts
+    interval: 30s
+    rules:
+      # Suspicious Login Attempts
+      - alert: SuspiciousLoginAttempts
+        expr: |
+          sum(rate(failed_login_attempts_total[5m])) by (source_ip) > 10
+        for: 5m
+        labels:
+          severity: high
+          category: security
+        annotations:
+          summary: "Suspicious login activity from {{ $labels.source_ip }}"
+          description: "Multiple failed login attempts detected"
+          action: "Consider blocking IP and reviewing authentication logs"
+
+      # Privilege Escalation Attempt
+      - alert: PrivilegeEscalationAttempt
+        expr: |
+          sum(rate(unauthorized_access_attempts_total[5m])) > 0
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "Potential privilege escalation detected"
+          description: "Unauthorized access attempt to admin resources"
+          action: "Immediate investigation required"
+
+      # Unusual API Access Pattern
+      - alert: UnusualAPIAccess
+        expr: |
+          (
+            sum(rate(api_requests_total[5m])) by (user)
+            >
+            5 * avg_over_time(sum(rate(api_requests_total[5m])) by (user)[1d:5m])
+          )
+        for: 10m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "Unusual API access pattern for user {{ $labels.user }}"
+          description: "API usage is 5x normal for this user"
+          action: "Verify user activity legitimacy"
+
+  # ============================================
+  # Capacity Planning Alerts
+  # ============================================
+  - name: capacity_alerts
+    interval: 300s
+    rules:
+      # Predictive Disk Full
+      - alert: DiskWillFillIn4Hours
+        expr: |
+          predict_linear(
+            node_filesystem_avail_bytes{fstype!="tmpfs"}[1h],
+            4 * 3600
+          ) < 0
+        for: 1h
+        labels:
+          severity: warning
+          category: capacity
+        annotations:
+          summary: "Disk will fill in 4 hours on {{ $labels.instance }}"
+          description: "Based on current trend, disk will be full in 4 hours"
+          action: "Plan disk expansion or cleanup"
+
+      # Database Connection Pool
+      - alert: DatabaseConnectionsNearLimit
+        expr: |
+          pg_stat_activity_count / pg_settings_max_connections > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Database connections near limit"
+          description: "{{ $value | humanizePercentage }} of connections in use"
+          action: "Increase connection pool or optimize queries"
+
+  # ============================================
+  # Kubernetes Specific Alerts
+  # ============================================
+  - name: kubernetes_alerts
+    interval: 30s
+    rules:
+      # Node Not Ready
+      - alert: KubernetesNodeNotReady
+        expr: |
+          kube_node_status_condition{
+            condition="Ready",
+            status="true"
+          } == 0
+        for: 5m
+        labels:
+          severity: high
+          category: kubernetes
+        annotations:
+          summary: "Kubernetes node {{ $labels.node }} not ready"
+          description: "Node has been not ready for 5 minutes"
+          action: "Check node status and kubelet"
+
+      # Pod Not Scheduled
+      - alert: PodNotScheduled
+        expr: |
+          kube_pod_status_phase{phase="Pending"} == 1
+        for: 15m
+        labels:
+          severity: warning
+          category: kubernetes
+        annotations:
+          summary: "Pod {{ $labels.pod }} pending for 15 minutes"
+          description: "Pod cannot be scheduled"
+          action: "Check resource availability and node capacity"
+
+      # HPA at Max
+      - alert: HPAAtMaxReplicas
+        expr: |
+          kube_horizontalpodautoscaler_status_current_replicas
+          ==
+          kube_horizontalpodautoscaler_spec_max_replicas
+        for: 15m
+        labels:
+          severity: warning
+          category: kubernetes
+        annotations:
+          summary: "HPA {{ $labels.horizontalpodautoscaler }} at max replicas"
+          description: "Autoscaler cannot scale further"
+          action: "Consider increasing max replicas or investigating load"
+
+      # Job Failed
+      - alert: KubernetesJobFailed
+        expr: |
+          kube_job_status_failed == 1
+        for: 1m
+        labels:
+          severity: warning
+          category: kubernetes
+        annotations:
+          summary: "Kubernetes job {{ $labels.job_name }} failed"
+          description: "Job has failed"
+          action: "Check job logs and retry if appropriate"
+
+  # ============================================
+  # Recording Rules (Pre-computed metrics)
+  # ============================================
+  - name: recording_rules
+    interval: 30s
+    rules:
+      # Error rate by service
+      - record: job:http_error_rate:ratio_rate5m
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m])) by (job)
+          /
+          sum(rate(http_requests_total[5m])) by (job)
+
+      # Request rate by service
+      - record: job:http_requests:rate5m
+        expr: sum(rate(http_requests_total[5m])) by (job)
+
+      # 95th percentile latency
+      - record: job:http_latency:p95_5m
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job)
+          )
+
+      # CPU usage percentage
+      - record: instance:node_cpu_utilisation:rate5m
+        expr: |
+          100 - (
+            avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100
+          )
+
+      # Memory usage percentage
+      - record: instance:node_memory_utilisation:ratio
+        expr: |
+          1 - (
+            node_memory_MemAvailable_bytes
+            /
+            node_memory_MemTotal_bytes
+          )

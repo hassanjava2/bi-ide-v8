@@ -1,0 +1,28 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: bi-ide
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secret.yaml
+  - deployment-api.yaml
+  - deployment-ui.yaml
+  - deployment-worker.yaml
+  - service-api.yaml
+  - service-ui.yaml
+  - ingress.yaml
+  - hpa.yaml
+
+images:
+  - name: biide/api
+    newTag: latest
+  - name: biide/ui
+    newTag: latest
+
+configMapGenerator:
+  - name: api-config
+    literals:
+      - LOG_LEVEL=INFO
+      - DEBUG=false

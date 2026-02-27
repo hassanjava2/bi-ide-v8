@@ -1,0 +1,42 @@
+[
+  {
+    "input": "ما هو الفرق بين == و === في JavaScript؟",
+    "output": "== يقارن القيم مع تحويل الأنواع (type coercion)، بينما === يقارن القيم والأنواع معاً (strict equality). مثال: \"5\" == 5 يعطي true، لكن \"5\" === 5 يعطي false.",
+    "category": "javascript"
+  },
+  {
+    "input": "ما هو closure في JavaScript؟",
+    "output": "Closure هو دالة تتذكر المتغيرات من النطاق الخارجي (lexical scope) حتى بعد انتهاء تنفيذ الدالة الخارجية. يستخدم لإنشاء متغيرات خاصة وللحفاظ على الحالة.",
+    "category": "javascript"
+  },
+  {
+    "input": "ما الفرق بين list و tuple في Python؟",
+    "output": "List قابلة للتعديل (mutable) بينما tuple غير قابلة للتعديل (immutable). tuple أسرع وتستهلك ذاكرة أقل، وتستخدم كمفاتيح في القواميس.",
+    "category": "python"
+  },
+  {
+    "input": "كيف أتعامل مع الأخطاء في async/await؟",
+    "output": "استخدم try/catch حول await للتعامل مع الأخطاء. مثال:\ntry {\n  const data = await fetchData();\n} catch (error) {\n  console.error(\"Failed:\", error);\n}",
+    "category": "javascript"
+  },
+  {
+    "input": "ما هو virtual environment في Python ولماذا نستخدمه؟",
+    "output": "Virtual environment هو بيئة معزولة لمشروع Python محدد. يسمح بتثبيت مكتبات مختلفة لكل مشروع دون تعارض. إنشاؤه: python -m venv venv ثم تفعيله.",
+    "category": "python"
+  },
+  {
+    "input": "كيف أحسّن أداء React component؟",
+    "output": "استخدم: 1) React.memo لمنع إعادة الرسم غير الضرورية 2) useMemo لحفظ الحسابات المكلفة 3) useCallback لحفظ الدوال 4) تقسيم الكود (code splitting) 5) تحميل كسول (lazy loading)",
+    "category": "react"
+  },
+  {
+    "input": "ما هو REST API وما هي مبادئه؟",
+    "output": "REST (Representational State Transfer) هو نمط معماري للـ APIs. مبادئه: 1) Client-Server 2) Stateless 3) Cacheable 4) Uniform Interface 5) Layered System. يستخدم HTTP methods: GET, POST, PUT, DELETE.",
+    "category": "api"
+  },
+  {
+    "input": "كيف أمنع SQL Injection؟",
+    "output": "استخدم: 1) Parameterized queries / Prepared statements 2) ORM بدل SQL المباشر 3) Input validation و sanitization 4) مبدأ least privilege لصلاحيات قاعدة البيانات.",
+    "category": "security"
+  }
+]

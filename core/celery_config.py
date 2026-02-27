@@ -1,10 +1,6 @@
 """
 Celery Configuration - إعدادات المهام في الخلفية
 """
-import sys
-sys.path.insert(0, '.')
-import encoding_fix
-
 import os
 from celery import Celery
 from celery.signals import task_prerun, task_postrun

@@ -8,11 +8,10 @@ President Interface - Human Control Layer
 - فيتو على التدمير الذاتي
 - مشاهدة حية للمجلس
 """
-import sys; sys.path.insert(0, '.'); import encoding_fix; encoding_fix.safe_print("")
 
 from enum import Enum
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Callable
 import asyncio
 

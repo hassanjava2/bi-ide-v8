@@ -5,7 +5,7 @@ ERP Database Service - خدمة ERP مع قاعدة بيانات
 """
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Any
 
 from sqlalchemy import select, func, update, delete
@@ -68,8 +68,8 @@ class ERPDatabaseService:
                 total=5750 + (i * 1150),
                 status=statuses[i],
                 items=[{"name": "خدمة استشارية", "quantity": 1, "price": 5000 + (i * 1000)}],
-                created_at=datetime.utcnow() - timedelta(days=i * 5),
-                due_date=(datetime.utcnow() + timedelta(days=30 - i * 5)).date(),
+                created_at=datetime.now(timezone.utc) - timedelta(days=i * 5),
+                due_date=(datetime.now(timezone.utc) + timedelta(days=30 - i * 5)).date(),
             )
             session.add(invoice)
 
@@ -117,7 +117,7 @@ class ERPDatabaseService:
                 department=dept,
                 position=pos,
                 salary=salary,
-                hire_date=(datetime.utcnow() - timedelta(days=365)).date(),
+                hire_date=(datetime.now(timezone.utc) - timedelta(days=365)).date(),
                 status="active",
             )
             session.add(emp)
@@ -255,7 +255,7 @@ class ERPDatabaseService:
             inv_id = str(uuid.uuid4())
             invoice = InvoiceDB(
                 id=inv_id,
-                invoice_number=f"INV-{datetime.utcnow().year}-{uuid.uuid4().hex[:6].upper()}",
+                invoice_number=f"INV-{datetime.now(timezone.utc).year}-{uuid.uuid4().hex[:6].upper()}",
                 customer_id=data.get("customer_id", ""),
                 customer_name=data.get("customer_name", ""),
                 amount=data.get("amount", 0),
@@ -275,7 +275,7 @@ class ERPDatabaseService:
             result = await session.execute(
                 update(InvoiceDB)
                 .where(InvoiceDB.id == invoice_id)
-                .values(status="paid", paid_at=datetime.utcnow())
+                .values(status="paid", paid_at=datetime.now(timezone.utc))
             )
             return result.rowcount > 0
 
@@ -338,7 +338,7 @@ class ERPDatabaseService:
                 "active_employees": total,
                 "total_payroll": total_salary,
                 "average_salary": total_salary / max(total, 1),
-                "payroll_date": (datetime.utcnow().replace(day=1) + timedelta(days=32)).replace(day=1).strftime("%Y-%m-%d"),
+                "payroll_date": (datetime.now(timezone.utc).replace(day=1) + timedelta(days=32)).replace(day=1).strftime("%Y-%m-%d"),
             }
 
     # ─────────────────── Reports ───────────────────

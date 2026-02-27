@@ -37,8 +37,8 @@ async def get_full_system_status():
         core_available = False
 
     try:
-        from council_ai import smart_council
-        council_available = smart_council is not None
+        from hierarchy import ai_hierarchy
+        council_available = ai_hierarchy is not None
     except Exception:
         council_available = False
 

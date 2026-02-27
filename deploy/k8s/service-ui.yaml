@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bi-ide-ui
+  namespace: bi-ide-v8
+  labels:
+    app: bi-ide-ui
+    component: frontend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: bi-ide-ui
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bi-ide-ui-external
+  namespace: bi-ide-v8
+  labels:
+    app: bi-ide-ui
+    component: frontend
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: http
+      protocol: TCP
+      name: https
+  selector:
+    app: bi-ide-ui
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800

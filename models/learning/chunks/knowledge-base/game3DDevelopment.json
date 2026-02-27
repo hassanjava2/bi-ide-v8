@@ -1,0 +1,109 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-30T19:30:01.160Z",
+  "categories": {
+    "basics3D": [
+      "نظام الإحداثيات (Left-Handed, Right-Handed)",
+      "Vectors (Add, Subtract, Dot, Cross, Normalize)",
+      "Quaternions و Euler Angles",
+      "التحويلات (Translation, Rotation, Scale)",
+      "Matrices 4x4"
+    ],
+    "unity3D": [
+      "إعداد مشروع Unity 3D",
+      "Render Pipelines (Built-in, URP, HDRP)",
+      "Components 3D (MeshFilter, MeshRenderer, Colliders)",
+      "Rigidbody و CharacterController",
+      "الإضاءة (Directional, Point, Spot, Area)",
+      "Materials و PBR"
+    ],
+    "unreal3D": [
+      "إعداد مشروع Unreal Engine",
+      "Core Classes (Actor, Pawn, Character)",
+      "Components (StaticMesh, SkeletalMesh)",
+      "Nanite و Lumen",
+      "Chaos Physics",
+      "Blueprints"
+    ],
+    "camera3D": [
+      "First Person Camera",
+      "Third Person Camera",
+      "Orbital Camera",
+      "Top-Down Camera",
+      "Cinemachine",
+      "Camera Shake",
+      "Collision Avoidance"
+    ],
+    "movement3D": [
+      "Character Controller Movement",
+      "Rigidbody-Based Movement",
+      "NavMesh Agent Movement",
+      "Smooth Movement",
+      "Jump و Gravity"
+    ],
+    "physics3D": [
+      "Rigidbody Properties",
+      "Forces و Impulses",
+      "Collision Detection",
+      "Triggers",
+      "Raycasting (Ray, Sphere, Box)",
+      "Joints",
+      "Continuous Collision"
+    ],
+    "graphics3D": [
+      "Meshes و Vertices",
+      "Materials و PBR",
+      "Shaders (Vertex, Fragment)",
+      "Shader Graph",
+      "Post Processing",
+      "Lighting و Shadows"
+    ],
+    "terrain": [
+      "Unity Terrain",
+      "Heightmaps",
+      "Texture Splatting",
+      "Trees و Grass",
+      "Procedural Generation",
+      "Perlin Noise"
+    ],
+    "ai3D": [
+      "NavMesh و Navigation",
+      "NavMesh Agent",
+      "Field of View",
+      "Line of Sight",
+      "Cover System",
+      "Patrol و Chase"
+    ],
+    "vrAr": [
+      "VR Development",
+      "XR Interaction Toolkit",
+      "VR Locomotion (Teleport, Continuous)",
+      "VR Interaction",
+      "AR Foundation",
+      "Plane Detection",
+      "Image Tracking"
+    ],
+    "optimization3D": [
+      "Draw Calls و Batching",
+      "LOD (Level of Detail)",
+      "Occlusion Culling",
+      "Shadow Optimization",
+      "Physics Optimization",
+      "Memory Management",
+      "Profiling"
+    ]
+  },
+  "totalExamples": 62,
+  "engines": [
+    "Unity",
+    "Unreal Engine",
+    "Godot"
+  ],
+  "platforms": [
+    "PC",
+    "Console",
+    "Mobile",
+    "VR",
+    "AR"
+  ]
+}

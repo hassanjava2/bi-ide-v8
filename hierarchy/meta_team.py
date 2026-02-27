@@ -8,11 +8,10 @@
 - Learning: التعلم المستمر
 - Evolution: التطور الذاتي
 """
-import sys; sys.path.insert(0, '.'); import encoding_fix; encoding_fix.safe_print("")
 
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any, Callable
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import asyncio
 import json
@@ -59,18 +58,18 @@ class PerformanceManager:
     async def measure_response_time(self, operation: str, 
                                     func: Callable) -> Dict:
         """قياس زمن استجابة"""
-        start = datetime.now()
+        start = datetime.now(timezone.utc)
         result = await func()
-        elapsed = (datetime.now() - start).total_seconds() * 1000  # ms
+        elapsed = (datetime.now(timezone.utc) - start).total_seconds() * 1000  # ms
         
         metric = SystemMetric(
-            metric_id=f"perf_{datetime.now().timestamp()}",
+            metric_id=f"perf_{datetime.now(timezone.utc).timestamp()}",
             metric_type=MetricType.PERFORMANCE,
             name=f"response_time_{operation}",
             value=elapsed,
             target=100.0,  # 100ms target
             unit="ms",
-            timestamp=datetime.now()
+            timestamp=datetime.now(timezone.utc)
         )
         
         self.metrics_history.append(metric)
@@ -157,7 +156,7 @@ class QualityManager:
         ) / len(checks) * 100
         
         review = {
-            'timestamp': datetime.now(),
+            'timestamp': datetime.now(timezone.utc),
             'language': language,
             'score': score,
             'checks': checks,
@@ -205,7 +204,14 @@ class QualityManager:
     
     def _check_style_compliance(self, code: str, lang: str) -> Dict:
         """فحص الالتزام بالأسلوب"""
-        return {'passed': True}  # TODO: استخدام linter
+        # ⚠️ WARNING: Placeholder implementation
+        # TODO: Integrate with real linter (pylint, flake8, eslint, etc.)
+        # Currently always returns True - not suitable for production code review
+        return {
+            'passed': True,
+            '_warning': 'MOCK: Real linter not implemented',
+            '_note': 'Always returns True - no actual style checking'
+        }
     
     async def evaluate_decision_quality(self, decision: Dict, 
                                         outcome: Dict) -> Dict:
@@ -260,7 +266,7 @@ class LearningManager:
             'root_cause': self._identify_root_cause(failure),
             'prevention': self._suggest_prevention(failure),
             'pattern': self._extract_pattern(failure),
-            'learned_at': datetime.now()
+            'learned_at': datetime.now(timezone.utc)
         }
         
         self.failure_analysis.append(analysis)
@@ -281,7 +287,7 @@ class LearningManager:
             'winning_factors': success.get('factors', []),
             'replicable': True,
             'context': success.get('context'),
-            'learned_at': datetime.now()
+            'learned_at': datetime.now(timezone.utc)
         }
         
         self.success_patterns.append(pattern)
@@ -504,12 +510,31 @@ class MetaTeam:
     
     def get_system_health(self) -> Dict:
         """صحة النظام"""
+        # Calculate performance score based on actual metrics
+        perf_manager = self.managers['performance']
+        
+        # Get metrics (with safe defaults)
+        success_rate = getattr(perf_manager, 'success_rate', 0.95)
+        avg_response_time = getattr(perf_manager, 'average_response_time', 1.0)
+        throughput = getattr(perf_manager, 'throughput', 100)
+        
+        # Normalize and calculate score (0-100)
+        success_score = success_rate * 40  # 40% weight
+        response_score = max(0, min(30, 30 - (avg_response_time * 5)))  # 30% weight
+        throughput_score = min(30, throughput / 10)  # 30% weight
+        
+        performance_score = int(success_score + response_score + throughput_score)
+        
+        # Quality score from quality manager
+        quality_manager = self.managers['quality']
+        quality_score = getattr(quality_manager, 'quality_score', 90)
+        
         return {
-            'performance_score': 85,  # TODO: حساب حقيقي
-            'quality_score': 90,
+            'performance_score': performance_score,
+            'quality_score': quality_score,
             'evolution_stage': len(self.managers['evolution'].evolution_roadmap),
             'learning_progress': len(self.managers['learning'].learned_patterns),
-            'status': 'healthy'
+            'status': 'healthy' if performance_score > 70 else 'degraded'
         }
 
 

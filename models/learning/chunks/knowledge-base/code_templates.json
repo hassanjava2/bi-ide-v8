@@ -1,0 +1,272 @@
+[
+  {
+    "instruction": "اكتب function بـ javascript:",
+    "input": "دالة لجلب البيانات من API",
+    "output": "async function fetchData(url, options = {}) {\n    try {\n        const response = await fetch(url, {\n            headers: {\n                'Content-Type': 'application/json',\n                ...options.headers\n            },\n            ...options\n        });\n        \n        if (!response.ok) {\n            throw new Error(`HTTP error! status: ${response.status}`);\n        }\n        \n        return await response.json();\n    } catch (error) {\n        console.error('Fetch error:', error);\n        throw error;\n    }\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ javascript:",
+    "input": "دالة للتحقق من صحة البريد الإلكتروني",
+    "output": "function isValidEmail(email) {\n    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    return emailRegex.test(email);\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ javascript:",
+    "input": "دالة لتنسيق التاريخ",
+    "output": "function formatDate(date, locale = 'ar-SA') {\n    return new Intl.DateTimeFormat(locale, {\n        year: 'numeric',\n        month: 'long',\n        day: 'numeric'\n    }).format(new Date(date));\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ javascript:",
+    "input": "دالة Debounce لتأخير التنفيذ",
+    "output": "function debounce(func, wait = 300) {\n    let timeoutId;\n    return function (...args) {\n        clearTimeout(timeoutId);\n        timeoutId = setTimeout(() => {\n            func.apply(this, args);\n        }, wait);\n    };\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ javascript:",
+    "input": "دالة Throttle للتحكم في معدل التنفيذ",
+    "output": "function throttle(func, limit = 300) {\n    let inThrottle;\n    return function (...args) {\n        if (!inThrottle) {\n            func.apply(this, args);\n            inThrottle = true;\n            setTimeout(() => inThrottle = false, limit);\n        }\n    };\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ javascript:",
+    "input": "دالة Deep Clone لنسخ الكائنات",
+    "output": "function deepClone(obj) {\n    if (obj === null || typeof obj !== 'object') {\n        return obj;\n    }\n    \n    if (Array.isArray(obj)) {\n        return obj.map(item => deepClone(item));\n    }\n    \n    return Object.fromEntries(\n        Object.entries(obj).map(([key, value]) => [key, deepClone(value)])\n    );\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ javascript:",
+    "input": "دالة لتجميع العناصر حسب خاصية",
+    "output": "function groupBy(array, key) {\n    return array.reduce((result, item) => {\n        const groupKey = typeof key === 'function' ? key(item) : item[key];\n        (result[groupKey] = result[groupKey] || []).push(item);\n        return result;\n    }, {});\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ javascript:",
+    "input": "دالة لإزالة التكرارات من مصفوفة",
+    "output": "function uniqueBy(array, key) {\n    const seen = new Set();\n    return array.filter(item => {\n        const value = typeof key === 'function' ? key(item) : item[key];\n        if (seen.has(value)) return false;\n        seen.add(value);\n        return true;\n    });\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب classe بـ javascript:",
+    "input": "كلاس EventEmitter للأحداث",
+    "output": "class EventEmitter {\n    constructor() {\n        this.events = new Map();\n    }\n    \n    on(event, callback) {\n        if (!this.events.has(event)) {\n            this.events.set(event, new Set());\n        }\n        this.events.get(event).add(callback);\n        return () => this.off(event, callback);\n    }\n    \n    off(event, callback) {\n        if (this.events.has(event)) {\n            this.events.get(event).delete(callback);\n        }\n    }\n    \n    emit(event, ...args) {\n        if (this.events.has(event)) {\n            this.events.get(event).forEach(cb => cb(...args));\n        }\n    }\n    \n    once(event, callback) {\n        const wrapper = (...args) => {\n            callback(...args);\n            this.off(event, wrapper);\n        };\n        return this.on(event, wrapper);\n    }\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "classes",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب classe بـ javascript:",
+    "input": "كلاس State Manager بسيط",
+    "output": "class StateManager {\n    constructor(initialState = {}) {\n        this.state = initialState;\n        this.listeners = new Set();\n    }\n    \n    getState() {\n        return { ...this.state };\n    }\n    \n    setState(updates) {\n        this.state = { ...this.state, ...updates };\n        this.notify();\n    }\n    \n    subscribe(listener) {\n        this.listeners.add(listener);\n        return () => this.listeners.delete(listener);\n    }\n    \n    notify() {\n        this.listeners.forEach(listener => listener(this.state));\n    }\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "classes",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب classe بـ javascript:",
+    "input": "كلاس LocalStorage Wrapper",
+    "output": "class Storage {\n    constructor(prefix = 'app_') {\n        this.prefix = prefix;\n    }\n    \n    _key(key) {\n        return `${this.prefix}${key}`;\n    }\n    \n    get(key, defaultValue = null) {\n        try {\n            const item = localStorage.getItem(this._key(key));\n            return item ? JSON.parse(item) : defaultValue;\n        } catch (e) {\n            return defaultValue;\n        }\n    }\n    \n    set(key, value) {\n        try {\n            localStorage.setItem(this._key(key), JSON.stringify(value));\n            return true;\n        } catch (e) {\n            return false;\n        }\n    }\n    \n    remove(key) {\n        localStorage.removeItem(this._key(key));\n    }\n    \n    clear() {\n        Object.keys(localStorage)\n            .filter(k => k.startsWith(this.prefix))\n            .forEach(k => localStorage.removeItem(k));\n    }\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "classes",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب classe بـ javascript:",
+    "input": "كلاس HTTP Client",
+    "output": "class HttpClient {\n    constructor(baseURL = '', defaultHeaders = {}) {\n        this.baseURL = baseURL;\n        this.defaultHeaders = {\n            'Content-Type': 'application/json',\n            ...defaultHeaders\n        };\n    }\n    \n    async request(endpoint, options = {}) {\n        const url = `${this.baseURL}${endpoint}`;\n        const config = {\n            ...options,\n            headers: { ...this.defaultHeaders, ...options.headers }\n        };\n        \n        if (config.body && typeof config.body === 'object') {\n            config.body = JSON.stringify(config.body);\n        }\n        \n        const response = await fetch(url, config);\n        \n        if (!response.ok) {\n            const error = new Error(`HTTP ${response.status}`);\n            error.response = response;\n            throw error;\n        }\n        \n        return response.json();\n    }\n    \n    get(endpoint, options = {}) {\n        return this.request(endpoint, { ...options, method: 'GET' });\n    }\n    \n    post(endpoint, data, options = {}) {\n        return this.request(endpoint, { ...options, method: 'POST', body: data });\n    }\n    \n    put(endpoint, data, options = {}) {\n        return this.request(endpoint, { ...options, method: 'PUT', body: data });\n    }\n    \n    delete(endpoint, options = {}) {\n        return this.request(endpoint, { ...options, method: 'DELETE' });\n    }\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "classes",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب react_component بـ javascript:",
+    "input": "مكون Button قابل لإعادة الاستخدام",
+    "output": "function Button({ \n    children, \n    variant = 'primary', \n    size = 'medium',\n    disabled = false,\n    loading = false,\n    onClick,\n    ...props \n}) {\n    const baseClasses = 'btn';\n    const variantClasses = {\n        primary: 'btn-primary',\n        secondary: 'btn-secondary',\n        danger: 'btn-danger'\n    };\n    const sizeClasses = {\n        small: 'btn-sm',\n        medium: 'btn-md',\n        large: 'btn-lg'\n    };\n    \n    return (\n        <button\n            className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]}`}\n            disabled={disabled || loading}\n            onClick={onClick}\n            {...props}\n        >\n            {loading ? <Spinner size=\"small\" /> : children}\n        </button>\n    );\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "react_components",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب react_component بـ javascript:",
+    "input": "مكون Modal",
+    "output": "function Modal({ isOpen, onClose, title, children }) {\n    if (!isOpen) return null;\n    \n    return (\n        <div className=\"modal-overlay\" onClick={onClose}>\n            <div className=\"modal-content\" onClick={e => e.stopPropagation()}>\n                <div className=\"modal-header\">\n                    <h2>{title}</h2>\n                    <button className=\"modal-close\" onClick={onClose}>\n                        &times;\n                    </button>\n                </div>\n                <div className=\"modal-body\">\n                    {children}\n                </div>\n            </div>\n        </div>\n    );\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "react_components",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب react_component بـ javascript:",
+    "input": "Custom Hook useLocalStorage",
+    "output": "function useLocalStorage(key, initialValue) {\n    const [storedValue, setStoredValue] = useState(() => {\n        try {\n            const item = window.localStorage.getItem(key);\n            return item ? JSON.parse(item) : initialValue;\n        } catch (error) {\n            return initialValue;\n        }\n    });\n    \n    const setValue = (value) => {\n        try {\n            const valueToStore = value instanceof Function \n                ? value(storedValue) \n                : value;\n            setStoredValue(valueToStore);\n            window.localStorage.setItem(key, JSON.stringify(valueToStore));\n        } catch (error) {\n            console.error('Error saving to localStorage:', error);\n        }\n    };\n    \n    return [storedValue, setValue];\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "react_components",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب react_component بـ javascript:",
+    "input": "Custom Hook useFetch",
+    "output": "function useFetch(url, options = {}) {\n    const [data, setData] = useState(null);\n    const [loading, setLoading] = useState(true);\n    const [error, setError] = useState(null);\n    \n    useEffect(() => {\n        const controller = new AbortController();\n        \n        const fetchData = async () => {\n            try {\n                setLoading(true);\n                const response = await fetch(url, {\n                    ...options,\n                    signal: controller.signal\n                });\n                \n                if (!response.ok) {\n                    throw new Error(`HTTP error! status: ${response.status}`);\n                }\n                \n                const result = await response.json();\n                setData(result);\n                setError(null);\n            } catch (err) {\n                if (err.name !== 'AbortError') {\n                    setError(err.message);\n                }\n            } finally {\n                setLoading(false);\n            }\n        };\n        \n        fetchData();\n        \n        return () => controller.abort();\n    }, [url]);\n    \n    return { data, loading, error };\n}",
+    "metadata": {
+      "language": "javascript",
+      "category": "react_components",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ python:",
+    "input": "دالة Decorator للتوقيت",
+    "output": "from functools import wraps\nimport time\n\ndef timing(func):\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        start = time.perf_counter()\n        result = func(*args, **kwargs)\n        end = time.perf_counter()\n        print(f\"{func.__name__} took {end - start:.4f} seconds\")\n        return result\n    return wrapper",
+    "metadata": {
+      "language": "python",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ python:",
+    "input": "دالة Decorator للتخزين المؤقت",
+    "output": "from functools import wraps\n\ndef memoize(func):\n    cache = {}\n    \n    @wraps(func)\n    def wrapper(*args):\n        if args not in cache:\n            cache[args] = func(*args)\n        return cache[args]\n    \n    wrapper.cache = cache\n    wrapper.clear_cache = lambda: cache.clear()\n    return wrapper",
+    "metadata": {
+      "language": "python",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ python:",
+    "input": "دالة لقراءة ملف JSON بأمان",
+    "output": "import json\nfrom pathlib import Path\nfrom typing import Any, Optional\n\ndef read_json(filepath: str, default: Optional[Any] = None) -> Any:\n    \"\"\"قراءة ملف JSON بأمان مع قيمة افتراضية\"\"\"\n    try:\n        path = Path(filepath)\n        if not path.exists():\n            return default\n        \n        with open(path, 'r', encoding='utf-8') as f:\n            return json.load(f)\n    except (json.JSONDecodeError, IOError) as e:\n        print(f\"Error reading {filepath}: {e}\")\n        return default",
+    "metadata": {
+      "language": "python",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ python:",
+    "input": "دالة لكتابة ملف JSON بأمان",
+    "output": "import json\nfrom pathlib import Path\nfrom typing import Any\n\ndef write_json(filepath: str, data: Any, indent: int = 2) -> bool:\n    \"\"\"كتابة بيانات إلى ملف JSON\"\"\"\n    try:\n        path = Path(filepath)\n        path.parent.mkdir(parents=True, exist_ok=True)\n        \n        with open(path, 'w', encoding='utf-8') as f:\n            json.dump(data, f, ensure_ascii=False, indent=indent)\n        return True\n    except IOError as e:\n        print(f\"Error writing to {filepath}: {e}\")\n        return False",
+    "metadata": {
+      "language": "python",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب function بـ python:",
+    "input": "دالة Retry للمحاولة المتكررة",
+    "output": "from functools import wraps\nimport time\nfrom typing import Type, Tuple\n\ndef retry(\n    max_attempts: int = 3,\n    delay: float = 1.0,\n    backoff: float = 2.0,\n    exceptions: Tuple[Type[Exception], ...] = (Exception,)\n):\n    \"\"\"Decorator للمحاولة المتكررة عند الفشل\"\"\"\n    def decorator(func):\n        @wraps(func)\n        def wrapper(*args, **kwargs):\n            current_delay = delay\n            last_exception = None\n            \n            for attempt in range(max_attempts):\n                try:\n                    return func(*args, **kwargs)\n                except exceptions as e:\n                    last_exception = e\n                    if attempt < max_attempts - 1:\n                        time.sleep(current_delay)\n                        current_delay *= backoff\n            \n            raise last_exception\n        return wrapper\n    return decorator",
+    "metadata": {
+      "language": "python",
+      "category": "functions",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب classe بـ python:",
+    "input": "كلاس Singleton",
+    "output": "class Singleton:\n    \"\"\"كلاس Singleton - نسخة واحدة فقط\"\"\"\n    _instance = None\n    \n    def __new__(cls, *args, **kwargs):\n        if cls._instance is None:\n            cls._instance = super().__new__(cls)\n        return cls._instance",
+    "metadata": {
+      "language": "python",
+      "category": "classes",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب classe بـ python:",
+    "input": "كلاس Configuration Manager",
+    "output": "from dataclasses import dataclass, field\nfrom typing import Dict, Any, Optional\nimport json\nfrom pathlib import Path\n\n@dataclass\nclass Config:\n    \"\"\"إدارة إعدادات التطبيق\"\"\"\n    _data: Dict[str, Any] = field(default_factory=dict)\n    _filepath: Optional[str] = None\n    \n    def load(self, filepath: str) -> 'Config':\n        \"\"\"تحميل الإعدادات من ملف\"\"\"\n        self._filepath = filepath\n        path = Path(filepath)\n        \n        if path.exists():\n            with open(path, 'r', encoding='utf-8') as f:\n                self._data = json.load(f)\n        \n        return self\n    \n    def save(self) -> bool:\n        \"\"\"حفظ الإعدادات\"\"\"\n        if not self._filepath:\n            return False\n        \n        with open(self._filepath, 'w', encoding='utf-8') as f:\n            json.dump(self._data, f, ensure_ascii=False, indent=2)\n        return True\n    \n    def get(self, key: str, default: Any = None) -> Any:\n        \"\"\"الحصول على قيمة\"\"\"\n        keys = key.split('.')\n        value = self._data\n        \n        for k in keys:\n            if isinstance(value, dict) and k in value:\n                value = value[k]\n            else:\n                return default\n        \n        return value\n    \n    def set(self, key: str, value: Any) -> None:\n        \"\"\"تعيين قيمة\"\"\"\n        keys = key.split('.')\n        data = self._data\n        \n        for k in keys[:-1]:\n            data = data.setdefault(k, {})\n        \n        data[keys[-1]] = value",
+    "metadata": {
+      "language": "python",
+      "category": "classes",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب classe بـ python:",
+    "input": "كلاس Logger مخصص",
+    "output": "import logging\nfrom pathlib import Path\nfrom datetime import datetime\n\nclass Logger:\n    \"\"\"نظام تسجيل مخصص\"\"\"\n    \n    def __init__(self, name: str, log_dir: str = 'logs'):\n        self.logger = logging.getLogger(name)\n        self.logger.setLevel(logging.DEBUG)\n        \n        # إنشاء مجلد السجلات\n        log_path = Path(log_dir)\n        log_path.mkdir(parents=True, exist_ok=True)\n        \n        # ملف السجل\n        log_file = log_path / f\"{name}_{datetime.now().strftime('%Y%m%d')}.log\"\n        \n        # Handler للملف\n        file_handler = logging.FileHandler(log_file, encoding='utf-8')\n        file_handler.setLevel(logging.DEBUG)\n        \n        # Handler للطرفية\n        console_handler = logging.StreamHandler()\n        console_handler.setLevel(logging.INFO)\n        \n        # التنسيق\n        formatter = logging.Formatter(\n            '%(asctime)s | %(levelname)s | %(message)s',\n            datefmt='%Y-%m-%d %H:%M:%S'\n        )\n        file_handler.setFormatter(formatter)\n        console_handler.setFormatter(formatter)\n        \n        self.logger.addHandler(file_handler)\n        self.logger.addHandler(console_handler)\n    \n    def debug(self, msg): self.logger.debug(msg)\n    def info(self, msg): self.logger.info(msg)\n    def warning(self, msg): self.logger.warning(msg)\n    def error(self, msg): self.logger.error(msg)\n    def critical(self, msg): self.logger.critical(msg)",
+    "metadata": {
+      "language": "python",
+      "category": "classes",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب querie بـ sql:",
+    "input": "استعلام مع Pagination",
+    "output": "SELECT \n    id,\n    name,\n    email,\n    created_at\nFROM users\nWHERE is_active = true\nORDER BY created_at DESC\nLIMIT :limit\nOFFSET :offset;",
+    "metadata": {
+      "language": "sql",
+      "category": "queries",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب querie بـ sql:",
+    "input": "استعلام مع تجميع وإحصائيات",
+    "output": "SELECT \n    DATE(created_at) as date,\n    COUNT(*) as total_orders,\n    SUM(total_amount) as revenue,\n    AVG(total_amount) as avg_order_value\nFROM orders\nWHERE created_at >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)\nGROUP BY DATE(created_at)\nORDER BY date DESC;",
+    "metadata": {
+      "language": "sql",
+      "category": "queries",
+      "type": "code_generation"
+    }
+  },
+  {
+    "instruction": "اكتب querie بـ sql:",
+    "input": "إنشاء جدول مستخدمين",
+    "output": "CREATE TABLE users (\n    id SERIAL PRIMARY KEY,\n    email VARCHAR(255) UNIQUE NOT NULL,\n    password_hash VARCHAR(255) NOT NULL,\n    name VARCHAR(100) NOT NULL,\n    role VARCHAR(20) DEFAULT 'user',\n    is_active BOOLEAN DEFAULT true,\n    email_verified_at TIMESTAMP,\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n);\n\nCREATE INDEX idx_users_email ON users(email);\nCREATE INDEX idx_users_role ON users(role);",
+    "metadata": {
+      "language": "sql",
+      "category": "queries",
+      "type": "code_generation"
+    }
+  }
+]

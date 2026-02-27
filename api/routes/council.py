@@ -239,11 +239,11 @@ council_metrics: Dict[str, Any] = {
     "last_response_at": None,
 }
 
-# Smart Council
+# Smart Council - now uses hierarchy instead of legacy council_ai
 SMART_COUNCIL_AVAILABLE = False
 smart_council = None
 try:
-    from council_ai import smart_council as _sc
+    from hierarchy import ai_hierarchy as _sc
     smart_council = _sc
     SMART_COUNCIL_AVAILABLE = True
 except Exception:
@@ -677,3 +677,92 @@ async def get_hierarchy_metrics():
             "top_wise_men": live.get("top_wise_men", []),
         },
     }
+
+
+@router.post("/hierarchy/deliberate")
+async def hierarchy_deliberate(request: CouncilMessageRequest):
+    """
+    Start a deliberation in the High Council on a specific topic.
+    This creates a discussion among the council members and returns their consensus.
+    """
+    try:
+        from hierarchy import ai_hierarchy
+        from hierarchy.high_council import Discussion
+        
+        if not ai_hierarchy or not ai_hierarchy.council:
+            raise HTTPException(500, "AI Hierarchy not initialized")
+        
+        council = ai_hierarchy.council
+        
+        # Create and conduct discussion
+        discussion = Discussion(
+            topic=request.message,
+            initiator=request.user_id,
+            opinions={}
+        )
+        
+        # Use async conduct_discussion if available, otherwise simulate
+        if hasattr(council, '_conduct_discussion'):
+            import asyncio
+            await council._conduct_discussion(request.message)
+        
+        current = council.current_discussion
+        if current:
+            return {
+                "status": "success",
+                "topic": current.topic,
+                "opinions": current.opinions,
+                "consensus": current.consensus,
+                "timestamp": current.timestamp.isoformat() if current.timestamp else None,
+                "participants": len(council.sages) if hasattr(council, 'sages') else 0
+            }
+        
+        return {
+            "status": "completed",
+            "topic": request.message,
+            "message": "Discussion completed but no record available"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Deliberation failed: {str(e)}")
+
+
+@router.get("/hierarchy/council/status")
+async def get_council_detailed_status():
+    """Get detailed status of the High Council including all sages"""
+    try:
+        from hierarchy import ai_hierarchy
+        
+        if not ai_hierarchy or not ai_hierarchy.council:
+            raise HTTPException(500, "AI Hierarchy not initialized")
+        
+        council = ai_hierarchy.council
+        status = council.get_status() if hasattr(council, 'get_status') else {}
+        
+        # Add sages information if available
+        sages_info = []
+        if hasattr(council, 'sages'):
+            for role, sage in council.sages.items():
+                sages_info.append({
+                    "id": sage.id if hasattr(sage, 'id') else str(role),
+                    "name": sage.name if hasattr(sage, 'name') else str(role),
+                    "role": str(role),
+                    "active": sage.is_active if hasattr(sage, 'is_active') else True,
+                    "focus": sage.current_focus if hasattr(sage, 'current_focus') else ""
+                })
+        
+        return {
+            "status": "success",
+            "council": {
+                **status,
+                "sages": sages_info,
+                "total_sages": len(sages_info)
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Failed to get council status: {str(e)}")

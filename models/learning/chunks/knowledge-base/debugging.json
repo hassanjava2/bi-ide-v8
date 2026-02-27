@@ -1,0 +1,66 @@
+{
+  "version": "2.0.0",
+  "lastUpdated": "2026-01-30T19:31:17.623Z",
+  "categories": {
+    "أنواع الأخطاء": [
+      "SyntaxError - أخطاء الصياغة",
+      "TypeError - أخطاء النوع",
+      "ReferenceError - أخطاء المرجعية",
+      "RangeError - أخطاء النطاق",
+      "LogicError - أخطاء منطقية",
+      "RuntimeError - أخطاء وقت التشغيل"
+    ],
+    "لغات البرمجة": [
+      "JavaScript/TypeScript",
+      "Python",
+      "Java",
+      "C/C++",
+      "SQL",
+      "React/Vue/Angular"
+    ],
+    "أنماط الأخطاء المتقدمة": [
+      "Race Conditions",
+      "Memory Leaks",
+      "Closure Bugs",
+      "Async/Await Errors",
+      "State Management Bugs",
+      "Security Vulnerabilities"
+    ],
+    "تقنيات Debugging": [
+      "Console Methods",
+      "Breakpoints",
+      "Network Debugging",
+      "Binary Search Debugging",
+      "Git Bisect",
+      "Rubber Duck Debugging"
+    ],
+    "أخطاء React الشائعة": [
+      "Hooks Errors",
+      "State Updates",
+      "useEffect Issues",
+      "Key Props",
+      "Infinite Loops",
+      "Memory Leaks"
+    ],
+    "أخطاء قواعد البيانات": [
+      "SQL Syntax Errors",
+      "Foreign Key Violations",
+      "Duplicate Keys",
+      "Query Performance",
+      "Connection Issues",
+      "SQL Injection"
+    ]
+  },
+  "totalExamples": 141,
+  "capabilities": [
+    "اكتشاف أخطاء الصياغة (Syntax Errors)",
+    "اكتشاف أخطاء النوع (Type Errors)",
+    "اكتشاف أخطاء المرجعية (Reference Errors)",
+    "اكتشاف الأخطاء المنطقية (Logic Errors)",
+    "اكتشاف مشاكل الأداء (Performance Issues)",
+    "اكتشاف ثغرات أمنية (Security Issues)",
+    "اقتراح حلول للأخطاء",
+    "شرح سبب الخطأ",
+    "تقديم أفضل الممارسات"
+  ]
+}

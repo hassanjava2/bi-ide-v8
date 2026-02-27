@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import our models so Alembic can auto-detect changes
 from core.database import Base  # noqa: E402
+from core.user_models import *  # noqa: F401, F403
 
 # Also import ERP models (when available)
 try:

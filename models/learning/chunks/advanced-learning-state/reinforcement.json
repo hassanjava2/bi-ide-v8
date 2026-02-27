@@ -1,0 +1,10 @@
+{
+  "rewards": {
+    "history": [],
+    "cumulative": 0,
+    "average": 0
+  },
+  "dqn": {
+    "epsilon": 1
+  }
+}

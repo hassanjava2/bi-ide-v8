@@ -8,11 +8,10 @@ The Eternal Council - 24/7 Continuous Meeting
 
 الاجتماع: مستمر 24 ساعة
 """
-import sys; sys.path.insert(0, '.'); import encoding_fix; encoding_fix.safe_print("")
 
 from enum import Enum
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Dict
 import asyncio
 from collections import deque
@@ -67,7 +66,7 @@ class Discussion:
     initiator: str
     opinions: Dict[str, str] = field(default_factory=dict)
     consensus: Optional[str] = None
-    timestamp: datetime = field(default_factory=datetime.now)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class HighCouncil:

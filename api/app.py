@@ -19,7 +19,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.middleware import ErrorHandlingMiddleware
-from api.rate_limit import RateLimitMiddleware
+from api.rate_limit_redis import RedisRateLimitMiddleware
 
 
 def create_app() -> FastAPI:
@@ -29,6 +29,12 @@ def create_app() -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        if os.getenv("PYTEST_RUNNING") == "1":
+            # Keep tests deterministic: avoid background startup tasks that can race
+            # with test-controlled database initialization and cause SQLite locks.
+            yield
+            return
+
         def _spawn_step(label: str, step_factory, timeout_sec: float, *, run_in_thread: bool = False):
             """Schedule a startup step without blocking request handling.
 
@@ -98,6 +104,17 @@ def create_app() -> FastAPI:
         except Exception as e:
             print(f"⚠️ Core modules init: {e}")
 
+        # Initialize default admin user
+        try:
+            from scripts.create_default_admin import create_admin
+            _spawn_step(
+                "Default admin initialized",
+                lambda: create_admin(),
+                float(os.getenv("STARTUP_ADMIN_TIMEOUT", "30")),
+            )
+        except Exception as e:
+            print(f"⚠️ Admin init: {e}")
+
         # AI Hierarchy
         hierarchy = None
         AI_CORE_HOST = os.getenv("AI_CORE_HOST", None)
@@ -134,25 +151,9 @@ def create_app() -> FastAPI:
         except Exception as e:
             print(f"⚠️ IDE Service schedule: {e}")
 
-        # ERP Service (in-memory fallback)
+        # ERP Database Service (PostgreSQL/SQLite) - Full Integration
         try:
-            def _init_erp_memory():
-                from erp.erp_service import get_erp_service
-                from api.routes.erp import set_erp_service
-                erp_service = get_erp_service(hierarchy)
-                set_erp_service(erp_service)
-
-            _spawn_sync_step(
-                "ERP Service (in-memory) ready",
-                _init_erp_memory,
-                float(os.getenv("STARTUP_ERP_TIMEOUT", "60")),
-            )
-        except Exception as e:
-            print(f"⚠️ ERP Service schedule: {e}")
-
-        # ERP Database Service (PostgreSQL/SQLite)
-        try:
-            from erp.erp_db_service import get_erp_db_service
+            from erp.erp_database_service import get_erp_db_service
             from api.routes.erp import set_erp_db_service
 
             async def _init_erp_db():
@@ -161,12 +162,12 @@ def create_app() -> FastAPI:
                 set_erp_db_service(erp_db)
 
             _spawn_step(
-                "ERP Database Service ready (DB-backed)",
+                "ERP Database Service ready (PostgreSQL/SQLite)",
                 lambda: _init_erp_db(),
                 float(os.getenv("STARTUP_ERP_DB_TIMEOUT", "60")),
             )
         except Exception as e:
-            print(f"⚠️ ERP DB Service schedule: {e} — using in-memory fallback")
+            print(f"⚠️ ERP DB Service schedule: {e}")
 
         # Specialized Network
         try:
@@ -276,7 +277,13 @@ def create_app() -> FastAPI:
 
     # ── Middleware (order matters: last added = first executed) ──
     app.add_middleware(ErrorHandlingMiddleware)
-    app.add_middleware(RateLimitMiddleware)
+    # Use Redis-backed rate limiter for multi-instance support
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        app.add_middleware(RedisRateLimitMiddleware)
+    else:
+        from api.rate_limit import RateLimitMiddleware
+        app.add_middleware(RateLimitMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(","),
@@ -288,6 +295,7 @@ def create_app() -> FastAPI:
     # ── Import & register routers ──
     from api.routes import router as health_router
     from api.routes.auth_routes import router as auth_router
+    from api.routes.users import router as users_router
     from api.routes.council import router as council_router
     from api.routes.ide import router as ide_router
     from api.routes.erp import router as erp_router
@@ -296,9 +304,16 @@ def create_app() -> FastAPI:
     from api.routes.checkpoints import router as checkpoint_router
     from api.routes.ideas import router as ideas_router
     from api.routes.admin import router as admin_router
+    from api.routes.rtx4090 import router as rtx4090_router
+    from api.routes.community import router as community_router
+    try:
+        from mobile.api.mobile_routes import router as mobile_router
+    except ImportError:
+        mobile_router = None
 
     app.include_router(health_router)
     app.include_router(auth_router)
+    app.include_router(users_router)
     app.include_router(council_router)
     app.include_router(ide_router)
     app.include_router(erp_router)
@@ -307,6 +322,10 @@ def create_app() -> FastAPI:
     app.include_router(checkpoint_router)
     app.include_router(ideas_router)
     app.include_router(admin_router)
+    app.include_router(rtx4090_router)
+    app.include_router(community_router, prefix="/api/v1")
+    if mobile_router:
+        app.include_router(mobile_router, prefix="/api/v1")
 
     # Include orchestrator router (existing separate module)
     try:
@@ -326,9 +345,24 @@ def create_app() -> FastAPI:
         async def serve_index():
             return FileResponse("ui/dist/index.html")
 
+        # Define excluded paths for SPA catch-all
+        # This prevents the catch-all from interfering with API and system routes
+        EXCLUDED_PATHS = {
+            "api", "docs", "redoc", "openapi.json",
+            "health", "ready", "metrics", "static",
+            "admin", "auth", "test", "debug", "api/v1"
+        }
+        
         @app.get("/{path:path}")
         async def serve_spa(path: str):
-            if path.startswith("api/") or path in ("docs", "redoc", "openapi.json", "health", "ready", "metrics"):
+            """
+            Serve SPA for all non-API routes.
+            
+            SECURITY NOTE: EXCLUDED_PATHS must be updated if new API routes
+            are added that don't start with 'api/'.
+            """
+            # Check if path starts with any excluded prefix
+            if any(path.startswith(p) for p in EXCLUDED_PATHS):
                 from fastapi import HTTPException
                 raise HTTPException(404, "Not Found")
             return FileResponse("ui/dist/index.html")

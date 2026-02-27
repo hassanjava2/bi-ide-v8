@@ -2,6 +2,7 @@
 Error Handling Middleware - معالجة الأخطاء الموحدة
 """
 
+import os
 import time
 import traceback
 from datetime import datetime
@@ -37,13 +38,16 @@ class ErrorHandlingMiddleware(BaseHTTPMiddleware):
             print(f"❌ [{error_id}] Unhandled error on {request.method} {request.url.path}: {e}")
             traceback.print_exc()
 
+            # SECURITY FIX: Don't expose error details in production
+            is_production = os.getenv("ENVIRONMENT", "development").lower() == "production"
+            
             return JSONResponse(
                 status_code=500,
                 content={
                     "error": "Internal Server Error",
                     "error_id": error_id,
-                    "message": str(e),
-                    "path": str(request.url.path),
+                    "message": "An unexpected error occurred. Please try again later." if is_production else str(e),
+                    "path": str(request.url.path) if not is_production else None,
                     "timestamp": datetime.now().isoformat(),
                     "duration_ms": round(duration_ms, 2),
                 },

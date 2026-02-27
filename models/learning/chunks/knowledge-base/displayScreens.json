@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-30T18:47:11.783Z",
+  "categories": {
+    "traditional": [
+      "CRT (أنبوب الأشعة الكاثودية)",
+      "LCD (الكريستال السائل)",
+      "LED (إضاءة خلفية LED)",
+      "OLED (الثنائي العضوي الباعث للضوء)",
+      "QLED (النقاط الكمية)",
+      "Mini-LED",
+      "MicroLED",
+      "Plasma (البلازما)"
+    ],
+    "smart": [
+      "Smart TV أنظمة التشغيل (webOS, Tizen, Google TV)",
+      "الاتصال (WiFi, Bluetooth, HDMI)",
+      "المساعدات الصوتية (Alexa, Google, Bixby)",
+      "Amazon Echo Show",
+      "Google Nest Hub",
+      "Smart Monitors"
+    ],
+    "touchScreens": [
+      "شاشات اللمس السعوية (Capacitive)",
+      "شاشات اللمس المقاومية (Resistive)",
+      "موجات صوتية سطحية (SAW)",
+      "الأشعة تحت الحمراء (IR)",
+      "فوق صوتية (Ultrasonic)",
+      "بصرية (Optical Imaging)"
+    ],
+    "touchTechnology": [
+      "Force Touch / 3D Touch",
+      "Haptic Feedback",
+      "Palm Rejection",
+      "Hover Detection",
+      "In-Display Fingerprint"
+    ],
+    "stylus": [
+      "Apple Pencil",
+      "Samsung S Pen",
+      "Wacom EMR",
+      "Microsoft Surface Pen",
+      "Active vs Passive Stylus"
+    ]
+  },
+  "totalExamples": 51
+}

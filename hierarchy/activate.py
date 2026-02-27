@@ -5,15 +5,14 @@
 
 import sys
 import os
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
 import json
 import asyncio
 from typing import Dict, List, Any
 from datetime import datetime
 
-# Import Hierarchy (relative)
+# Import Hierarchy
 from hierarchy import ai_hierarchy, AIHierarchy
 
 

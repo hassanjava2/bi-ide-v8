@@ -1,0 +1,287 @@
+{
+  "devops": [
+    "topics.kubernetes pods",
+    "topics.github actions",
+    "topics.terraform basics",
+    "topics.nginx configuration",
+    "topics.docker compose",
+    "topics.logging best practices",
+    "topics.vercel deployment",
+    "topics.fly.io deployment",
+    "topics.argocd gitops"
+  ],
+  "javascript": [
+    "topics.async await patterns",
+    "topics.javascript promises",
+    "topics.event loop",
+    "topics.javascript closures",
+    "topics.es6 modules",
+    "topics.prototype chain",
+    "topics.event loop mechanism",
+    "topics.qwik framework",
+    "topics.solid js",
+    "topics.esbuild bundler",
+    "topics.deno runtime",
+    "topics.prototype inheritance",
+    "topics.vite build tool",
+    "topics.turbopack",
+    "topics.astro framework",
+    "topics.es6 destructuring",
+    "topics.javascript modules",
+    "topics.bun javascript",
+    "topics.modern javascript tricks",
+    "topics.advanced javascript tutorial",
+    "topics.practical javascript tutorial",
+    "topics.best practices javascript tricks",
+    "topics.beginner javascript tricks",
+    "topics.best practices javascript tutorial",
+    "topics.modern javascript tips"
+  ],
+  "security": [
+    "topics.jwt authentication",
+    "topics.xss prevention",
+    "topics.oauth2 flow",
+    "topics.cors configuration",
+    "topics.sql injection prevention",
+    "topics.password hashing",
+    "topics.passkeys authentication",
+    "topics.web crypto api",
+    "topics.rate limiting"
+  ],
+  "nodejs": [
+    "topics.nestjs modules",
+    "topics.node streams",
+    "topics.node worker threads",
+    "topics.express middleware",
+    "topics.fastify framework",
+    "topics.node cluster",
+    "topics.graphql resolvers",
+    "topics.node cluster module",
+    "topics.websocket implementation",
+    "topics.pnpm package manager",
+    "topics.beginner nodejs tutorial",
+    "topics.beginner nodejs patterns",
+    "topics.best practices nodejs patterns",
+    "topics.modern nodejs patterns",
+    "topics.practical nodejs guide",
+    "topics.beginner nodejs tricks",
+    "topics.practical nodejs examples",
+    "topics.advanced nodejs tips",
+    "topics.modern nodejs tutorial"
+  ],
+  "css": [
+    "topics.css grid layout",
+    "topics.css flexbox",
+    "topics.css variables",
+    "topics.tailwind css",
+    "topics.css animations",
+    "topics.responsive design",
+    "topics.best practices css tricks",
+    "topics.modern css examples",
+    "topics.practical css patterns",
+    "topics.modern css tips",
+    "topics.beginner css tricks",
+    "topics.best practices css patterns",
+    "topics.practical css tricks",
+    "topics.beginner css examples",
+    "topics.advanced css patterns",
+    "topics.modern css tutorial"
+  ],
+  "react": [
+    "topics.redux toolkit",
+    "topics.next.js app router",
+    "topics.react suspense",
+    "topics.react server components",
+    "topics.react context api",
+    "topics.react hooks",
+    "topics.react query",
+    "topics.next.js routing",
+    "topics.react memo optimization",
+    "topics.remix framework",
+    "topics.useEffect cleanup",
+    "topics.advanced react tricks",
+    "topics.advanced react tips",
+    "topics.beginner react tricks",
+    "topics.practical react examples",
+    "topics.advanced react guide",
+    "topics.modern react tips",
+    "topics.modern react examples",
+    "topics.beginner react patterns",
+    "topics.modern react patterns",
+    "topics.best practices react patterns",
+    "topics.advanced react patterns"
+  ],
+  "database": [
+    "topics.prisma orm",
+    "topics.mongodb aggregation",
+    "topics.redis caching",
+    "topics.database indexing",
+    "topics.sql optimization",
+    "topics.postgresql json",
+    "topics.database normalization",
+    "topics.planetscale database",
+    "topics.drizzle orm",
+    "topics.supabase backend",
+    "topics.advanced database guide",
+    "topics.modern database patterns",
+    "topics.modern database guide",
+    "topics.practical database tips",
+    "topics.practical database guide",
+    "topics.best practices database guide",
+    "topics.best practices database tips",
+    "topics.modern database tricks",
+    "topics.advanced database patterns"
+  ],
+  "cloud": [
+    "topics.serverless framework",
+    "topics.aws s3",
+    "topics.aws lambda",
+    "topics.cloud functions",
+    "topics.cloudflare workers",
+    "topics.aws s3 operations",
+    "topics.edge functions"
+  ],
+  "ai": [
+    "topics.neural networks",
+    "topics.machine learning basics",
+    "topics.nlp fundamentals",
+    "topics.tensorflow basics",
+    "topics.neural networks intro",
+    "topics.openai api",
+    "topics.llm fine tuning",
+    "topics.langchain framework",
+    "topics.rag architecture",
+    "topics.prompt engineering",
+    "topics.huggingface transformers",
+    "topics.vector databases"
+  ],
+  "architecture": [
+    "topics.domain driven design",
+    "topics.design patterns",
+    "topics.solid principles",
+    "topics.clean architecture",
+    "topics.microservices patterns",
+    "topics.event sourcing",
+    "topics.saga pattern",
+    "topics.api gateway",
+    "topics.circuit breaker",
+    "topics.cqrs pattern"
+  ],
+  "git": [
+    "topics.git rebase",
+    "topics.conventional commits",
+    "topics.git hooks",
+    "topics.git merge strategies",
+    "topics.git bisect"
+  ],
+  "typescript": [
+    "topics.typescript interfaces",
+    "topics.typescript generics",
+    "topics.trpc api",
+    "topics.typescript utility types",
+    "topics.typescript decorators",
+    "topics.zod validation",
+    "topics.advanced typescript tips",
+    "topics.modern typescript guide",
+    "topics.best practices typescript examples",
+    "topics.beginner typescript examples",
+    "topics.best practices typescript tricks",
+    "topics.modern typescript examples",
+    "topics.practical typescript patterns"
+  ],
+  "python": [
+    "topics.python decorators",
+    "topics.fastapi framework",
+    "topics.django orm",
+    "topics.python async",
+    "topics.python type hints",
+    "topics.python async await",
+    "topics.beginner python guide",
+    "topics.modern python tricks",
+    "topics.practical python patterns",
+    "topics.beginner python tips",
+    "topics.practical python examples",
+    "topics.practical python guide",
+    "topics.modern python tutorial"
+  ],
+  "testing": [
+    "topics.test driven development",
+    "topics.jest testing",
+    "topics.unit testing patterns",
+    "topics.cypress e2e",
+    "topics.mocking strategies",
+    "topics.test coverage",
+    "topics.vitest testing",
+    "topics.cypress e2e testing",
+    "topics.playwright testing"
+  ],
+  "performance": [
+    "topics.web performance optimization",
+    "topics.code profiling",
+    "topics.memory management",
+    "topics.web performance",
+    "topics.caching strategies"
+  ],
+  "accessibility": [
+    "topics.accessibility best practices"
+  ],
+  "pwa": [
+    "topics.progressive web apps"
+  ],
+  "realtime": [
+    "topics.web sockets real time"
+  ],
+  "api": [
+    "topics.graphql basics",
+    "topics.rest api design"
+  ],
+  "patterns": [
+    "topics.error handling patterns"
+  ],
+  "practices": [
+    "topics.code review guidelines",
+    "topics.refactoring techniques"
+  ],
+  "docker": [
+    "topics.docker networking",
+    "topics.docker volumes"
+  ],
+  "linux": [
+    "topics.linux bash",
+    "topics.shell scripting",
+    "topics.systemd services",
+    "topics.linux permissions"
+  ],
+  "sql": [
+    "topics.sql joins advanced",
+    "topics.sql window functions"
+  ],
+  "kubernetes": [
+    "topics.helm charts",
+    "topics.kubernetes services",
+    "topics.kubernetes ingress"
+  ],
+  "html": [
+    "topics.htmx framework"
+  ],
+  "rust": [
+    "topics.rust programming"
+  ],
+  "web": [
+    "topics.webassembly wasm",
+    "topics.service workers",
+    "topics.web components"
+  ],
+  "go": [
+    "topics.go concurrency"
+  ],
+  "svelte": [
+    "topics.svelte reactivity"
+  ],
+  "vue": [
+    "topics.vue composition api"
+  ],
+  "mongodb": [
+    "topics.mongodb indexing"
+  ]
+}

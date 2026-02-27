@@ -16,7 +16,6 @@ Technical:
 - خبير الذكاء الاصطناعي (AI/ML)
 - خبير الأمان (Security)
 """
-import sys; sys.path.insert(0, '.'); import encoding_fix; encoding_fix.safe_print("")
 
 from enum import Enum
 from dataclasses import dataclass, field

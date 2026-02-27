@@ -1,0 +1,43 @@
+{
+  "originalFile": "D:\\bi ide\\data\\learned-knowledge.json",
+  "optimizedAt": "2026-02-02T11:18:10.597Z",
+  "originalSize": 3962506,
+  "structure": {
+    "type": "object",
+    "isArray": false,
+    "keys": [
+      "topics",
+      "questions",
+      "codeSnippets",
+      "errors",
+      "lastUpdated",
+      "totalLearned"
+    ],
+    "totalRecords": 221,
+    "nestedStructures": {
+      "topics": {
+        "type": "object",
+        "count": 221
+      },
+      "questions": {
+        "type": "object",
+        "count": 0
+      },
+      "codeSnippets": {
+        "type": "object",
+        "count": 0
+      },
+      "errors": {
+        "type": "object",
+        "count": 0
+      }
+    }
+  },
+  "chunksCount": 4,
+  "indexes": [
+    "byTopic",
+    "byCategory",
+    "byDate",
+    "byQuality"
+  ]
+}

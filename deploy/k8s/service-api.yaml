@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bi-ide-api
+  namespace: bi-ide-v8
+  labels:
+    app: bi-ide-api
+    component: backend
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8000
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 50051
+      targetPort: grpc
+      protocol: TCP
+      name: grpc
+  selector:
+    app: bi-ide-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bi-ide-api-headless
+  namespace: bi-ide-v8
+  labels:
+    app: bi-ide-api
+    component: backend
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - port: 8000
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: bi-ide-api

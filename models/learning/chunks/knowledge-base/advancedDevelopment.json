@@ -1,0 +1,69 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-30T19:47:09.109Z",
+  "modules": {
+    "electronSecurity": {
+      "topics": [
+        "Context Isolation - العزل السياقي",
+        "Preload Script - سكربت التحميل المسبق",
+        "contextBridge API",
+        "IPC Communication الآمن",
+        "Security Best Practices",
+        "Migration Guide from Legacy",
+        "CSP (Content Security Policy)",
+        "Sandbox Mode"
+      ],
+      "examples": 18
+    },
+    "jestTesting": {
+      "topics": [
+        "Jest Basics & Configuration",
+        "Matchers (toBe, toEqual, toMatch...)",
+        "Mock Functions (jest.fn)",
+        "Module Mocking (jest.mock)",
+        "Spying (jest.spyOn)",
+        "Async Testing",
+        "Timer Mocking",
+        "Snapshot Testing",
+        "Code Coverage",
+        "React Component Testing",
+        "Best Practices"
+      ],
+      "examples": 13
+    },
+    "leveldbCaching": {
+      "topics": [
+        "LevelDB Basics",
+        "CRUD Operations",
+        "Batch Operations",
+        "Iteration & Prefix Search",
+        "TTL Cache Implementation",
+        "LRU Cache Implementation",
+        "Write-Through Cache",
+        "Electron Integration",
+        "Sublevel Partitioning",
+        "Indexing Patterns",
+        "Performance Optimization"
+      ],
+      "examples": 8
+    },
+    "webpackOptimization": {
+      "topics": [
+        "Webpack Basics & Configuration",
+        "Code Splitting (Entry Points)",
+        "Dynamic Imports",
+        "SplitChunksPlugin",
+        "Tree Shaking",
+        "Bundle Analysis",
+        "Content Hash Caching",
+        "Minification (Terser)",
+        "Compression (Gzip, Brotli)",
+        "Image Optimization",
+        "Electron Multi-target Config",
+        "Hot Module Replacement"
+      ],
+      "examples": 10
+    }
+  },
+  "totalExamples": 49
+}

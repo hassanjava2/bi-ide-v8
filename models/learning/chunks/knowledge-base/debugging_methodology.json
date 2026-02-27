@@ -1,0 +1,97 @@
+{
+  "steps": [
+    {
+      "step": 1,
+      "name": "إعادة إنتاج الخطأ",
+      "description": "حدد الخطوات الدقيقة لإعادة إنتاج الخطأ",
+      "tips": [
+        "سجل الخطوات بالتفصيل",
+        "حدد المدخلات التي تسبب الخطأ",
+        "تحقق من إمكانية إعادة الإنتاج"
+      ]
+    },
+    {
+      "step": 2,
+      "name": "قراءة رسالة الخطأ",
+      "description": "اقرأ رسالة الخطأ و stack trace بعناية",
+      "tips": [
+        "حدد نوع الخطأ",
+        "حدد الملف ورقم السطر",
+        "اتبع stack trace من الأسفل للأعلى"
+      ]
+    },
+    {
+      "step": 3,
+      "name": "عزل المشكلة",
+      "description": "حدد أصغر جزء من الكود يسبب الخطأ",
+      "tips": [
+        "استخدم binary search (علق نصف الكود)",
+        "أنشئ minimal reproduction",
+        "اختبر كل جزء منفرداً"
+      ]
+    },
+    {
+      "step": 4,
+      "name": "فحص البيانات",
+      "description": "تحقق من قيم المتغيرات",
+      "tips": [
+        "استخدم console.log / print",
+        "استخدم debugger و breakpoints",
+        "تحقق من الأنواع والقيم"
+      ]
+    },
+    {
+      "step": 5,
+      "name": "البحث عن حلول",
+      "description": "ابحث عن الخطأ أونلاين",
+      "tips": [
+        "ابحث عن رسالة الخطأ بالضبط",
+        "راجع Stack Overflow",
+        "راجع documentation الرسمي"
+      ]
+    },
+    {
+      "step": 6,
+      "name": "تطبيق الحل",
+      "description": "طبق الإصلاح واختبره",
+      "tips": [
+        "أصلح بأقل تغيير ممكن",
+        "اختبر الإصلاح",
+        "تأكد من عدم كسر شيء آخر"
+      ]
+    },
+    {
+      "step": 7,
+      "name": "منع التكرار",
+      "description": "أضف اختبارات لمنع تكرار الخطأ",
+      "tips": [
+        "اكتب unit test للحالة",
+        "أضف validation",
+        "وثّق الخطأ والحل"
+      ]
+    }
+  ],
+  "debugging_tools": {
+    "javascript": [
+      "console.log(), console.table(), console.trace()",
+      "debugger statement",
+      "Chrome DevTools",
+      "VS Code Debugger",
+      "Node.js --inspect"
+    ],
+    "python": [
+      "print()",
+      "pdb (Python Debugger)",
+      "breakpoint() # Python 3.7+",
+      "VS Code / PyCharm Debugger",
+      "logging module"
+    ],
+    "general": [
+      "Breakpoints",
+      "Step over / Step into / Step out",
+      "Watch expressions",
+      "Call stack inspection",
+      "Variable inspection"
+    ]
+  }
+}

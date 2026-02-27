@@ -1,0 +1,3242 @@
+{
+  "version": "2.0",
+  "metadata": {
+    "created": 1769833285589,
+    "lastUpdated": 1770032045521,
+    "lastBackup": null,
+    "totalRecords": 199
+  },
+  "topics": {
+    "kubernetes pods": {
+      "topic": "kubernetes pods",
+      "originalName": "kubernetes pods",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769833291994,
+      "lastLearned": 1769833291994,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "async await patterns": {
+      "topic": "async await patterns",
+      "originalName": "async await patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769833295386,
+      "lastLearned": 1769833295386,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "javascript promises": {
+      "topic": "javascript promises",
+      "originalName": "javascript promises",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769833298644,
+      "lastLearned": 1769833298644,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "jwt authentication": {
+      "topic": "jwt authentication",
+      "originalName": "jwt authentication",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769833301922,
+      "lastLearned": 1769833301922,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "nestjs modules": {
+      "topic": "nestjs modules",
+      "originalName": "nestjs modules",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769833305083,
+      "lastLearned": 1769833305083,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "css grid layout": {
+      "topic": "css grid layout",
+      "originalName": "css grid layout",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769833825357,
+      "lastLearned": 1769833825357,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "redux toolkit": {
+      "topic": "redux toolkit",
+      "originalName": "redux toolkit",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769833828464,
+      "lastLearned": 1769833828464,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "event loop": {
+      "topic": "event loop",
+      "originalName": "event loop",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769833831717,
+      "lastLearned": 1769833831717,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "prisma orm": {
+      "topic": "prisma orm",
+      "originalName": "prisma orm",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834069459,
+      "lastLearned": 1769834069459,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "github actions": {
+      "topic": "github actions",
+      "originalName": "github actions",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834072705,
+      "lastLearned": 1769834072705,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "node streams": {
+      "topic": "node streams",
+      "originalName": "node streams",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834076035,
+      "lastLearned": 1769834076035,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "nextjs app router": {
+      "topic": "nextjs app router",
+      "originalName": "nextjs app router",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834253617,
+      "lastLearned": 1769834253617,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "serverless framework": {
+      "topic": "serverless framework",
+      "originalName": "serverless framework",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834256880,
+      "lastLearned": 1769834256880,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "neural networks": {
+      "topic": "neural networks",
+      "originalName": "neural networks",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834260073,
+      "lastLearned": 1769834260073,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "terraform basics": {
+      "topic": "terraform basics",
+      "originalName": "terraform basics",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834394150,
+      "lastLearned": 1769834394150,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "node worker threads": {
+      "topic": "node worker threads",
+      "originalName": "node worker threads",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834397320,
+      "lastLearned": 1769834397320,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "javascript closures": {
+      "topic": "javascript closures",
+      "originalName": "javascript closures",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834400566,
+      "lastLearned": 1769834400566,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "express middleware": {
+      "topic": "express middleware",
+      "originalName": "express middleware",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834697272,
+      "lastLearned": 1769834697272,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "mongodb aggregation": {
+      "topic": "mongodb aggregation",
+      "originalName": "mongodb aggregation",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834701036,
+      "lastLearned": 1769834701036,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "nginx configuration": {
+      "topic": "nginx configuration",
+      "originalName": "nginx configuration",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834704392,
+      "lastLearned": 1769834704392,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "react suspense": {
+      "topic": "react suspense",
+      "originalName": "react suspense",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769834997361,
+      "lastLearned": 1769834997361,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "typescript interfaces": {
+      "topic": "typescript interfaces",
+      "originalName": "typescript interfaces",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769835000639,
+      "lastLearned": 1769835000639,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "typescript generics": {
+      "topic": "typescript generics",
+      "originalName": "typescript generics",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769835003821,
+      "lastLearned": 1769835003821,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "css flexbox": {
+      "topic": "css flexbox",
+      "originalName": "css flexbox",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769835215892,
+      "lastLearned": 1769835215892,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "react server components": {
+      "topic": "react server components",
+      "originalName": "react server components",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769835219375,
+      "lastLearned": 1769835219375,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "es6 modules": {
+      "topic": "es6 modules",
+      "originalName": "es6 modules",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769835222507,
+      "lastLearned": 1769835222507,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "python decorators": {
+      "topic": "python decorators",
+      "originalName": "python decorators",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769835515930,
+      "lastLearned": 1769835515930,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "test driven development": {
+      "topic": "test driven development",
+      "originalName": "test driven development",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769835521573,
+      "lastLearned": 1769835521573,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "redis caching": {
+      "topic": "redis caching",
+      "originalName": "redis caching",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769835818812,
+      "lastLearned": 1769835818812,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "database indexing": {
+      "topic": "database indexing",
+      "originalName": "database indexing",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769835821640,
+      "lastLearned": 1769835821640,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "xss prevention": {
+      "topic": "xss prevention",
+      "originalName": "xss prevention",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769836115619,
+      "lastLearned": 1769836115619,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "sql optimization": {
+      "topic": "sql optimization",
+      "originalName": "sql optimization",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769836118474,
+      "lastLearned": 1769836118474,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "css variables": {
+      "topic": "css variables",
+      "originalName": "css variables",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769836121324,
+      "lastLearned": 1769836121324,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "oauth2 flow": {
+      "topic": "oauth2 flow",
+      "originalName": "oauth2 flow",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769836421118,
+      "lastLearned": 1769836421118,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "cors configuration": {
+      "topic": "cors configuration",
+      "originalName": "cors configuration",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837015671,
+      "lastLearned": 1769837015671,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "jest testing": {
+      "topic": "jest testing",
+      "originalName": "jest testing",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837018584,
+      "lastLearned": 1769837018584,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "design patterns": {
+      "topic": "design patterns",
+      "originalName": "design patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837021583,
+      "lastLearned": 1769837021583,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "postgresql json": {
+      "topic": "postgresql json",
+      "originalName": "postgresql json",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837315939,
+      "lastLearned": 1769837315939,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "solid principles": {
+      "topic": "solid principles",
+      "originalName": "solid principles",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837319131,
+      "lastLearned": 1769837319131,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "conventional commits": {
+      "topic": "conventional commits",
+      "originalName": "conventional commits",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837322012,
+      "lastLearned": 1769837322012,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "prototype chain": {
+      "topic": "prototype chain",
+      "originalName": "prototype chain",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837616157,
+      "lastLearned": 1769837616157,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "docker compose": {
+      "topic": "docker compose",
+      "originalName": "docker compose",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837619402,
+      "lastLearned": 1769837619402,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "fastify framework": {
+      "topic": "fastify framework",
+      "originalName": "fastify framework",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837622917,
+      "lastLearned": 1769837622917,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "sql injection prevention": {
+      "topic": "sql injection prevention",
+      "originalName": "sql injection prevention",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837915915,
+      "lastLearned": 1769837915915,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "aws s3": {
+      "topic": "aws s3",
+      "originalName": "aws s3",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837919018,
+      "lastLearned": 1769837919018,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "clean architecture": {
+      "topic": "clean architecture",
+      "originalName": "clean architecture",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769837922276,
+      "lastLearned": 1769837922276,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "fastapi framework": {
+      "topic": "fastapi framework",
+      "originalName": "fastapi framework",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769838219423,
+      "lastLearned": 1769838219423,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "microservices patterns": {
+      "topic": "microservices patterns",
+      "originalName": "microservices patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769838222672,
+      "lastLearned": 1769838222672,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "tailwind css": {
+      "topic": "tailwind css",
+      "originalName": "tailwind css",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769838515599,
+      "lastLearned": 1769838515599,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "django orm": {
+      "topic": "django orm",
+      "originalName": "django orm",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769838518425,
+      "lastLearned": 1769838518425,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "css animations": {
+      "topic": "css animations",
+      "originalName": "css animations",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769838816194,
+      "lastLearned": 1769838816194,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "git hooks": {
+      "topic": "git hooks",
+      "originalName": "git hooks",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769838821709,
+      "lastLearned": 1769838821709,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "web performance optimization": {
+      "topic": "web performance optimization",
+      "originalName": "web performance optimization",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769839118680,
+      "lastLearned": 1769839118680,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "accessibility best practices": {
+      "topic": "accessibility best practices",
+      "originalName": "accessibility best practices",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769839121522,
+      "lastLearned": 1769839121522,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "git merge strategies": {
+      "topic": "git merge strategies",
+      "originalName": "git merge strategies",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769839418941,
+      "lastLearned": 1769839418941,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "unit testing patterns": {
+      "topic": "unit testing patterns",
+      "originalName": "unit testing patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769840015657,
+      "lastLearned": 1769840015657,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "python async": {
+      "topic": "python async",
+      "originalName": "python async",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769840018548,
+      "lastLearned": 1769840018548,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "cypress e2e": {
+      "topic": "cypress e2e",
+      "originalName": "cypress e2e",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769840021545,
+      "lastLearned": 1769840021545,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "python type hints": {
+      "topic": "python type hints",
+      "originalName": "python type hints",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769840315612,
+      "lastLearned": 1769840315612,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "nlp fundamentals": {
+      "topic": "nlp fundamentals",
+      "originalName": "nlp fundamentals",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769840616487,
+      "lastLearned": 1769840616487,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "react context api": {
+      "topic": "react context api",
+      "originalName": "react context api",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769840619620,
+      "lastLearned": 1769840619620,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "tensorflow basics": {
+      "topic": "tensorflow basics",
+      "originalName": "tensorflow basics",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769840915961,
+      "lastLearned": 1769840915961,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "node cluster": {
+      "topic": "node cluster",
+      "originalName": "node cluster",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769840919488,
+      "lastLearned": 1769840919488,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "react hooks": {
+      "topic": "react hooks",
+      "originalName": "react hooks",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769840922647,
+      "lastLearned": 1769840922647,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "react query": {
+      "topic": "react query",
+      "originalName": "react query",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769841215932,
+      "lastLearned": 1769841215932,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "aws lambda": {
+      "topic": "aws lambda",
+      "originalName": "aws lambda",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769841219109,
+      "lastLearned": 1769841219109,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "progressive web apps": {
+      "topic": "progressive web apps",
+      "originalName": "progressive web apps",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769841222288,
+      "lastLearned": 1769841222288,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "refactoring techniques": {
+      "topic": "refactoring techniques",
+      "originalName": "refactoring techniques",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769841753806,
+      "lastLearned": 1769841753806,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "password hashing": {
+      "topic": "password hashing",
+      "originalName": "password hashing",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769841757120,
+      "lastLearned": 1769841757120,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "python async await": {
+      "topic": "python async await",
+      "originalName": "python async await",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769841760468,
+      "lastLearned": 1769841760468,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "git bisect": {
+      "topic": "git bisect",
+      "originalName": "git bisect",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842070452,
+      "lastLearned": 1769842070452,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "responsive design": {
+      "topic": "responsive design",
+      "originalName": "responsive design",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842073967,
+      "lastLearned": 1769842073967,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "nextjs routing": {
+      "topic": "nextjs routing",
+      "originalName": "nextjs routing",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842077132,
+      "lastLearned": 1769842077132,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "test coverage": {
+      "topic": "test coverage",
+      "originalName": "test coverage",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842132037,
+      "lastLearned": 1769842132037,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "trpc api": {
+      "topic": "trpc api",
+      "originalName": "trpc api",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842135200,
+      "lastLearned": 1769842135200,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "vitest testing": {
+      "topic": "vitest testing",
+      "originalName": "vitest testing",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842138487,
+      "lastLearned": 1769842138487,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "qwik framework": {
+      "topic": "qwik framework",
+      "originalName": "qwik framework",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842206971,
+      "lastLearned": 1769842206971,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "helm charts": {
+      "topic": "helm charts",
+      "originalName": "helm charts",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842210125,
+      "lastLearned": 1769842210125,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "solid js": {
+      "topic": "solid js",
+      "originalName": "solid js",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842213430,
+      "lastLearned": 1769842213430,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "cloud functions": {
+      "topic": "cloud functions",
+      "originalName": "cloud functions",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842545507,
+      "lastLearned": 1769842545507,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "esbuild bundler": {
+      "topic": "esbuild bundler",
+      "originalName": "esbuild bundler",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842548846,
+      "lastLearned": 1769842548846,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "event sourcing": {
+      "topic": "event sourcing",
+      "originalName": "event sourcing",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842552166,
+      "lastLearned": 1769842552166,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "database normalization": {
+      "topic": "database normalization",
+      "originalName": "database normalization",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842769354,
+      "lastLearned": 1769842769354,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "vercel deployment": {
+      "topic": "vercel deployment",
+      "originalName": "vercel deployment",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842774915,
+      "lastLearned": 1769842774915,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "neural networks intro": {
+      "topic": "neural networks intro",
+      "originalName": "neural networks intro",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842989306,
+      "lastLearned": 1769842989306,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "passkeys authentication": {
+      "topic": "passkeys authentication",
+      "originalName": "passkeys authentication",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842992495,
+      "lastLearned": 1769842992495,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "openai api": {
+      "topic": "openai api",
+      "originalName": "openai api",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769842995642,
+      "lastLearned": 1769842995642,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "web crypto api": {
+      "topic": "web crypto api",
+      "originalName": "web crypto api",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843289069,
+      "lastLearned": 1769843289069,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "deno runtime": {
+      "topic": "deno runtime",
+      "originalName": "deno runtime",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843291931,
+      "lastLearned": 1769843291931,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "kubernetes services": {
+      "topic": "kubernetes services",
+      "originalName": "kubernetes services",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843489791,
+      "lastLearned": 1769843489791,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "prototype inheritance": {
+      "topic": "prototype inheritance",
+      "originalName": "prototype inheritance",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843492996,
+      "lastLearned": 1769843492996,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "cloudflare workers": {
+      "topic": "cloudflare workers",
+      "originalName": "cloudflare workers",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843496183,
+      "lastLearned": 1769843496183,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "vite build tool": {
+      "topic": "vite build tool",
+      "originalName": "vite build tool",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843789344,
+      "lastLearned": 1769843789344,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "planetscale database": {
+      "topic": "planetscale database",
+      "originalName": "planetscale database",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843792100,
+      "lastLearned": 1769843792100,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "typescript utility types": {
+      "topic": "typescript utility types",
+      "originalName": "typescript utility types",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843797217,
+      "lastLearned": 1769843797217,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "drizzle orm": {
+      "topic": "drizzle orm",
+      "originalName": "drizzle orm",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843952503,
+      "lastLearned": 1769843952503,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "shell scripting": {
+      "topic": "shell scripting",
+      "originalName": "shell scripting",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843955307,
+      "lastLearned": 1769843955307,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "docker volumes": {
+      "topic": "docker volumes",
+      "originalName": "docker volumes",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769843958095,
+      "lastLearned": 1769843958095,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "supabase backend": {
+      "topic": "supabase backend",
+      "originalName": "supabase backend",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844278052,
+      "lastLearned": 1769844278052,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "sql window functions": {
+      "topic": "sql window functions",
+      "originalName": "sql window functions",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844280940,
+      "lastLearned": 1769844280940,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "systemd services": {
+      "topic": "systemd services",
+      "originalName": "systemd services",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844284739,
+      "lastLearned": 1769844284739,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "htmx framework": {
+      "topic": "htmx framework",
+      "originalName": "htmx framework",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844391604,
+      "lastLearned": 1769844391604,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "astro framework": {
+      "topic": "astro framework",
+      "originalName": "astro framework",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844394864,
+      "lastLearned": 1769844394864,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "api gateway": {
+      "topic": "api gateway",
+      "originalName": "api gateway",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844398086,
+      "lastLearned": 1769844398086,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "llm fine tuning": {
+      "topic": "llm fine tuning",
+      "originalName": "llm fine tuning",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844770888,
+      "lastLearned": 1769844770888,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "rate limiting": {
+      "topic": "rate limiting",
+      "originalName": "rate limiting",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844774146,
+      "lastLearned": 1769844774146,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "go concurrency": {
+      "topic": "go concurrency",
+      "originalName": "go concurrency",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844777918,
+      "lastLearned": 1769844777918,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "langchain framework": {
+      "topic": "langchain framework",
+      "originalName": "langchain framework",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844881594,
+      "lastLearned": 1769844881594,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "svelte reactivity": {
+      "topic": "svelte reactivity",
+      "originalName": "svelte reactivity",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844884803,
+      "lastLearned": 1769844884803,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "es6 destructuring": {
+      "topic": "es6 destructuring",
+      "originalName": "es6 destructuring",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769844887933,
+      "lastLearned": 1769844887933,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "node cluster module": {
+      "topic": "node cluster module",
+      "originalName": "node cluster module",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845182070,
+      "lastLearned": 1769845182070,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "cypress e2e testing": {
+      "topic": "cypress e2e testing",
+      "originalName": "cypress e2e testing",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845185426,
+      "lastLearned": 1769845185426,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "edge functions": {
+      "topic": "edge functions",
+      "originalName": "edge functions",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845188558,
+      "lastLearned": 1769845188558,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "vue composition api": {
+      "topic": "vue composition api",
+      "originalName": "vue composition api",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845313770,
+      "lastLearned": 1769845313770,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "websocket implementation": {
+      "topic": "websocket implementation",
+      "originalName": "websocket implementation",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845316991,
+      "lastLearned": 1769845316991,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "linux permissions": {
+      "topic": "linux permissions",
+      "originalName": "linux permissions",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845320522,
+      "lastLearned": 1769845320522,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "remix framework": {
+      "topic": "remix framework",
+      "originalName": "remix framework",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845415670,
+      "lastLearned": 1769845415670,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "javascript modules": {
+      "topic": "javascript modules",
+      "originalName": "javascript modules",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845421233,
+      "lastLearned": 1769845421233,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "memory management": {
+      "topic": "memory management",
+      "originalName": "memory management",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845594901,
+      "lastLearned": 1769845594901,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "web performance": {
+      "topic": "web performance",
+      "originalName": "web performance",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845598162,
+      "lastLearned": 1769845598162,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "circuit breaker": {
+      "topic": "circuit breaker",
+      "originalName": "circuit breaker",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845601368,
+      "lastLearned": 1769845601368,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "playwright testing": {
+      "topic": "playwright testing",
+      "originalName": "playwright testing",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845695384,
+      "lastLearned": 1769845695384,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "mongodb indexing": {
+      "topic": "mongodb indexing",
+      "originalName": "mongodb indexing",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845699049,
+      "lastLearned": 1769845699049,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "service workers": {
+      "topic": "service workers",
+      "originalName": "service workers",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845702232,
+      "lastLearned": 1769845702232,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "caching strategies": {
+      "topic": "caching strategies",
+      "originalName": "caching strategies",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845967375,
+      "lastLearned": 1769845967375,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "bun javascript": {
+      "topic": "bun javascript",
+      "originalName": "bun javascript",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845970639,
+      "lastLearned": 1769845970639,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "rag architecture": {
+      "topic": "rag architecture",
+      "originalName": "rag architecture",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769845973863,
+      "lastLearned": 1769845973863,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "kubernetes ingress": {
+      "topic": "kubernetes ingress",
+      "originalName": "kubernetes ingress",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769846157267,
+      "lastLearned": 1769846157267,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "prompt engineering": {
+      "topic": "prompt engineering",
+      "originalName": "prompt engineering",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769846160508,
+      "lastLearned": 1769846160508,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "flyio deployment": {
+      "topic": "flyio deployment",
+      "originalName": "flyio deployment",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769846163682,
+      "lastLearned": 1769846163682,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "cqrs pattern": {
+      "topic": "cqrs pattern",
+      "originalName": "cqrs pattern",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769846457678,
+      "lastLearned": 1769846457678,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "argocd gitops": {
+      "topic": "argocd gitops",
+      "originalName": "argocd gitops",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769846460963,
+      "lastLearned": 1769846460963,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "zod validation": {
+      "topic": "zod validation",
+      "originalName": "zod validation",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769846464262,
+      "lastLearned": 1769846464262,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "huggingface transformers": {
+      "topic": "huggingface transformers",
+      "originalName": "huggingface transformers",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769846757330,
+      "lastLearned": 1769846757330,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "useeffect cleanup": {
+      "topic": "useeffect cleanup",
+      "originalName": "useeffect cleanup",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769846760536,
+      "lastLearned": 1769846760536,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "web components": {
+      "topic": "web components",
+      "originalName": "web components",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769846764503,
+      "lastLearned": 1769846764503,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "vector databases": {
+      "topic": "vector databases",
+      "originalName": "vector databases",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847057856,
+      "lastLearned": 1769847057856,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "pnpm package manager": {
+      "topic": "pnpm package manager",
+      "originalName": "pnpm package manager",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847061030,
+      "lastLearned": 1769847061030,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced react tricks": {
+      "topic": "advanced react tricks",
+      "originalName": "advanced react tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.65,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847064266,
+      "lastLearned": 1769847064266,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced database guide": {
+      "topic": "advanced database guide",
+      "originalName": "advanced database guide",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847357471,
+      "lastLearned": 1769847357471,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "beginner python guide": {
+      "topic": "beginner python guide",
+      "originalName": "beginner python guide",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847360750,
+      "lastLearned": 1769847360750,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern javascript tricks": {
+      "topic": "modern javascript tricks",
+      "originalName": "modern javascript tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847364001,
+      "lastLearned": 1769847364001,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices css tricks": {
+      "topic": "best practices css tricks",
+      "originalName": "best practices css tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847657411,
+      "lastLearned": 1769847657411,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "beginner nodejs tutorial": {
+      "topic": "beginner nodejs tutorial",
+      "originalName": "beginner nodejs tutorial",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847660589,
+      "lastLearned": 1769847660589,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern css examples": {
+      "topic": "modern css examples",
+      "originalName": "modern css examples",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847663804,
+      "lastLearned": 1769847663804,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern database patterns": {
+      "topic": "modern database patterns",
+      "originalName": "modern database patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847957660,
+      "lastLearned": 1769847957660,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced react tips": {
+      "topic": "advanced react tips",
+      "originalName": "advanced react tips",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847960933,
+      "lastLearned": 1769847960933,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "beginner react tricks": {
+      "topic": "beginner react tricks",
+      "originalName": "beginner react tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.55,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769847964209,
+      "lastLearned": 1769847964209,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "beginner nodejs patterns": {
+      "topic": "beginner nodejs patterns",
+      "originalName": "beginner nodejs patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.45,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848114898,
+      "lastLearned": 1769848114898,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced typescript tips": {
+      "topic": "advanced typescript tips",
+      "originalName": "advanced typescript tips",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848118078,
+      "lastLearned": 1769848118078,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern typescript guide": {
+      "topic": "modern typescript guide",
+      "originalName": "modern typescript guide",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848121413,
+      "lastLearned": 1769848121413,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical css patterns": {
+      "topic": "practical css patterns",
+      "originalName": "practical css patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848283904,
+      "lastLearned": 1769848283904,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices nodejs patterns": {
+      "topic": "best practices nodejs patterns",
+      "originalName": "best practices nodejs patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848287053,
+      "lastLearned": 1769848287053,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical react examples": {
+      "topic": "practical react examples",
+      "originalName": "practical react examples",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848290172,
+      "lastLearned": 1769848290172,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern css tips": {
+      "topic": "modern css tips",
+      "originalName": "modern css tips",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848583911,
+      "lastLearned": 1769848583911,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced javascript tutorial": {
+      "topic": "advanced javascript tutorial",
+      "originalName": "advanced javascript tutorial",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848587356,
+      "lastLearned": 1769848587356,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "beginner css tricks": {
+      "topic": "beginner css tricks",
+      "originalName": "beginner css tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848590482,
+      "lastLearned": 1769848590482,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced react guide": {
+      "topic": "advanced react guide",
+      "originalName": "advanced react guide",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848883764,
+      "lastLearned": 1769848883764,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern database guide": {
+      "topic": "modern database guide",
+      "originalName": "modern database guide",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848887442,
+      "lastLearned": 1769848887442,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices css patterns": {
+      "topic": "best practices css patterns",
+      "originalName": "best practices css patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769848890811,
+      "lastLearned": 1769848890811,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical database tips": {
+      "topic": "practical database tips",
+      "originalName": "practical database tips",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769849183881,
+      "lastLearned": 1769849183881,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical javascript tutorial": {
+      "topic": "practical javascript tutorial",
+      "originalName": "practical javascript tutorial",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769849187413,
+      "lastLearned": 1769849187413,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices javascript tricks": {
+      "topic": "best practices javascript tricks",
+      "originalName": "best practices javascript tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769849190924,
+      "lastLearned": 1769849190924,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern nodejs patterns": {
+      "topic": "modern nodejs patterns",
+      "originalName": "modern nodejs patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769849483766,
+      "lastLearned": 1769849483766,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern react tips": {
+      "topic": "modern react tips",
+      "originalName": "modern react tips",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769849487123,
+      "lastLearned": 1769849487123,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern python tricks": {
+      "topic": "modern python tricks",
+      "originalName": "modern python tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769849490045,
+      "lastLearned": 1769849490045,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices typescript examples": {
+      "topic": "best practices typescript examples",
+      "originalName": "best practices typescript examples",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769849784050,
+      "lastLearned": 1769849784050,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical database guide": {
+      "topic": "practical database guide",
+      "originalName": "practical database guide",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769849787531,
+      "lastLearned": 1769849787531,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "beginner javascript tricks": {
+      "topic": "beginner javascript tricks",
+      "originalName": "beginner javascript tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769849790657,
+      "lastLearned": 1769849790657,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical nodejs guide": {
+      "topic": "practical nodejs guide",
+      "originalName": "practical nodejs guide",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769852048847,
+      "lastLearned": 1769852048847,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices javascript tutorial": {
+      "topic": "best practices javascript tutorial",
+      "originalName": "best practices javascript tutorial",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769852053315,
+      "lastLearned": 1769852053315,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "beginner nodejs tricks": {
+      "topic": "beginner nodejs tricks",
+      "originalName": "beginner nodejs tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.65,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769852057133,
+      "lastLearned": 1769852057133,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "beginner typescript examples": {
+      "topic": "beginner typescript examples",
+      "originalName": "beginner typescript examples",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769852348980,
+      "lastLearned": 1769852348980,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices typescript tricks": {
+      "topic": "best practices typescript tricks",
+      "originalName": "best practices typescript tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769852352135,
+      "lastLearned": 1769852352135,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern react examples": {
+      "topic": "modern react examples",
+      "originalName": "modern react examples",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769852355210,
+      "lastLearned": 1769852355210,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical python patterns": {
+      "topic": "practical python patterns",
+      "originalName": "practical python patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769852648955,
+      "lastLearned": 1769852648955,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "beginner python tips": {
+      "topic": "beginner python tips",
+      "originalName": "beginner python tips",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769852652081,
+      "lastLearned": 1769852652081,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices database guide": {
+      "topic": "best practices database guide",
+      "originalName": "best practices database guide",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769852655516,
+      "lastLearned": 1769852655516,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern javascript tips": {
+      "topic": "modern javascript tips",
+      "originalName": "modern javascript tips",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769856051736,
+      "lastLearned": 1769856051736,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern database tricks": {
+      "topic": "modern database tricks",
+      "originalName": "modern database tricks",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.8,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769856054991,
+      "lastLearned": 1769856054991,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced nodejs tips": {
+      "topic": "advanced nodejs tips",
+      "originalName": "advanced nodejs tips",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.45,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769856058166,
+      "lastLearned": 1769856058166,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced css patterns": {
+      "topic": "advanced css patterns",
+      "originalName": "advanced css patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769856378115,
+      "lastLearned": 1769856378115,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices react patterns": {
+      "topic": "best practices react patterns",
+      "originalName": "best practices react patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769856381165,
+      "lastLearned": 1769856381165,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced react patterns": {
+      "topic": "advanced react patterns",
+      "originalName": "advanced react patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769856384309,
+      "lastLearned": 1769856384309,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical typescript patterns": {
+      "topic": "practical typescript patterns",
+      "originalName": "practical typescript patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769856677732,
+      "lastLearned": 1769856677732,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern css tutorial": {
+      "topic": "modern css tutorial",
+      "originalName": "modern css tutorial",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769856681597,
+      "lastLearned": 1769856681597,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical python guide": {
+      "topic": "practical python guide",
+      "originalName": "practical python guide",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1769856684888,
+      "lastLearned": 1769856684888,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices css tips": {
+      "topic": "best practices css tips",
+      "originalName": "best practices css tips",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031092971,
+      "lastLearned": 1770031092971,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical css examples": {
+      "topic": "practical css examples",
+      "originalName": "practical css examples",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031097357,
+      "lastLearned": 1770031097357,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical css tutorial": {
+      "topic": "practical css tutorial",
+      "originalName": "practical css tutorial",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031101182,
+      "lastLearned": 1770031101182,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "practical nodejs tutorial": {
+      "topic": "practical nodejs tutorial",
+      "originalName": "practical nodejs tutorial",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031392553,
+      "lastLearned": 1770031392553,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern python tips": {
+      "topic": "modern python tips",
+      "originalName": "modern python tips",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031395896,
+      "lastLearned": 1770031395896,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "beginner css patterns": {
+      "topic": "beginner css patterns",
+      "originalName": "beginner css patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031399420,
+      "lastLearned": 1770031399420,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "modern css patterns": {
+      "topic": "modern css patterns",
+      "originalName": "modern css patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031692252,
+      "lastLearned": 1770031692252,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced javascript examples": {
+      "topic": "advanced javascript examples",
+      "originalName": "advanced javascript examples",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031695833,
+      "lastLearned": 1770031695833,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "advanced css examples": {
+      "topic": "advanced css examples",
+      "originalName": "advanced css examples",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031699369,
+      "lastLearned": 1770031699369,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices nodejs tutorial": {
+      "topic": "best practices nodejs tutorial",
+      "originalName": "best practices nodejs tutorial",
+      "source": "auto",
+      "category": "general",
+      "quality": 0.75,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031992486,
+      "lastLearned": 1770031992486,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices javascript patterns": {
+      "topic": "best practices javascript patterns",
+      "originalName": "best practices javascript patterns",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031995844,
+      "lastLearned": 1770031995844,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    },
+    "best practices python tutorial": {
+      "topic": "best practices python tutorial",
+      "originalName": "best practices python tutorial",
+      "source": "auto",
+      "category": "general",
+      "quality": 1,
+      "content": [],
+      "relatedTopics": [],
+      "metadata": {},
+      "firstLearned": 1770031999337,
+      "lastLearned": 1770031999337,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ]
+    }
+  },
+  "writingPatterns": {},
+  "errorPatterns": {},
+  "preferences": {
+    "indentation": "spaces",
+    "indentSize": 4,
+    "quotes": "single",
+    "semicolons": true,
+    "namingConvention": "camelCase"
+  },
+  "userModel": {
+    "skillLevel": "intermediate",
+    "preferredLanguages": [],
+    "commonMistakes": [],
+    "strengths": [],
+    "weaknesses": [],
+    "totalSessions": 0,
+    "totalLearningTime": 0
+  },
+  "sessions": [],
+  "stats": {
+    "totalTopics": 199,
+    "totalPatterns": 0,
+    "totalErrors": 0,
+    "totalSessions": 0,
+    "totalLearningTime": 0,
+    "topicsByCategory": {
+      "general": 12
+    },
+    "topicsBySource": {
+      "auto": 12
+    },
+    "qualityDistribution": {
+      "low": 0,
+      "medium": 0,
+      "high": 12
+    },
+    "userModel": {
+      "skillLevel": "intermediate",
+      "preferredLanguages": [],
+      "commonMistakes": [],
+      "strengths": [],
+      "weaknesses": [],
+      "totalSessions": 0,
+      "totalLearningTime": 0
+    },
+    "lastUpdated": 1770032045521
+  }
+}

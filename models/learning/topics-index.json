@@ -1,0 +1,4963 @@
+{
+  "version": "2.0",
+  "timestamp": "2026-02-02T11:33:19.336Z",
+  "topics": [
+    {
+      "topic": "kubernetes pods",
+      "firstLearned": 1769833291993,
+      "lastLearned": 1769833291993,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "devops",
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "async await patterns",
+      "firstLearned": 1769833295385,
+      "lastLearned": 1769833295385,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "javascript promises",
+      "firstLearned": 1769833298644,
+      "lastLearned": 1769833298644,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "jwt authentication",
+      "firstLearned": 1769833301921,
+      "lastLearned": 1769833301921,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "security",
+      "metadata": {
+        "category": "security",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "nestjs modules",
+      "firstLearned": 1769833305083,
+      "lastLearned": 1769833305083,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "css grid layout",
+      "firstLearned": 1769833825356,
+      "lastLearned": 1769833825356,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "redux toolkit",
+      "firstLearned": 1769833828463,
+      "lastLearned": 1769833828463,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "event loop",
+      "firstLearned": 1769833831716,
+      "lastLearned": 1769833831716,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "prisma orm",
+      "firstLearned": 1769834069458,
+      "lastLearned": 1769834069458,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "github actions",
+      "firstLearned": 1769834072704,
+      "lastLearned": 1769834072704,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "devops",
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "node streams",
+      "firstLearned": 1769834076034,
+      "lastLearned": 1769834076034,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "nextjs app router",
+      "firstLearned": 1769834253616,
+      "lastLearned": 1769834253616,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "serverless framework",
+      "firstLearned": 1769834256880,
+      "lastLearned": 1769834256880,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "cloud",
+      "metadata": {
+        "category": "cloud",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "neural networks",
+      "firstLearned": 1769834260072,
+      "lastLearned": 1769834260072,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "machine learning basics",
+      "firstLearned": 1769834328926,
+      "lastLearned": 1769834328926,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "domain driven design",
+      "firstLearned": 1769834332158,
+      "lastLearned": 1769834332158,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "architecture",
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "git rebase",
+      "firstLearned": 1769834335382,
+      "lastLearned": 1769834335382,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "git",
+      "metadata": {
+        "category": "git",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "terraform basics",
+      "firstLearned": 1769834394149,
+      "lastLearned": 1769834394149,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "devops",
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "node worker threads",
+      "firstLearned": 1769834397319,
+      "lastLearned": 1769834397319,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "javascript closures",
+      "firstLearned": 1769834400565,
+      "lastLearned": 1769834400565,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "express middleware",
+      "firstLearned": 1769834697271,
+      "lastLearned": 1769834697271,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "mongodb aggregation",
+      "firstLearned": 1769834701035,
+      "lastLearned": 1769834701035,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "nginx configuration",
+      "firstLearned": 1769834704391,
+      "lastLearned": 1769834704391,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "devops",
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "react suspense",
+      "firstLearned": 1769834997360,
+      "lastLearned": 1769834997360,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "typescript interfaces",
+      "firstLearned": 1769835000638,
+      "lastLearned": 1769835000638,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "typescript generics",
+      "firstLearned": 1769835003820,
+      "lastLearned": 1769835003820,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "css flexbox",
+      "firstLearned": 1769835215892,
+      "lastLearned": 1769835215892,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "react server components",
+      "firstLearned": 1769835219375,
+      "lastLearned": 1769835219375,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "es6 modules",
+      "firstLearned": 1769835222507,
+      "lastLearned": 1769835222507,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "python decorators",
+      "firstLearned": 1769835515930,
+      "lastLearned": 1769835515930,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "test driven development",
+      "firstLearned": 1769835521572,
+      "lastLearned": 1769835521572,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "testing",
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "redis caching",
+      "firstLearned": 1769835818812,
+      "lastLearned": 1769835818812,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "database indexing",
+      "firstLearned": 1769835821639,
+      "lastLearned": 1769835821639,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "xss prevention",
+      "firstLearned": 1769836115619,
+      "lastLearned": 1769836115619,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "security",
+      "metadata": {
+        "category": "security",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "sql optimization",
+      "firstLearned": 1769836118473,
+      "lastLearned": 1769836118473,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "css variables",
+      "firstLearned": 1769836121324,
+      "lastLearned": 1769836121324,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "oauth2 flow",
+      "firstLearned": 1769836421117,
+      "lastLearned": 1769836421117,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "security",
+      "metadata": {
+        "category": "security",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "cors configuration",
+      "firstLearned": 1769837015670,
+      "lastLearned": 1769837015670,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "security",
+      "metadata": {
+        "category": "security",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "jest testing",
+      "firstLearned": 1769837018583,
+      "lastLearned": 1769837018583,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "testing",
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "design patterns",
+      "firstLearned": 1769837021583,
+      "lastLearned": 1769837021583,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "architecture",
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "postgresql json",
+      "firstLearned": 1769837315939,
+      "lastLearned": 1769837315939,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "solid principles",
+      "firstLearned": 1769837319130,
+      "lastLearned": 1769837319130,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "architecture",
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "conventional commits",
+      "firstLearned": 1769837322011,
+      "lastLearned": 1769837322011,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "git",
+      "metadata": {
+        "category": "git",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "prototype chain",
+      "firstLearned": 1769837616156,
+      "lastLearned": 1769837616156,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "docker compose",
+      "firstLearned": 1769837619402,
+      "lastLearned": 1769837619402,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "devops",
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "fastify framework",
+      "firstLearned": 1769837622916,
+      "lastLearned": 1769837622916,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "sql injection prevention",
+      "firstLearned": 1769837915914,
+      "lastLearned": 1769837915914,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "security",
+      "metadata": {
+        "category": "security",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "aws s3",
+      "firstLearned": 1769837919018,
+      "lastLearned": 1769837919018,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "cloud",
+      "metadata": {
+        "category": "cloud",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "clean architecture",
+      "firstLearned": 1769837922276,
+      "lastLearned": 1769837922276,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "architecture",
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "fastapi framework",
+      "firstLearned": 1769838219422,
+      "lastLearned": 1769838219422,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "microservices patterns",
+      "firstLearned": 1769838222672,
+      "lastLearned": 1769838222672,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "architecture",
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "tailwind css",
+      "firstLearned": 1769838515599,
+      "lastLearned": 1769838515599,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "django orm",
+      "firstLearned": 1769838518425,
+      "lastLearned": 1769838518425,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "css animations",
+      "firstLearned": 1769838816193,
+      "lastLearned": 1769838816193,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "git hooks",
+      "firstLearned": 1769838821708,
+      "lastLearned": 1769838821708,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "git",
+      "metadata": {
+        "category": "git",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "web performance optimization",
+      "firstLearned": 1769839118680,
+      "lastLearned": 1769839118680,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "performance",
+      "metadata": {
+        "category": "performance",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "accessibility best practices",
+      "firstLearned": 1769839121521,
+      "lastLearned": 1769839121521,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "accessibility",
+      "metadata": {
+        "category": "accessibility",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "git merge strategies",
+      "firstLearned": 1769839418941,
+      "lastLearned": 1769839418941,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "git",
+      "metadata": {
+        "category": "git",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "unit testing patterns",
+      "firstLearned": 1769840015656,
+      "lastLearned": 1769840015656,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "testing",
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "python async",
+      "firstLearned": 1769840018548,
+      "lastLearned": 1769840018548,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "cypress e2e",
+      "firstLearned": 1769840021545,
+      "lastLearned": 1769840021545,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "testing",
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "python type hints",
+      "firstLearned": 1769840315611,
+      "lastLearned": 1769840315611,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "nlp fundamentals",
+      "firstLearned": 1769840616487,
+      "lastLearned": 1769840616487,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "react context api",
+      "firstLearned": 1769840619620,
+      "lastLearned": 1769840619620,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "tensorflow basics",
+      "firstLearned": 1769840915961,
+      "lastLearned": 1769840915961,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "node cluster",
+      "firstLearned": 1769840919488,
+      "lastLearned": 1769840919488,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "react hooks",
+      "firstLearned": 1769840922647,
+      "lastLearned": 1769840922647,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "react query",
+      "firstLearned": 1769841215931,
+      "lastLearned": 1769841215931,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "aws lambda",
+      "firstLearned": 1769841219108,
+      "lastLearned": 1769841219108,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "cloud",
+      "metadata": {
+        "category": "cloud",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "progressive web apps",
+      "firstLearned": 1769841222287,
+      "lastLearned": 1769841222287,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "pwa",
+      "metadata": {
+        "category": "pwa",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "web sockets real time",
+      "firstLearned": 1769841424019,
+      "lastLearned": 1769841424019,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "realtime",
+      "metadata": {
+        "category": "realtime",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "graphql basics",
+      "firstLearned": 1769841427558,
+      "lastLearned": 1769841427558,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "api",
+      "metadata": {
+        "category": "api",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "rest api design",
+      "firstLearned": 1769841430871,
+      "lastLearned": 1769841430871,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "api",
+      "metadata": {
+        "category": "api",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "error handling patterns",
+      "firstLearned": 1769841715530,
+      "lastLearned": 1769841715530,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "patterns",
+      "metadata": {
+        "category": "patterns",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "logging best practices",
+      "firstLearned": 1769841719249,
+      "lastLearned": 1769841719249,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "devops",
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "code review guidelines",
+      "firstLearned": 1769841722822,
+      "lastLearned": 1769841722822,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "practices",
+      "metadata": {
+        "category": "practices",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "refactoring techniques",
+      "firstLearned": 1769841753805,
+      "lastLearned": 1769841753805,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "practices",
+      "metadata": {
+        "category": "practices",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "password hashing",
+      "firstLearned": 1769841757119,
+      "lastLearned": 1769841757119,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "security",
+      "metadata": {
+        "category": "security",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "python async await",
+      "firstLearned": 1769841760467,
+      "lastLearned": 1769841760467,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "docker networking",
+      "firstLearned": 1769841832908,
+      "lastLearned": 1769841832908,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "docker",
+      "metadata": {
+        "category": "docker",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "mocking strategies",
+      "firstLearned": 1769841836151,
+      "lastLearned": 1769841836151,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "testing",
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "code profiling",
+      "firstLearned": 1769841839474,
+      "lastLearned": 1769841839474,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "performance",
+      "metadata": {
+        "category": "performance",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "linux bash",
+      "firstLearned": 1769841865615,
+      "lastLearned": 1769841865615,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "linux",
+      "metadata": {
+        "category": "linux",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "sql joins advanced",
+      "firstLearned": 1769841868993,
+      "lastLearned": 1769841868993,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "sql",
+      "metadata": {
+        "category": "sql",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "event loop mechanism",
+      "firstLearned": 1769841872239,
+      "lastLearned": 1769841872239,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 6
+      }
+    },
+    {
+      "topic": "git bisect",
+      "firstLearned": 1769842070451,
+      "lastLearned": 1769842070451,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "git",
+      "metadata": {
+        "category": "git",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "responsive design",
+      "firstLearned": 1769842073966,
+      "lastLearned": 1769842073966,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "nextjs routing",
+      "firstLearned": 1769842077132,
+      "lastLearned": 1769842077132,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "test coverage",
+      "firstLearned": 1769842132036,
+      "lastLearned": 1769842132036,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "testing",
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "trpc api",
+      "firstLearned": 1769842135199,
+      "lastLearned": 1769842135199,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "vitest testing",
+      "firstLearned": 1769842138486,
+      "lastLearned": 1769842138486,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "testing",
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "qwik framework",
+      "firstLearned": 1769842206970,
+      "lastLearned": 1769842206970,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 8
+      }
+    },
+    {
+      "topic": "helm charts",
+      "firstLearned": 1769842210125,
+      "lastLearned": 1769842210125,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "kubernetes",
+      "metadata": {
+        "category": "kubernetes",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "solid js",
+      "firstLearned": 1769842213429,
+      "lastLearned": 1769842213429,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "cloud functions",
+      "firstLearned": 1769842545505,
+      "lastLearned": 1769842545505,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "cloud",
+      "metadata": {
+        "category": "cloud",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "esbuild bundler",
+      "firstLearned": 1769842548845,
+      "lastLearned": 1769842548845,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "event sourcing",
+      "firstLearned": 1769842552165,
+      "lastLearned": 1769842552165,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "architecture",
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "database normalization",
+      "firstLearned": 1769842769353,
+      "lastLearned": 1769842769353,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "vercel deployment",
+      "firstLearned": 1769842774914,
+      "lastLearned": 1769842774914,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "devops",
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "neural networks intro",
+      "firstLearned": 1769842989305,
+      "lastLearned": 1769842989305,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "passkeys authentication",
+      "firstLearned": 1769842992494,
+      "lastLearned": 1769842992494,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "security",
+      "metadata": {
+        "category": "security",
+        "sourcesCount": 2,
+        "contentCount": 6
+      }
+    },
+    {
+      "topic": "openai api",
+      "firstLearned": 1769842995642,
+      "lastLearned": 1769842995642,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "web crypto api",
+      "firstLearned": 1769843289068,
+      "lastLearned": 1769843289068,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "security",
+      "metadata": {
+        "category": "security",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "deno runtime",
+      "firstLearned": 1769843291931,
+      "lastLearned": 1769843291931,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "kubernetes services",
+      "firstLearned": 1769843489789,
+      "lastLearned": 1769843489789,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "kubernetes",
+      "metadata": {
+        "category": "kubernetes",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "prototype inheritance",
+      "firstLearned": 1769843492995,
+      "lastLearned": 1769843492995,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "cloudflare workers",
+      "firstLearned": 1769843496183,
+      "lastLearned": 1769843496183,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "cloud",
+      "metadata": {
+        "category": "cloud",
+        "sourcesCount": 2,
+        "contentCount": 6
+      }
+    },
+    {
+      "topic": "vite build tool",
+      "firstLearned": 1769843789344,
+      "lastLearned": 1769843789344,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "planetscale database",
+      "firstLearned": 1769843792099,
+      "lastLearned": 1769843792099,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "typescript utility types",
+      "firstLearned": 1769843797215,
+      "lastLearned": 1769843797215,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "drizzle orm",
+      "firstLearned": 1769843952501,
+      "lastLearned": 1769843952501,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "shell scripting",
+      "firstLearned": 1769843955306,
+      "lastLearned": 1769843955306,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "linux",
+      "metadata": {
+        "category": "linux",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "docker volumes",
+      "firstLearned": 1769843958094,
+      "lastLearned": 1769843958094,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "docker",
+      "metadata": {
+        "category": "docker",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "saga pattern",
+      "firstLearned": 1769844252247,
+      "lastLearned": 1769844252247,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "architecture",
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "turbopack",
+      "firstLearned": 1769844255035,
+      "lastLearned": 1769844255035,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "supabase backend",
+      "firstLearned": 1769844278050,
+      "lastLearned": 1769844278050,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "sql window functions",
+      "firstLearned": 1769844280938,
+      "lastLearned": 1769844280938,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "sql",
+      "metadata": {
+        "category": "sql",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "systemd services",
+      "firstLearned": 1769844284738,
+      "lastLearned": 1769844284738,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "linux",
+      "metadata": {
+        "category": "linux",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "htmx framework",
+      "firstLearned": 1769844391603,
+      "lastLearned": 1769844391603,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "html",
+      "metadata": {
+        "category": "html",
+        "sourcesCount": 2,
+        "contentCount": 6
+      }
+    },
+    {
+      "topic": "astro framework",
+      "firstLearned": 1769844394863,
+      "lastLearned": 1769844394863,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "api gateway",
+      "firstLearned": 1769844398085,
+      "lastLearned": 1769844398085,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "architecture",
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "aws s3 operations",
+      "firstLearned": 1769844691161,
+      "lastLearned": 1769844691161,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "cloud",
+      "metadata": {
+        "category": "cloud",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "rust programming",
+      "firstLearned": 1769844693992,
+      "lastLearned": 1769844693992,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "rust",
+      "metadata": {
+        "category": "rust",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "react memo optimization",
+      "firstLearned": 1769844697219,
+      "lastLearned": 1769844697219,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "graphql resolvers",
+      "firstLearned": 1769844712242,
+      "lastLearned": 1769844712242,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "typescript decorators",
+      "firstLearned": 1769844715213,
+      "lastLearned": 1769844715213,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "webassembly wasm",
+      "firstLearned": 1769844717992,
+      "lastLearned": 1769844717992,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "web",
+      "metadata": {
+        "category": "web",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "llm fine tuning",
+      "firstLearned": 1769844770886,
+      "lastLearned": 1769844770886,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "rate limiting",
+      "firstLearned": 1769844774146,
+      "lastLearned": 1769844774146,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "security",
+      "metadata": {
+        "category": "security",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "go concurrency",
+      "firstLearned": 1769844777917,
+      "lastLearned": 1769844777917,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "go",
+      "metadata": {
+        "category": "go",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "langchain framework",
+      "firstLearned": 1769844881593,
+      "lastLearned": 1769844881593,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "svelte reactivity",
+      "firstLearned": 1769844884802,
+      "lastLearned": 1769844884802,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "svelte",
+      "metadata": {
+        "category": "svelte",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "es6 destructuring",
+      "firstLearned": 1769844887932,
+      "lastLearned": 1769844887932,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "node cluster module",
+      "firstLearned": 1769845182069,
+      "lastLearned": 1769845182069,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "cypress e2e testing",
+      "firstLearned": 1769845185425,
+      "lastLearned": 1769845185425,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "testing",
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "edge functions",
+      "firstLearned": 1769845188557,
+      "lastLearned": 1769845188557,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "cloud",
+      "metadata": {
+        "category": "cloud",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "vue composition api",
+      "firstLearned": 1769845313768,
+      "lastLearned": 1769845313768,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "vue",
+      "metadata": {
+        "category": "vue",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "websocket implementation",
+      "firstLearned": 1769845316990,
+      "lastLearned": 1769845316990,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "linux permissions",
+      "firstLearned": 1769845320521,
+      "lastLearned": 1769845320521,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "linux",
+      "metadata": {
+        "category": "linux",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "remix framework",
+      "firstLearned": 1769845415669,
+      "lastLearned": 1769845415669,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "javascript modules",
+      "firstLearned": 1769845421232,
+      "lastLearned": 1769845421232,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "memory management",
+      "firstLearned": 1769845594899,
+      "lastLearned": 1769845594899,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "performance",
+      "metadata": {
+        "category": "performance",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "web performance",
+      "firstLearned": 1769845598161,
+      "lastLearned": 1769845598161,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "performance",
+      "metadata": {
+        "category": "performance",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "circuit breaker",
+      "firstLearned": 1769845601367,
+      "lastLearned": 1769845601367,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "architecture",
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "playwright testing",
+      "firstLearned": 1769845695383,
+      "lastLearned": 1769845695383,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "testing",
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "mongodb indexing",
+      "firstLearned": 1769845699048,
+      "lastLearned": 1769845699048,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "mongodb",
+      "metadata": {
+        "category": "mongodb",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "service workers",
+      "firstLearned": 1769845702231,
+      "lastLearned": 1769845702231,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "web",
+      "metadata": {
+        "category": "web",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "caching strategies",
+      "firstLearned": 1769845967374,
+      "lastLearned": 1769845967374,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "performance",
+      "metadata": {
+        "category": "performance",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "bun javascript",
+      "firstLearned": 1769845970638,
+      "lastLearned": 1769845970638,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "rag architecture",
+      "firstLearned": 1769845973861,
+      "lastLearned": 1769845973861,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "kubernetes ingress",
+      "firstLearned": 1769846157266,
+      "lastLearned": 1769846157266,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "kubernetes",
+      "metadata": {
+        "category": "kubernetes",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "prompt engineering",
+      "firstLearned": 1769846160507,
+      "lastLearned": 1769846160507,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "flyio deployment",
+      "firstLearned": 1769846163681,
+      "lastLearned": 1769846163681,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "devops",
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 2,
+        "contentCount": 6
+      }
+    },
+    {
+      "topic": "cqrs pattern",
+      "firstLearned": 1769846457677,
+      "lastLearned": 1769846457677,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "architecture",
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "argocd gitops",
+      "firstLearned": 1769846460962,
+      "lastLearned": 1769846460962,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "devops",
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "zod validation",
+      "firstLearned": 1769846464261,
+      "lastLearned": 1769846464261,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "huggingface transformers",
+      "firstLearned": 1769846757329,
+      "lastLearned": 1769846757329,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "useeffect cleanup",
+      "firstLearned": 1769846760534,
+      "lastLearned": 1769846760534,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "web components",
+      "firstLearned": 1769846764502,
+      "lastLearned": 1769846764502,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "web",
+      "metadata": {
+        "category": "web",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "vector databases",
+      "firstLearned": 1769847057856,
+      "lastLearned": 1769847057856,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "ai",
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "pnpm package manager",
+      "firstLearned": 1769847061029,
+      "lastLearned": 1769847061029,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "advanced react tricks",
+      "firstLearned": 1769847064265,
+      "lastLearned": 1769847064265,
+      "quality": 0.65,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 4
+      }
+    },
+    {
+      "topic": "advanced database guide",
+      "firstLearned": 1769847357469,
+      "lastLearned": 1769847357469,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner python guide",
+      "firstLearned": 1769847360748,
+      "lastLearned": 1769847360748,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern javascript tricks",
+      "firstLearned": 1769847364001,
+      "lastLearned": 1769847364001,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 8
+      }
+    },
+    {
+      "topic": "best practices css tricks",
+      "firstLearned": 1769847657410,
+      "lastLearned": 1769847657410,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 7
+      }
+    },
+    {
+      "topic": "beginner nodejs tutorial",
+      "firstLearned": 1769847660588,
+      "lastLearned": 1769847660588,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern css examples",
+      "firstLearned": 1769847663803,
+      "lastLearned": 1769847663803,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern database patterns",
+      "firstLearned": 1769847957659,
+      "lastLearned": 1769847957659,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "advanced react tips",
+      "firstLearned": 1769847960932,
+      "lastLearned": 1769847960932,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "beginner react tricks",
+      "firstLearned": 1769847964208,
+      "lastLearned": 1769847964208,
+      "quality": 0.55,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 3
+      }
+    },
+    {
+      "topic": "beginner nodejs patterns",
+      "firstLearned": 1769848114896,
+      "lastLearned": 1769848114896,
+      "quality": 0.45,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 2
+      }
+    },
+    {
+      "topic": "advanced typescript tips",
+      "firstLearned": 1769848118077,
+      "lastLearned": 1769848118077,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 7
+      }
+    },
+    {
+      "topic": "modern typescript guide",
+      "firstLearned": 1769848121412,
+      "lastLearned": 1769848121412,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical css patterns",
+      "firstLearned": 1769848283902,
+      "lastLearned": 1769848283902,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 8
+      }
+    },
+    {
+      "topic": "best practices nodejs patterns",
+      "firstLearned": 1769848287052,
+      "lastLearned": 1769848287052,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "practical react examples",
+      "firstLearned": 1769848290171,
+      "lastLearned": 1769848290171,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern css tips",
+      "firstLearned": 1769848583910,
+      "lastLearned": 1769848583910,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "advanced javascript tutorial",
+      "firstLearned": 1769848587355,
+      "lastLearned": 1769848587355,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner css tricks",
+      "firstLearned": 1769848590482,
+      "lastLearned": 1769848590482,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "advanced react guide",
+      "firstLearned": 1769848883763,
+      "lastLearned": 1769848883763,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern database guide",
+      "firstLearned": 1769848887442,
+      "lastLearned": 1769848887442,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 7
+      }
+    },
+    {
+      "topic": "best practices css patterns",
+      "firstLearned": 1769848890810,
+      "lastLearned": 1769848890810,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical database tips",
+      "firstLearned": 1769849183881,
+      "lastLearned": 1769849183881,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical javascript tutorial",
+      "firstLearned": 1769849187411,
+      "lastLearned": 1769849187411,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices javascript tricks",
+      "firstLearned": 1769849190924,
+      "lastLearned": 1769849190924,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern nodejs patterns",
+      "firstLearned": 1769849483765,
+      "lastLearned": 1769849483765,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern react tips",
+      "firstLearned": 1769849487122,
+      "lastLearned": 1769849487122,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern python tricks",
+      "firstLearned": 1769849490044,
+      "lastLearned": 1769849490044,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "best practices typescript examples",
+      "firstLearned": 1769849784049,
+      "lastLearned": 1769849784049,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical database guide",
+      "firstLearned": 1769849787530,
+      "lastLearned": 1769849787530,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner javascript tricks",
+      "firstLearned": 1769849790656,
+      "lastLearned": 1769849790656,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 7
+      }
+    },
+    {
+      "topic": "practical nodejs guide",
+      "firstLearned": 1769852048845,
+      "lastLearned": 1769852048845,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "best practices javascript tutorial",
+      "firstLearned": 1769852053313,
+      "lastLearned": 1769852053313,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner nodejs tricks",
+      "firstLearned": 1769852057131,
+      "lastLearned": 1769852057131,
+      "quality": 0.65,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 4
+      }
+    },
+    {
+      "topic": "beginner typescript examples",
+      "firstLearned": 1769852348979,
+      "lastLearned": 1769852348979,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices typescript tricks",
+      "firstLearned": 1769852352134,
+      "lastLearned": 1769852352134,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern react examples",
+      "firstLearned": 1769852355209,
+      "lastLearned": 1769852355209,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "practical python patterns",
+      "firstLearned": 1769852648955,
+      "lastLearned": 1769852648955,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner python tips",
+      "firstLearned": 1769852652080,
+      "lastLearned": 1769852652080,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices database guide",
+      "firstLearned": 1769852655515,
+      "lastLearned": 1769852655515,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner react patterns",
+      "firstLearned": 1769853084347,
+      "lastLearned": 1769853084347,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "best practices database tips",
+      "firstLearned": 1769853215585,
+      "lastLearned": 1769853215585,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical css tricks",
+      "firstLearned": 1769853218709,
+      "lastLearned": 1769853218709,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern typescript examples",
+      "firstLearned": 1769853221822,
+      "lastLearned": 1769853221822,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical nodejs examples",
+      "firstLearned": 1769855739250,
+      "lastLearned": 1769855739250,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "beginner css examples",
+      "firstLearned": 1769855743214,
+      "lastLearned": 1769855743214,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern javascript tips",
+      "firstLearned": 1769856051735,
+      "lastLearned": 1769856051735,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern database tricks",
+      "firstLearned": 1769856054990,
+      "lastLearned": 1769856054990,
+      "quality": 0.8,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 3
+      }
+    },
+    {
+      "topic": "advanced nodejs tips",
+      "firstLearned": 1769856058165,
+      "lastLearned": 1769856058165,
+      "quality": 0.45,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 2
+      }
+    },
+    {
+      "topic": "modern react patterns",
+      "firstLearned": 1769856352929,
+      "lastLearned": 1769856352929,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "practical python examples",
+      "firstLearned": 1769856357102,
+      "lastLearned": 1769856357102,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern nodejs tutorial",
+      "firstLearned": 1769856361463,
+      "lastLearned": 1769856361463,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "advanced css patterns",
+      "firstLearned": 1769856378113,
+      "lastLearned": 1769856378113,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices react patterns",
+      "firstLearned": 1769856381164,
+      "lastLearned": 1769856381164,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "advanced react patterns",
+      "firstLearned": 1769856384307,
+      "lastLearned": 1769856384307,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "react",
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "practical typescript patterns",
+      "firstLearned": 1769856677730,
+      "lastLearned": 1769856677730,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "typescript",
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern css tutorial",
+      "firstLearned": 1769856681596,
+      "lastLearned": 1769856681596,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical python guide",
+      "firstLearned": 1769856684887,
+      "lastLearned": 1769856684887,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "advanced database patterns",
+      "firstLearned": 1769899407829,
+      "lastLearned": 1769899407829,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "database",
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern python tutorial",
+      "firstLearned": 1769899411288,
+      "lastLearned": 1769899411288,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices css tips",
+      "firstLearned": 1770031092967,
+      "lastLearned": 1770031092967,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 8
+      }
+    },
+    {
+      "topic": "practical css examples",
+      "firstLearned": 1770031097356,
+      "lastLearned": 1770031097356,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical css tutorial",
+      "firstLearned": 1770031101180,
+      "lastLearned": 1770031101180,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical nodejs tutorial",
+      "firstLearned": 1770031392552,
+      "lastLearned": 1770031392552,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern python tips",
+      "firstLearned": 1770031395894,
+      "lastLearned": 1770031395894,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner css patterns",
+      "firstLearned": 1770031399419,
+      "lastLearned": 1770031399419,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 7
+      }
+    },
+    {
+      "topic": "modern css patterns",
+      "firstLearned": 1770031692250,
+      "lastLearned": 1770031692250,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "advanced javascript examples",
+      "firstLearned": 1770031695830,
+      "lastLearned": 1770031695830,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "advanced css examples",
+      "firstLearned": 1770031699368,
+      "lastLearned": 1770031699368,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "css",
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices nodejs tutorial",
+      "firstLearned": 1770031992484,
+      "lastLearned": 1770031992484,
+      "quality": 0.75,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "nodejs",
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "best practices javascript patterns",
+      "firstLearned": 1770031995842,
+      "lastLearned": 1770031995842,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "javascript",
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices python tutorial",
+      "firstLearned": 1770031999336,
+      "lastLearned": 1770031999336,
+      "quality": 1,
+      "learnCount": 1,
+      "sources": [
+        "auto"
+      ],
+      "category": "python",
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    }
+  ],
+  "stats": {
+    "totalTopics": 233,
+    "totalSessions": 0,
+    "lastLearningTime": 1770031999336,
+    "topicsByCategory": {
+      "css": 6,
+      "nodejs": 2,
+      "python": 2,
+      "javascript": 2
+    },
+    "topicsBySource": {
+      "auto": 12
+    },
+    "averageQuality": 0.8811158798283262,
+    "recentTopics": [
+      {
+        "topic": "practical css tutorial",
+        "source": "auto",
+        "quality": 1,
+        "timestamp": 1770031101180,
+        "metadata": {
+          "category": "css",
+          "sourcesCount": 2,
+          "contentCount": 10
+        }
+      },
+      {
+        "topic": "practical nodejs tutorial",
+        "source": "auto",
+        "quality": 0.75,
+        "timestamp": 1770031392552,
+        "metadata": {
+          "category": "nodejs",
+          "sourcesCount": 1,
+          "contentCount": 5
+        }
+      },
+      {
+        "topic": "modern python tips",
+        "source": "auto",
+        "quality": 1,
+        "timestamp": 1770031395894,
+        "metadata": {
+          "category": "python",
+          "sourcesCount": 2,
+          "contentCount": 10
+        }
+      },
+      {
+        "topic": "beginner css patterns",
+        "source": "auto",
+        "quality": 1,
+        "timestamp": 1770031399419,
+        "metadata": {
+          "category": "css",
+          "sourcesCount": 2,
+          "contentCount": 7
+        }
+      },
+      {
+        "topic": "modern css patterns",
+        "source": "auto",
+        "quality": 1,
+        "timestamp": 1770031692250,
+        "metadata": {
+          "category": "css",
+          "sourcesCount": 2,
+          "contentCount": 10
+        }
+      },
+      {
+        "topic": "advanced javascript examples",
+        "source": "auto",
+        "quality": 1,
+        "timestamp": 1770031695831,
+        "metadata": {
+          "category": "javascript",
+          "sourcesCount": 2,
+          "contentCount": 10
+        }
+      },
+      {
+        "topic": "advanced css examples",
+        "source": "auto",
+        "quality": 1,
+        "timestamp": 1770031699368,
+        "metadata": {
+          "category": "css",
+          "sourcesCount": 2,
+          "contentCount": 10
+        }
+      },
+      {
+        "topic": "best practices nodejs tutorial",
+        "source": "auto",
+        "quality": 0.75,
+        "timestamp": 1770031992485,
+        "metadata": {
+          "category": "nodejs",
+          "sourcesCount": 1,
+          "contentCount": 5
+        }
+      },
+      {
+        "topic": "best practices javascript patterns",
+        "source": "auto",
+        "quality": 1,
+        "timestamp": 1770031995842,
+        "metadata": {
+          "category": "javascript",
+          "sourcesCount": 2,
+          "contentCount": 10
+        }
+      },
+      {
+        "topic": "best practices python tutorial",
+        "source": "auto",
+        "quality": 1,
+        "timestamp": 1770031999336,
+        "metadata": {
+          "category": "python",
+          "sourcesCount": 2,
+          "contentCount": 10
+        }
+      }
+    ]
+  },
+  "history": [
+    {
+      "topic": "node cluster module",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769845182069,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "cypress e2e testing",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769845185425,
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "edge functions",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769845188557,
+      "metadata": {
+        "category": "cloud",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "vue composition api",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769845313768,
+      "metadata": {
+        "category": "vue",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "websocket implementation",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769845316990,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "linux permissions",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769845320521,
+      "metadata": {
+        "category": "linux",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "remix framework",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769845415669,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "javascript modules",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769845421232,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "memory management",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769845594900,
+      "metadata": {
+        "category": "performance",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "web performance",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769845598161,
+      "metadata": {
+        "category": "performance",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "circuit breaker",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769845601367,
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "playwright testing",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769845695383,
+      "metadata": {
+        "category": "testing",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "mongodb indexing",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769845699048,
+      "metadata": {
+        "category": "mongodb",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "service workers",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769845702231,
+      "metadata": {
+        "category": "web",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "caching strategies",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769845967374,
+      "metadata": {
+        "category": "performance",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "bun javascript",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769845970638,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "rag architecture",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769845973861,
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "kubernetes ingress",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769846157266,
+      "metadata": {
+        "category": "kubernetes",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "prompt engineering",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769846160507,
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "flyio deployment",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769846163681,
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 2,
+        "contentCount": 6
+      }
+    },
+    {
+      "topic": "cqrs pattern",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769846457677,
+      "metadata": {
+        "category": "architecture",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "argocd gitops",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769846460963,
+      "metadata": {
+        "category": "devops",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "zod validation",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769846464261,
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "huggingface transformers",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769846757329,
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "useeffect cleanup",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769846760534,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "web components",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769846764502,
+      "metadata": {
+        "category": "web",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "vector databases",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769847057856,
+      "metadata": {
+        "category": "ai",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "pnpm package manager",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769847061029,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "advanced react tricks",
+      "source": "auto",
+      "quality": 0.65,
+      "timestamp": 1769847064265,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 4
+      }
+    },
+    {
+      "topic": "advanced database guide",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769847357469,
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner python guide",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769847360749,
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern javascript tricks",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769847364001,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 8
+      }
+    },
+    {
+      "topic": "best practices css tricks",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769847657410,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 7
+      }
+    },
+    {
+      "topic": "beginner nodejs tutorial",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769847660588,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern css examples",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769847663803,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern database patterns",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769847957659,
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "advanced react tips",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769847960932,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "beginner react tricks",
+      "source": "auto",
+      "quality": 0.55,
+      "timestamp": 1769847964208,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 3
+      }
+    },
+    {
+      "topic": "beginner nodejs patterns",
+      "source": "auto",
+      "quality": 0.45,
+      "timestamp": 1769848114896,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 2
+      }
+    },
+    {
+      "topic": "advanced typescript tips",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769848118077,
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 7
+      }
+    },
+    {
+      "topic": "modern typescript guide",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769848121412,
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical css patterns",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769848283902,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 8
+      }
+    },
+    {
+      "topic": "best practices nodejs patterns",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769848287052,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "practical react examples",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769848290171,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern css tips",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769848583910,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "advanced javascript tutorial",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769848587355,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner css tricks",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769848590482,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "advanced react guide",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769848883763,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern database guide",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769848887442,
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 7
+      }
+    },
+    {
+      "topic": "best practices css patterns",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769848890810,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical database tips",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769849183881,
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical javascript tutorial",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769849187411,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices javascript tricks",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769849190924,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern nodejs patterns",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769849483765,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern react tips",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769849487122,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern python tricks",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769849490044,
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "best practices typescript examples",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769849784049,
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical database guide",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769849787530,
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner javascript tricks",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769849790656,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 7
+      }
+    },
+    {
+      "topic": "practical nodejs guide",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769852048845,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "best practices javascript tutorial",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769852053313,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner nodejs tricks",
+      "source": "auto",
+      "quality": 0.65,
+      "timestamp": 1769852057131,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 4
+      }
+    },
+    {
+      "topic": "beginner typescript examples",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769852348979,
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices typescript tricks",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769852352134,
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern react examples",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769852355209,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "practical python patterns",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769852648955,
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner python tips",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769852652080,
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices database guide",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769852655515,
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner react patterns",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769853084347,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "best practices database tips",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769853215585,
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical css tricks",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769853218709,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern typescript examples",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769853221822,
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical nodejs examples",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769855739250,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "beginner css examples",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769855743214,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern javascript tips",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769856051735,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern database tricks",
+      "source": "auto",
+      "quality": 0.8,
+      "timestamp": 1769856054990,
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 3
+      }
+    },
+    {
+      "topic": "advanced nodejs tips",
+      "source": "auto",
+      "quality": 0.45,
+      "timestamp": 1769856058165,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 2
+      }
+    },
+    {
+      "topic": "modern react patterns",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769856352929,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "practical python examples",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769856357102,
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern nodejs tutorial",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769856361463,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "advanced css patterns",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769856378113,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices react patterns",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769856381164,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "advanced react patterns",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1769856384307,
+      "metadata": {
+        "category": "react",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "practical typescript patterns",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769856677730,
+      "metadata": {
+        "category": "typescript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern css tutorial",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769856681596,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical python guide",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769856684887,
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "advanced database patterns",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769899407829,
+      "metadata": {
+        "category": "database",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "modern python tutorial",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1769899411288,
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices css tips",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1770031092967,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 8
+      }
+    },
+    {
+      "topic": "practical css examples",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1770031097356,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical css tutorial",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1770031101180,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "practical nodejs tutorial",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1770031392552,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "modern python tips",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1770031395894,
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "beginner css patterns",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1770031399419,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 7
+      }
+    },
+    {
+      "topic": "modern css patterns",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1770031692250,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "advanced javascript examples",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1770031695831,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "advanced css examples",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1770031699368,
+      "metadata": {
+        "category": "css",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices nodejs tutorial",
+      "source": "auto",
+      "quality": 0.75,
+      "timestamp": 1770031992485,
+      "metadata": {
+        "category": "nodejs",
+        "sourcesCount": 1,
+        "contentCount": 5
+      }
+    },
+    {
+      "topic": "best practices javascript patterns",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1770031995842,
+      "metadata": {
+        "category": "javascript",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    },
+    {
+      "topic": "best practices python tutorial",
+      "source": "auto",
+      "quality": 1,
+      "timestamp": 1770031999336,
+      "metadata": {
+        "category": "python",
+        "sourcesCount": 2,
+        "contentCount": 10
+      }
+    }
+  ]
+}

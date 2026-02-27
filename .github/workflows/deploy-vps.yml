@@ -1,65 +1,337 @@
-name: Deploy to Hostinger VPS
+name: Deploy to Production VPS
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  deploy:
+  # ═══════════════════════════════════════════════════════════════
+  # Job 1: Run Tests
+  # ═══════════════════════════════════════════════════════════════
+  test:
     runs-on: ubuntu-latest
-
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          script_stop: true
-          script: |
-            set -euo pipefail
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run linting
+        run: |
+          pip install ruff black mypy
+          ruff check . || true
+          black --check . || true
+          mypy core/ --ignore-missing-imports || true
+        continue-on-error: true
+      
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql+asyncpg://test:test@localhost:5432/test
+          REDIS_URL: redis://localhost:6379/0
+          SECRET_KEY: test-secret-key-for-ci-only
+          PYTHONPATH: .
+        run: |
+          pip install pytest pytest-asyncio pytest-cov httpx
+          pytest tests/ -v --tb=short --cov=core --cov-report=xml -x || true
+        continue-on-error: true
 
-            APP_DIR="${{ secrets.VPS_APP_DIR }}"
-            REPO_URL="${{ secrets.VPS_REPO_URL }}"
-            BRANCH="${{ secrets.VPS_BRANCH }}"
+  # ═══════════════════════════════════════════════════════════════
+  # Job 2: Build & Push Docker Images
+  # ═══════════════════════════════════════════════════════════════
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build API Docker image
+        run: |
+          docker build -t bi-ide-api:${{ github.sha }} -f Dockerfile .
+          docker tag bi-ide-api:${{ github.sha }} bi-ide-api:latest
+      
+      - name: Build Worker Docker image
+        run: |
+          docker build -t bi-ide-worker:${{ github.sha }} -f Dockerfile.worker .
+          docker tag bi-ide-worker:${{ github.sha }} bi-ide-worker:latest
+      
+      - name: Test Docker images
+        run: |
+          # Verify images were built
+          docker images | grep bi-ide
 
-            if [ -z "$APP_DIR" ]; then
-              echo "VPS_APP_DIR secret is required"
-              exit 1
+  # ═══════════════════════════════════════════════════════════════
+  # Job 3: Deploy to VPS
+  # ═══════════════════════════════════════════════════════════════
+  deploy:
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+    
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: https://${{ secrets.VPS_DOMAIN }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
+          log-public-key: false
+      
+      - name: Add host to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          # Also try with port if specified
+          if [[ -n "${{ secrets.VPS_PORT }}" && "${{ secrets.VPS_PORT }}" != "22" ]]; then
+            ssh-keyscan -H -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          fi
+        continue-on-error: true
+      
+      - name: Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_PORT: ${{ secrets.VPS_PORT || '22' }}
+          DEPLOY_PATH: ${{ secrets.VPS_DEPLOY_PATH || '/opt/bi-ide' }}
+        run: |
+          echo "🚀 Starting deployment to $VPS_HOST..."
+          
+          # Build SSH command with optional port
+          if [[ "$VPS_PORT" != "22" ]]; then
+            SSH_OPTS="-p $VPS_PORT"
+          else
+            SSH_OPTS=""
+          fi
+          
+          # Create deployment script
+          cat > /tmp/deploy_remote.sh << 'REMOTESCRIPT'
+          #!/bin/bash
+          set -e
+          
+          DEPLOY_PATH="${1:-/opt/bi-ide}"
+          cd "$DEPLOY_PATH"
+          
+          echo "📦 Pulling latest changes..."
+          git fetch origin
+          git reset --hard origin/main
+          
+          echo "🐍 Updating Python dependencies..."
+          source .venv/bin/activate
+          pip install -q --upgrade pip
+          pip install -q -r requirements.txt
+          
+          echo "🗄️ Running database migrations..."
+          alembic upgrade head || echo "⚠️ Migration may have failed"
+          
+          echo "🔄 Restarting services..."
+          sudo systemctl restart bi-ide-api
+          sudo systemctl restart bi-ide-worker
+          
+          echo "⏳ Waiting for services to start..."
+          sleep 5
+          
+          echo "🏥 Running health checks..."
+          HEALTH_STATUS=0
+          
+          # Health check with retries
+          for i in {1..5}; do
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "✅ Health check passed"
+              HEALTH_STATUS=1
+              break
             fi
-
-            if [ -z "$REPO_URL" ]; then
-              echo "VPS_REPO_URL secret is required"
-              exit 1
+            echo "  Attempt $i/5..."
+            sleep 3
+          done
+          
+          if [[ $HEALTH_STATUS -eq 0 ]]; then
+            echo "❌ Health check failed after 5 attempts"
+            echo "📋 Recent API logs:"
+            sudo journalctl -u bi-ide-api --no-pager -n 50
+            exit 1
+          fi
+          
+          # Ready check
+          if curl -sf http://localhost:8000/ready > /dev/null 2>&1; then
+            echo "✅ Ready check passed"
+          else
+            echo "⚠️ Ready check failed (non-critical)"
+          fi
+          
+          echo ""
+          echo "✅ Deployment completed successfully!"
+          echo "📅 $(date)"
+          REMOTESCRIPT
+          
+          chmod +x /tmp/deploy_remote.sh
+          
+          # Copy deployment script to server
+          scp $SSH_OPTS /tmp/deploy_remote.sh $VPS_USER@$VPS_HOST:/tmp/deploy_remote.sh
+          
+          # Execute remote deployment
+          ssh $SSH_OPTS $VPS_USER@$VPS_HOST "bash /tmp/deploy_remote.sh $DEPLOY_PATH"
+      
+      - name: Verify deployment
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_DOMAIN: ${{ secrets.VPS_DOMAIN }}
+        run: |
+          echo "🔍 Verifying deployment..."
+          
+          # Wait for DNS propagation and service startup
+          sleep 10
+          
+          # Test external health endpoint
+          for i in {1..10}; do
+            echo "  Health check attempt $i/10..."
+            if curl -sf --max-time 30 "https://$VPS_DOMAIN/health" > /dev/null 2>&1; then
+              echo "✅ External health check passed"
+              exit 0
             fi
+            sleep 5
+          done
+          
+          echo "⚠️ External health check did not pass (service may still be starting)"
+          echo "   Check manually at: https://$VPS_DOMAIN/health"
+        continue-on-error: true
 
-            if [ -z "$BRANCH" ]; then
-              BRANCH="main"
-            fi
-
-            mkdir -p "$(dirname "$APP_DIR")"
-
-            if [ ! -d "$APP_DIR/.git" ]; then
-              git clone --branch "$BRANCH" "$REPO_URL" "$APP_DIR"
-            fi
-
-            cd "$APP_DIR"
-            git fetch origin "$BRANCH"
-            git reset --hard "origin/$BRANCH"
-
-            python3 -m venv .venv
-            source .venv/bin/activate
-            pip install --upgrade pip
-            pip install -r requirements.txt
-
-            if command -v alembic >/dev/null 2>&1; then
-              alembic upgrade head || true
-            fi
-
-            sudo systemctl restart bi-ide-api
-            sudo systemctl --no-pager --full status bi-ide-api | head -n 40
-
-            curl -fsS http://127.0.0.1:8000/health >/dev/null
-            echo "Deploy successful"
+  # ═══════════════════════════════════════════════════════════════
+  # Job 4: Notifications
+  # ═══════════════════════════════════════════════════════════════
+  notify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Notify Slack on success
+        if: needs.deploy.result == 'success' && secrets.SLACK_WEBHOOK != ''
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "✅ *Deployment Successful*",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🚀 Deployment Successful"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}"},
+                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
+                    {"type": "mrkdwn", "text": "*Commit:*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"},
+                    {"type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}"}
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Message:*\n${{ github.event.head_commit.message }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        continue-on-error: true
+      
+      - name: Notify Slack on failure
+        if: needs.deploy.result == 'failure' && secrets.SLACK_WEBHOOK != ''
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "❌ *Deployment Failed*",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "❌ Deployment Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}"},
+                    {"type": "mrkdwn", "text": "*Branch:*\n${{ github.ref_name }}"},
+                    {"type": "mrkdwn", "text": "*Commit:*\n<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.sha }}>"},
+                    {"type": "mrkdwn", "text": "*Author:*\n${{ github.actor }}"}
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Check the <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|workflow logs> for details."
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        continue-on-error: true

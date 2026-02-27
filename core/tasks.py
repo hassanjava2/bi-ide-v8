@@ -1,10 +1,6 @@
 """
 Background Tasks - المهام في الخلفية
 """
-import sys
-sys.path.insert(0, '.')
-import encoding_fix
-
 import os
 from typing import Dict, Any
 from .celery_config import celery_app
@@ -49,26 +45,74 @@ def generate_code_embeddings(self, code_snippets: list):
         raise self.retry(exc=exc, countdown=30)
 
 
-@celery_app.task(bind=True)
+@celery_app.task(bind=True, max_retries=2)
 def council_deliberation_task(self, topic: str, context: Dict):
-    """Run council deliberation in background"""
+    """
+    Run council deliberation in background
+    
+    This task uses the High Council's discussion mechanism through the
+    AI Hierarchy to conduct deliberations on important topics.
+    """
+    import asyncio
+    
     try:
         logger.info(f"Starting council deliberation on: {topic}")
         
         from hierarchy import ai_hierarchy
+        from hierarchy.high_council import Discussion
         
-        # Run deliberation
-        result = ai_hierarchy.council.deliberate(topic)
+        # Get the high council instance
+        council = ai_hierarchy.council
         
+        # Create a new event loop for async operations in Celery
+        async def _conduct_deliberation():
+            """Conduct deliberation asynchronously"""
+            # Create a discussion instance
+            discussion = Discussion(
+                topic=topic,
+                initiator=context.get("initiator", "background_task"),
+                opinions={}
+            )
+            
+            # Use the council's internal discussion method
+            await council._conduct_discussion(topic)
+            
+            # Get the current discussion result
+            current = council.current_discussion
+            if current:
+                return {
+                    "topic": current.topic,
+                    "opinions": current.opinions,
+                    "consensus": current.consensus,
+                    "timestamp": current.timestamp.isoformat() if current.timestamp else None
+                }
+            return {"topic": topic, "status": "no_discussion_record"}
+        
+        # Run the async function
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_closed():
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
+        result = loop.run_until_complete(_conduct_deliberation())
+        
+        logger.info(f"Council deliberation completed: {topic}")
         return {
             "status": "success",
             "topic": topic,
-            "decision": result
+            "decision": result.get("consensus", "no_consensus"),
+            "opinions_count": len(result.get("opinions", {})),
+            "timestamp": result.get("timestamp")
         }
     
     except Exception as exc:
         logger.error(f"Council deliberation failed: {exc}")
-        return {"status": "error", "error": str(exc)}
+        # Retry with countdown
+        raise self.retry(exc=exc, countdown=30)
 
 
 @celery_app.task(bind=True)

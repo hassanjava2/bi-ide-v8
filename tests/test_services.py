@@ -1,10 +1,6 @@
 """
 Services Tests - اختبارات الخدمات
 """
-import sys
-sys.path.insert(0, '.')
-import encoding_fix
-
 import pytest
 
 

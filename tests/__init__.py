@@ -1,3 +1,4 @@
+# Tests Package
 """
-Tests Module - اختبارات النظام
+Test suite for BI-IDE v8
 """

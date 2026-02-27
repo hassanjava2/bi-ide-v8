@@ -1,0 +1,82 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-30T19:44:26.106Z",
+  "categories": {
+    "engines": [
+      "Unity (C#)",
+      "Unreal Engine (C++, Blueprints)",
+      "Godot (GDScript, C#)",
+      "Phaser (JavaScript)",
+      "GameMaker Studio (GML)"
+    ],
+    "genres": [
+      "ألعاب الأكشن (Action)",
+      "ألعاب RPG (تقمص الأدوار)",
+      "ألعاب المنصات (Platformer)",
+      "ألعاب الألغاز (Puzzle)",
+      "ألعاب الاستراتيجية (Strategy)",
+      "ألعاب المحاكاة (Simulation)",
+      "ألعاب الرعب (Horror)",
+      "ألعاب السباق (Racing)"
+    ],
+    "programming": [
+      "Game Loop",
+      "State Machine",
+      "Object Pooling",
+      "Component Pattern",
+      "Observer/Event Pattern",
+      "Singleton Pattern"
+    ],
+    "systems": [
+      "نظام الحركة (Movement)",
+      "نظام القتال (Combat)",
+      "نظام المخزون (Inventory)",
+      "نظام الحفظ (Save/Load)",
+      "نظام الحوار (Dialogue)",
+      "نظام المهام (Quest)",
+      "نظام إطلاق النار (Shooting)",
+      "نظام موجات الأعداء (Wave Spawner)"
+    ],
+    "physics": [
+      "Collision Detection (AABB, Circle, SAT)",
+      "Rigidbody Physics",
+      "Raycasting",
+      "Triggers و Colliders"
+    ],
+    "graphics": [
+      "Render Pipelines (Forward, Deferred)",
+      "Shaders (Vertex, Fragment)",
+      "Post Processing",
+      "Lighting و Shadows"
+    ],
+    "ai": [
+      "Pathfinding (A*, NavMesh)",
+      "Behavior Trees",
+      "Finite State Machine",
+      "Steering Behaviors"
+    ],
+    "networking": [
+      "Client-Server Architecture",
+      "Peer-to-Peer",
+      "Dedicated Servers",
+      "Lag Compensation",
+      "Client Prediction",
+      "Entity Interpolation"
+    ],
+    "optimization": [
+      "Profiling",
+      "Object Pooling",
+      "Batching (Static, Dynamic, GPU Instancing)",
+      "LOD (Level of Detail)",
+      "Culling"
+    ],
+    "publishing": [
+      "Steam",
+      "App Store (iOS)",
+      "Google Play (Android)",
+      "Web (itch.io, etc.)",
+      "Monetization"
+    ]
+  },
+  "totalExamples": 71
+}

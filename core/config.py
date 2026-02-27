@@ -77,6 +77,10 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: Optional[str] = None
     HUGGINGFACE_TOKEN: Optional[str] = None
     
+    # Orchestrator
+    ORCHESTRATOR_TOKEN: str = ""
+    ORCHESTRATOR_HEARTBEAT_TIMEOUT_SEC: int = 45
+    
     class Config:
         env_file = _ENV_FILE
         case_sensitive = True
@@ -124,6 +128,17 @@ def get_settings() -> Settings:
         "",
         "president123",
         "CHANGE_THIS_PASSWORD",
+        "admin",
+        "password",
+        "123456",
+        "12345678",
+    }
+    insecure_orchestrator_tokens = {
+        "",
+        "CHANGE_THIS_TOKEN_BEFORE_REMOTE_DEPLOY",
+        "orchestrator-token-change-me",
+        "admin",
+        "token",
     }
 
     is_production = settings.ENVIRONMENT.lower() == "production"
@@ -135,11 +150,16 @@ def get_settings() -> Settings:
         if settings.ADMIN_PASSWORD in insecure_admin_passwords:
             settings.ADMIN_PASSWORD = "president123"
             print("⚠️ Development mode: using default ADMIN_PASSWORD")
+        if settings.ORCHESTRATOR_TOKEN in insecure_orchestrator_tokens:
+            settings.ORCHESTRATOR_TOKEN = secrets.token_urlsafe(32)
+            print("⚠️ Development mode: generated ephemeral ORCHESTRATOR_TOKEN")
     else:
         if settings.SECRET_KEY in insecure_secret_values:
             raise ValueError("SECRET_KEY is missing or insecure. Set a strong SECRET_KEY in .env")
         if settings.ADMIN_PASSWORD in insecure_admin_passwords:
             raise ValueError("ADMIN_PASSWORD is missing or insecure. Set a strong ADMIN_PASSWORD in .env")
+        if settings.ORCHESTRATOR_TOKEN in insecure_orchestrator_tokens:
+            raise ValueError("ORCHESTRATOR_TOKEN is missing or insecure. Set a strong token in .env")
 
     settings.ensure_directories()
     return settings

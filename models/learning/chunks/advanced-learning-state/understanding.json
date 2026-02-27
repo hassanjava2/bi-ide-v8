@@ -1,0 +1,13 @@
+{
+  "levels": {
+    "syntactic": 0,
+    "semantic": 0,
+    "pragmatic": 0,
+    "conceptual": 0
+  },
+  "knowledgeGraph": {
+    "nodes": [],
+    "edges": [],
+    "clusters": []
+  }
+}

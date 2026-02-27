@@ -1,0 +1,25 @@
+{
+  "learningRates": {
+    "base": 0.1,
+    "current": 0,
+    "min": 0.001,
+    "max": 0.5,
+    "decay": 0.99,
+    "warmup": 100
+  },
+  "performance": {
+    "accuracy": 0,
+    "precision": 0,
+    "recall": 0,
+    "f1Score": 0,
+    "loss": 1,
+    "improvement": 0
+  },
+  "curriculum": {
+    "currentLevel": 1,
+    "maxLevel": 10,
+    "topics": {},
+    "completedTopics": {},
+    "difficulty": "adaptive"
+  }
+}

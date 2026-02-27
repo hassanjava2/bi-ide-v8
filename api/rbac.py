@@ -50,6 +50,7 @@ class Permission(str, Enum):
     ERP_HR_EDIT = "erp:hr:edit"
     ERP_PAYROLL_READ = "erp:payroll:read"
     ERP_PAYROLL_MANAGE = "erp:payroll:manage"
+    ERP_PAYROLL_EDIT = "erp:payroll:edit"
 
     # Council & AI
     COUNCIL_READ = "council:read"

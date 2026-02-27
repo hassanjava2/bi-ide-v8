@@ -1,0 +1,116 @@
+[
+  {
+    "index": 0,
+    "key": "training_info",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\training_info.json",
+    "count": 2
+  },
+  {
+    "index": 1,
+    "key": "error_patterns",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\error_patterns.json",
+    "count": 516
+  },
+  {
+    "index": 2,
+    "key": "code_templates",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\code_templates.json",
+    "count": 27
+  },
+  {
+    "index": 3,
+    "key": "completions",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\completions.json",
+    "count": 9
+  },
+  {
+    "index": 4,
+    "key": "qa_knowledge",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\qa_knowledge.json",
+    "count": 8
+  },
+  {
+    "index": 5,
+    "key": "displayScreens",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\displayScreens.json",
+    "count": 4
+  },
+  {
+    "index": 6,
+    "key": "codePatterns",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\codePatterns.json",
+    "count": 5
+  },
+  {
+    "index": 7,
+    "key": "laptopFactory",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\laptopFactory.json",
+    "count": 6
+  },
+  {
+    "index": 8,
+    "key": "salesManagement",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\salesManagement.json",
+    "count": 5
+  },
+  {
+    "index": 9,
+    "key": "adsManagement",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\adsManagement.json",
+    "count": 5
+  },
+  {
+    "index": 10,
+    "key": "businessManagement",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\businessManagement.json",
+    "count": 5
+  },
+  {
+    "index": 11,
+    "key": "gameDevelopment",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\gameDevelopment.json",
+    "count": 4
+  },
+  {
+    "index": 12,
+    "key": "imageProcessing",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\imageProcessing.json",
+    "count": 6
+  },
+  {
+    "index": 13,
+    "key": "game3DDevelopment",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\game3DDevelopment.json",
+    "count": 6
+  },
+  {
+    "index": 14,
+    "key": "debugging",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\debugging.json",
+    "count": 5
+  },
+  {
+    "index": 15,
+    "key": "debugging_patterns",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\debugging_patterns.json",
+    "count": 26
+  },
+  {
+    "index": 16,
+    "key": "debugging_methodology",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\debugging_methodology.json",
+    "count": 2
+  },
+  {
+    "index": 17,
+    "key": "errorHandling",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\errorHandling.json",
+    "count": 4
+  },
+  {
+    "index": 18,
+    "key": "advancedDevelopment",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\knowledge-base\\advancedDevelopment.json",
+    "count": 4
+  }
+]

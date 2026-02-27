@@ -8,11 +8,10 @@
 - Competitor Scout: تجسس المنافسين
 - Opportunity Scout: صيد الفرص
 """
-import sys; sys.path.insert(0, '.'); import encoding_fix; encoding_fix.safe_print("")
 
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import asyncio
 import json
@@ -71,14 +70,14 @@ class TechScout:
         trending = await self._check_github_trending()
         for repo in trending:
             reports.append(IntelReport(
-                intel_id=f"tech_{datetime.now().timestamp()}",
+                intel_id=f"tech_{datetime.now(timezone.utc).timestamp()}",
                 scout_name=self.name,
                 intel_type=IntelType.TECH,
                 source='github',
                 content=f"مشروع متصاعد: {repo['name']} - {repo['description']}",
                 confidence=0.85,
                 urgency=5,
-                timestamp=datetime.now(),
+                timestamp=datetime.now(timezone.utc),
                 metadata={'stars': repo.get('stars'), 'language': repo.get('lang')}
             ))
         
@@ -93,7 +92,7 @@ class TechScout:
                 content=f"ثغرة خطيرة: {vuln['description']}",
                 confidence=0.95,
                 urgency=9,
-                timestamp=datetime.now(),
+                timestamp=datetime.now(timezone.utc),
                 metadata={'severity': vuln['severity'], 'package': vuln['package']}
             ))
         
@@ -101,10 +100,27 @@ class TechScout:
     
     async def _check_github_trending(self) -> List[Dict]:
         """فحص GitHub Trending"""
-        # TODO: استخدام GitHub API
+        # ⚠️ WARNING: Mock data - GitHub API not implemented
+        # TODO: Implement real GitHub API integration
+        # Currently returns static placeholder data
+        print("⚠️ SCOUT WARNING: Using mock GitHub data. Real API not implemented.")
         return [
-            {'name': 'rust/rust', 'description': 'تحسينات الأداء', 'stars': 85000, 'lang': 'Rust'},
-            {'name': 'python/poetry', 'description': 'مدير حزم جديد', 'stars': 25000, 'lang': 'Python'}
+            {
+                '_warning': 'MOCK DATA',
+                'name': 'rust/rust', 
+                'description': 'تحسينات الأداء (placeholder)', 
+                'stars': 85000, 
+                'lang': 'Rust',
+                '_source': 'static_mock'
+            },
+            {
+                '_warning': 'MOCK DATA',
+                'name': 'python/poetry', 
+                'description': 'مدير حزم جديد (placeholder)', 
+                'stars': 25000, 
+                'lang': 'Python',
+                '_source': 'static_mock'
+            }
         ]
     
     async def _check_security_advisories(self) -> List[Dict]:
@@ -135,14 +151,14 @@ class MarketScout:
         # اتجاهات ERP
         erp_trend = await self._analyze_erp_market()
         reports.append(IntelReport(
-            intel_id=f"mkt_erp_{datetime.now().timestamp()}",
+            intel_id=f"mkt_erp_{datetime.now(timezone.utc).timestamp()}",
             scout_name=self.name,
             intel_type=IntelType.MARKET,
             source='market_research',
             content=f"سوق ERP: {erp_trend['growth']}% نمو، المنافسة: {erp_trend['competition']}",
             confidence=0.80,
             urgency=6,
-            timestamp=datetime.now(),
+            timestamp=datetime.now(timezone.utc),
             metadata=erp_trend
         ))
         
@@ -157,7 +173,7 @@ class MarketScout:
                 content=f"احتياج جديد: {need['description']}",
                 confidence=need['frequency'] / 100,
                 urgency=7,
-                timestamp=datetime.now(),
+                timestamp=datetime.now(timezone.utc),
                 metadata=need
             ))
         
@@ -209,14 +225,14 @@ class CompetitorScout:
             updates = await self._monitor_website(comp_info['website'])
             if updates:
                 reports.append(IntelReport(
-                    intel_id=f"comp_{comp_id}_{datetime.now().timestamp()}",
+                    intel_id=f"comp_{comp_id}_{datetime.now(timezone.utc).timestamp()}",
                     scout_name=self.name,
                     intel_type=IntelType.COMPETITOR,
                     source=comp_info['website'],
                     content=f"{comp_info['name']}: {updates['headline']}",
                     confidence=0.90,
                     urgency=updates.get('urgency', 5),
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(timezone.utc),
                     metadata=updates
                 ))
             
@@ -224,14 +240,14 @@ class CompetitorScout:
             pricing = await self._check_pricing(comp_id)
             if pricing.get('changed'):
                 reports.append(IntelReport(
-                    intel_id=f"price_{comp_id}_{datetime.now().timestamp()}",
+                    intel_id=f"price_{comp_id}_{datetime.now(timezone.utc).timestamp()}",
                     scout_name=self.name,
                     intel_type=IntelType.COMPETITOR,
                     source='pricing_page',
                     content=f"{comp_info['name']} غيرت أسعارها: {pricing['change']}",
                     confidence=0.95,
                     urgency=7,
-                    timestamp=datetime.now(),
+                    timestamp=datetime.now(timezone.utc),
                     metadata=pricing
                 ))
         
@@ -239,8 +255,17 @@ class CompetitorScout:
     
     async def _monitor_website(self, url: str) -> Optional[Dict]:
         """مراقبة موقع المنافس"""
-        # TODO: استخدام scraping
-        return None
+        # ⚠️ WARNING: Web scraping not implemented
+        # TODO: Implement real web scraping with appropriate rate limiting
+        # and robots.txt compliance
+        print(f"⚠️ SCOUT WARNING: Web scraping not implemented for {url}")
+        return {
+            '_warning': 'NOT IMPLEMENTED',
+            '_note': 'Web scraping module not available',
+            'url': url,
+            'headline': f'No updates from {url}',
+            'status': 'placeholder'
+        }
     
     async def _check_pricing(self, competitor: str) -> Dict:
         """فحص أسعار المنافس"""
@@ -282,7 +307,7 @@ class OpportunityScout:
                 content=f"مناقصة: {tender['title']} - {tender['value']}$",
                 confidence=0.75,
                 urgency=8,
-                timestamp=datetime.now(),
+                timestamp=datetime.now(timezone.utc),
                 metadata=tender
             ))
         

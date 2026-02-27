@@ -1,0 +1,118 @@
+{
+  "originalFile": "D:\\bi ide\\models\\knowledge-base.json",
+  "optimizedAt": "2026-02-02T11:18:10.524Z",
+  "originalSize": 527449,
+  "structure": {
+    "type": "object",
+    "isArray": false,
+    "keys": [
+      "version",
+      "updated_at",
+      "training_info",
+      "error_patterns",
+      "code_templates",
+      "completions",
+      "qa_knowledge",
+      "displayScreens",
+      "codePatterns",
+      "laptopFactory",
+      "salesManagement",
+      "adsManagement",
+      "businessManagement",
+      "gameDevelopment",
+      "imageProcessing",
+      "game3DDevelopment",
+      "debugging",
+      "debugging_patterns",
+      "debugging_methodology",
+      "errorHandling",
+      "advancedDevelopment"
+    ],
+    "totalRecords": 649,
+    "nestedStructures": {
+      "training_info": {
+        "type": "object",
+        "count": 2
+      },
+      "error_patterns": {
+        "type": "array",
+        "count": 516
+      },
+      "code_templates": {
+        "type": "array",
+        "count": 27
+      },
+      "completions": {
+        "type": "array",
+        "count": 9
+      },
+      "qa_knowledge": {
+        "type": "array",
+        "count": 8
+      },
+      "displayScreens": {
+        "type": "object",
+        "count": 4
+      },
+      "codePatterns": {
+        "type": "object",
+        "count": 5
+      },
+      "laptopFactory": {
+        "type": "object",
+        "count": 6
+      },
+      "salesManagement": {
+        "type": "object",
+        "count": 5
+      },
+      "adsManagement": {
+        "type": "object",
+        "count": 5
+      },
+      "businessManagement": {
+        "type": "object",
+        "count": 5
+      },
+      "gameDevelopment": {
+        "type": "object",
+        "count": 4
+      },
+      "imageProcessing": {
+        "type": "object",
+        "count": 6
+      },
+      "game3DDevelopment": {
+        "type": "object",
+        "count": 6
+      },
+      "debugging": {
+        "type": "object",
+        "count": 5
+      },
+      "debugging_patterns": {
+        "type": "array",
+        "count": 26
+      },
+      "debugging_methodology": {
+        "type": "object",
+        "count": 2
+      },
+      "errorHandling": {
+        "type": "object",
+        "count": 4
+      },
+      "advancedDevelopment": {
+        "type": "object",
+        "count": 4
+      }
+    }
+  },
+  "chunksCount": 19,
+  "indexes": [
+    "byTopic",
+    "byCategory",
+    "byDate",
+    "byQuality"
+  ]
+}

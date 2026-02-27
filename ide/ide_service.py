@@ -1949,3 +1949,28 @@ def get_ide_service(hierarchy=None):
     if ide_service is None and hierarchy:
         ide_service = IDEService(hierarchy)
     return ide_service
+
+
+def analyze_code_quality(code: str, language: str = "python") -> Dict[str, Any]:
+    """
+    Analyze code quality and return score and issues.
+    تحليل جودة الكود وإرجاع النتيجة والمشاكل
+    """
+    fs = FileSystemManager()
+    copilot = AICopilot(None, fs)
+    diagnostics = copilot.get_code_diagnostics(code, language, "<analysis>")
+    
+    issues = diagnostics.get("issues", [])
+    summary = diagnostics.get("summary", {})
+    
+    # Calculate score (100 - penalties)
+    errors = summary.get("errors", 0)
+    warnings = summary.get("warnings", 0)
+    score = max(0, 100 - (errors * 20) - (warnings * 5))
+    
+    return {
+        "score": score,
+        "issues": issues,
+        "summary": summary,
+        "language": language
+    }

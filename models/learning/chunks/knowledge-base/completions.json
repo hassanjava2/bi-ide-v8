@@ -1,0 +1,83 @@
+[
+  {
+    "instruction": "أكمل هذا الكود (javascript):",
+    "input": "async function fetchUsers() {\n    const response = await fetch",
+    "output": "async function fetchUsers() {\n    const response = await fetch('/api/users');\n    if (!response.ok) throw new Error('Failed to fetch');\n    return await response.json();\n}",
+    "metadata": {
+      "language": "javascript",
+      "type": "code_completion"
+    }
+  },
+  {
+    "instruction": "أكمل هذا الكود (javascript):",
+    "input": "const handleSubmit = (e) => {\n    e.preventDefault",
+    "output": "const handleSubmit = (e) => {\n    e.preventDefault();\n    const formData = new FormData(e.target);\n    // معالجة البيانات\n}",
+    "metadata": {
+      "language": "javascript",
+      "type": "code_completion"
+    }
+  },
+  {
+    "instruction": "أكمل هذا الكود (javascript):",
+    "input": "useEffect(() => {\n    const controller = new AbortController",
+    "output": "useEffect(() => {\n    const controller = new AbortController();\n    \n    async function fetchData() {\n        try {\n            const response = await fetch(url, { signal: controller.signal });\n            const data = await response.json();\n            setData(data);\n        } catch (error) {\n            if (error.name !== 'AbortError') {\n                setError(error);\n            }\n        }\n    }\n    \n    fetchData();\n    return () => controller.abort();\n}, [url]);",
+    "metadata": {
+      "language": "javascript",
+      "type": "code_completion"
+    }
+  },
+  {
+    "instruction": "أكمل هذا الكود (javascript):",
+    "input": "const sortedItems = items.sort((a, b)",
+    "output": "const sortedItems = items.sort((a, b) => a.name.localeCompare(b.name));",
+    "metadata": {
+      "language": "javascript",
+      "type": "code_completion"
+    }
+  },
+  {
+    "instruction": "أكمل هذا الكود (javascript):",
+    "input": "const filteredUsers = users.filter(user",
+    "output": "const filteredUsers = users.filter(user => user.isActive && user.role === \"admin\");",
+    "metadata": {
+      "language": "javascript",
+      "type": "code_completion"
+    }
+  },
+  {
+    "instruction": "أكمل هذا الكود (python):",
+    "input": "def read_file(filepath):\n    with open(filepath",
+    "output": "def read_file(filepath):\n    with open(filepath, 'r', encoding='utf-8') as f:\n        return f.read()",
+    "metadata": {
+      "language": "python",
+      "type": "code_completion"
+    }
+  },
+  {
+    "instruction": "أكمل هذا الكود (python):",
+    "input": "class User:\n    def __init__(self",
+    "output": "class User:\n    def __init__(self, name: str, email: str):\n        self.name = name\n        self.email = email\n        self.created_at = datetime.now()",
+    "metadata": {
+      "language": "python",
+      "type": "code_completion"
+    }
+  },
+  {
+    "instruction": "أكمل هذا الكود (python):",
+    "input": "async def fetch_data(url: str)",
+    "output": "async def fetch_data(url: str) -> dict:\n    async with aiohttp.ClientSession() as session:\n        async with session.get(url) as response:\n            response.raise_for_status()\n            return await response.json()",
+    "metadata": {
+      "language": "python",
+      "type": "code_completion"
+    }
+  },
+  {
+    "instruction": "أكمل هذا الكود (python):",
+    "input": "items = [item for item in",
+    "output": "items = [item for item in data if item.get(\"active\") and item[\"price\"] > 0]",
+    "metadata": {
+      "language": "python",
+      "type": "code_completion"
+    }
+  }
+]

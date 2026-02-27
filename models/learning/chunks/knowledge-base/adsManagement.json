@@ -1,0 +1,71 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-30T18:40:40.502Z",
+  "categories": {
+    "basics": [
+      "CPC, CPM, CPA, CPV, CPI, CPL",
+      "CTR, Conversion Rate, ROAS",
+      "Quality Score, Relevance Score",
+      "Attribution Models",
+      "نماذج التسعير والميزانية"
+    ],
+    "googleAds": [
+      "Search Ads - إعلانات البحث",
+      "Display Ads - إعلانات العرض",
+      "Video Ads (YouTube)",
+      "Shopping Ads",
+      "Performance Max",
+      "Keyword Research & Matching",
+      "Smart Bidding Strategies",
+      "Audience Targeting",
+      "Extensions & Assets"
+    ],
+    "metaAds": [
+      "Facebook Ads",
+      "Instagram Ads",
+      "Campaign Objectives",
+      "Ad Formats (Image, Video, Carousel, Stories, Reels)",
+      "Custom & Lookalike Audiences",
+      "Meta Pixel & Conversions API",
+      "Catalog & Dynamic Ads",
+      "Advantage+ Shopping"
+    ],
+    "otherPlatforms": [
+      "TikTok Ads",
+      "LinkedIn Ads",
+      "Twitter/X Ads",
+      "Programmatic Advertising",
+      "Native Advertising"
+    ],
+    "strategies": [
+      "Full-Funnel Marketing",
+      "Retargeting & Remarketing",
+      "A/B Testing",
+      "Budget Allocation",
+      "Scaling Strategies",
+      "Creative Best Practices"
+    ],
+    "analytics": [
+      "Conversion Tracking",
+      "Attribution Models",
+      "Dashboard Building",
+      "KPIs & Reporting",
+      "Google Analytics Integration"
+    ],
+    "privacy": [
+      "GDPR Compliance",
+      "iOS 14+ / ATT",
+      "Cookie Consent",
+      "Server-Side Tracking"
+    ]
+  },
+  "platforms": [
+    "Google Ads",
+    "Meta Ads",
+    "TikTok Ads",
+    "LinkedIn Ads",
+    "Twitter/X Ads",
+    "Programmatic"
+  ],
+  "totalExamples": 44
+}

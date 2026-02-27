@@ -1,0 +1,26 @@
+[
+  {
+    "index": 0,
+    "key": "topics",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\learned-knowledge\\topics.json",
+    "count": 221
+  },
+  {
+    "index": 1,
+    "key": "questions",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\learned-knowledge\\questions.json",
+    "count": 0
+  },
+  {
+    "index": 2,
+    "key": "codeSnippets",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\learned-knowledge\\codeSnippets.json",
+    "count": 0
+  },
+  {
+    "index": 3,
+    "key": "errors",
+    "path": "D:\\bi ide\\models\\learning\\chunks\\learned-knowledge\\errors.json",
+    "count": 0
+  }
+]

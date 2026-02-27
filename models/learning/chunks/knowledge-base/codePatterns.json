@@ -1,0 +1,78 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-30T18:31:24.056Z",
+  "errorPatterns": {
+    "javascript": {
+      "syntaxErrors": [
+        "missing_semicolon",
+        "unclosed_bracket",
+        "unclosed_parenthesis",
+        "unclosed_string",
+        "unexpected_token"
+      ],
+      "referenceErrors": [
+        "undefined_variable",
+        "use_before_define"
+      ],
+      "typeErrors": [
+        "null_undefined_access",
+        "not_a_function",
+        "array_method_on_non_array"
+      ],
+      "logicErrors": [
+        "equality_vs_assignment",
+        "loose_equality",
+        "infinite_loop",
+        "always_true_condition"
+      ],
+      "asyncErrors": [
+        "missing_await",
+        "await_outside_async",
+        "unhandled_promise"
+      ],
+      "bestPracticeViolations": [
+        "var_instead_of_const_let",
+        "console_in_production",
+        "magic_numbers",
+        "nested_ternary"
+      ]
+    },
+    "python": {
+      "syntaxErrors": [
+        "indentation_error",
+        "missing_colon",
+        "invalid_syntax_print"
+      ],
+      "typeErrors": [
+        "string_int_concat",
+        "none_subscriptable"
+      ],
+      "nameErrors": [
+        "undefined_name",
+        "self_missing"
+      ],
+      "logicErrors": [
+        "mutable_default_argument",
+        "comparing_to_none",
+        "bare_except"
+      ]
+    },
+    "java": {
+      "syntaxErrors": [
+        "missing_semicolon",
+        "missing_main_method"
+      ],
+      "nullPointerExceptions": [
+        "null_reference"
+      ],
+      "resourceLeaks": [
+        "unclosed_stream"
+      ]
+    }
+  },
+  "goodPatterns": {
+    "javascript": 8,
+    "python": 6
+  },
+  "totalExamples": 27
+}

@@ -1,0 +1,12 @@
+{
+  "total_samples": 516,
+  "categories": {
+    "error_detection": 66,
+    "error_fixing": 37,
+    "code_generation": 27,
+    "code_completion": 9,
+    "qa_pairs": 8,
+    "best_practices": 0,
+    "debugging": 236
+  }
+}

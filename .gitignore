@@ -91,6 +91,9 @@ huggingface/
 
 # Checkpoint archives
 checkpoints_backup*
+training/v6-scripts/artifacts/
+**/artifacts.tar.part-*
+**/artifacts.tar
 
 # Import staging dirs
 import_from_linux*/
@@ -99,6 +102,13 @@ import_ok/
 # Model files (use Git LFS or cloud storage)
 *.model
 *.h5
+
+# Model directories (large files - use cloud storage)
+models/cache/
+models/finetuned/
+models/learning/
+models/checkpoints/
+!models/.gitkeep  # Keep directory structure
 
 # Temporary files
 *.tmp

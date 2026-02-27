@@ -8,7 +8,6 @@
 - توليد كود Python للطبقات الجديدة
 - إدارة حياة الطبقات (بناء/تدمير)
 """
-import sys; sys.path.insert(0, '.'); import encoding_fix; encoding_fix.safe_print("")
 
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any, Callable, Type

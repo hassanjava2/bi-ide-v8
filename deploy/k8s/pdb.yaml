@@ -1,0 +1,63 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bi-ide-api-pdb
+  namespace: bi-ide-v8
+  labels:
+    app: bi-ide-api
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: bi-ide-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bi-ide-ui-pdb
+  namespace: bi-ide-v8
+  labels:
+    app: bi-ide-ui
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: bi-ide-ui
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: bi-ide-worker-pdb
+  namespace: bi-ide-v8
+  labels:
+    app: bi-ide-worker
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: bi-ide-worker
+---
+# PriorityClass for critical components
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: bi-ide-critical
+value: 1000000
+globalDefault: false
+description: "Critical BI-IDE components that must not be preempted"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: bi-ide-high
+value: 100000
+globalDefault: false
+description: "High priority BI-IDE components"
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: bi-ide-standard
+value: 10000
+globalDefault: true
+description: "Standard priority for BI-IDE workloads"

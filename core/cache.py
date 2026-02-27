@@ -4,9 +4,6 @@ Supports Redis and in-memory fallback
 """
 import asyncio
 import sys
-sys.path.insert(0, '.')
-import encoding_fix
-
 import os
 import json
 import pickle

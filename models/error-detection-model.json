@@ -1,0 +1,4690 @@
+{
+  "patterns": {
+    "javascript:JS_SYNTAX_001": {
+      "id": "JS_SYNTAX_001",
+      "name": "Unexpected token",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "رمز غير متوقع في الكود",
+      "examples": [
+        {
+          "code": "const x = {a: 1,}",
+          "error": "Unexpected token }"
+        },
+        {
+          "code": "function foo( { }",
+          "error": "Unexpected token {"
+        }
+      ],
+      "fixes": [
+        {
+          "pattern": {},
+          "replacement": "$1",
+          "description": "إزالة الفاصلة الزائدة"
+        },
+        {
+          "pattern": {},
+          "replacement": "({",
+          "description": "تصحيح الأقواس"
+        }
+      ],
+      "relatedErrors": [
+        "JS_SYNTAX_002",
+        "JS_SYNTAX_003"
+      ],
+      "documentation": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Unexpected_token",
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SYNTAX_002": {
+      "id": "JS_SYNTAX_002",
+      "name": "Missing semicolon",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "فاصلة منقوطة مفقودة",
+      "examples": [
+        {
+          "code": "const x = 5\nconst y = 10",
+          "error": "Missing semicolon"
+        }
+      ],
+      "fixes": [
+        {
+          "pattern": {},
+          "replacement": "$1;\n",
+          "description": "إضافة فاصلة منقوطة"
+        }
+      ],
+      "autoFixable": true,
+      "language": "javascript",
+      "weight": 2.34,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SYNTAX_003": {
+      "id": "JS_SYNTAX_003",
+      "name": "Unclosed bracket",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "قوس غير مغلق",
+      "examples": [
+        {
+          "code": "function foo() {",
+          "error": "Unexpected end of input"
+        },
+        {
+          "code": "const arr = [1, 2, 3",
+          "error": "Missing ]"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "bracket_matching",
+          "description": "إغلاق القوس المفقود"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 1,
+      "successRate": 0
+    },
+    "javascript:JS_SYNTAX_004": {
+      "id": "JS_SYNTAX_004",
+      "name": "Invalid assignment",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "تعيين غير صالح للقيمة",
+      "examples": [
+        {
+          "code": "5 = x",
+          "error": "Invalid left-hand side"
+        },
+        {
+          "code": "true = false",
+          "error": "Invalid left-hand side"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "swap_operands",
+          "description": "تبديل طرفي المعادلة"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SYNTAX_005": {
+      "id": "JS_SYNTAX_005",
+      "name": "Unterminated string",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "نص غير مغلق",
+      "examples": [
+        {
+          "code": "const str = 'hello",
+          "error": "Unterminated string literal"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "close_string",
+          "description": "إغلاق النص"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SYNTAX_006": {
+      "id": "JS_SYNTAX_006",
+      "name": "Reserved word",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "استخدام كلمة محجوزة كمتغير",
+      "examples": [
+        {
+          "code": "const class = 5",
+          "error": "Unexpected reserved word"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "rename_variable",
+          "description": "إعادة تسمية المتغير"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SYNTAX_007": {
+      "id": "JS_SYNTAX_007",
+      "name": "Invalid regex",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "تعبير نمطي غير صالح",
+      "examples": [
+        {
+          "code": "/[/g",
+          "error": "Invalid regular expression"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "fix_regex",
+          "description": "تصحيح التعبير النمطي"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SYNTAX_008": {
+      "id": "JS_SYNTAX_008",
+      "name": "Duplicate parameter",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "اسم معامل مكرر",
+      "examples": [
+        {
+          "code": "function foo(a, a) {}",
+          "error": "Duplicate parameter"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "rename_param",
+          "description": "إعادة تسمية المعامل المكرر"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SYNTAX_009": {
+      "id": "JS_SYNTAX_009",
+      "name": "Illegal return",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "return خارج الدالة",
+      "examples": [
+        {
+          "code": "return 5;",
+          "error": "Illegal return statement"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "wrap_in_function",
+          "description": "وضع الكود داخل دالة"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SYNTAX_010": {
+      "id": "JS_SYNTAX_010",
+      "name": "Illegal break",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "break خارج الحلقة",
+      "examples": [
+        {
+          "code": "break;",
+          "error": "Illegal break statement"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "remove_or_wrap",
+          "description": "إزالة أو وضع داخل حلقة"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_REF_001": {
+      "id": "JS_REF_001",
+      "name": "Variable not defined",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "reference",
+      "description": "متغير غير معرف",
+      "examples": [
+        {
+          "code": "console.log(undefinedVar)",
+          "error": "undefinedVar is not defined"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "declare_variable",
+          "description": "تعريف المتغير"
+        },
+        {
+          "type": "check_spelling",
+          "description": "التحقق من الإملاء"
+        },
+        {
+          "type": "import_module",
+          "description": "استيراد الوحدة"
+        }
+      ],
+      "suggestions": [
+        "تأكد من تعريف المتغير قبل استخدامه",
+        "تحقق من إملاء اسم المتغير",
+        "قد تحتاج لاستيراد وحدة خارجية"
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 1,
+      "successRate": 0
+    },
+    "javascript:JS_REF_002": {
+      "id": "JS_REF_002",
+      "name": "Cannot access before initialization",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "reference",
+      "description": "الوصول قبل التهيئة (TDZ)",
+      "examples": [
+        {
+          "code": "console.log(x);\nlet x = 5;",
+          "error": "Cannot access 'x' before initialization"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "move_declaration",
+          "description": "نقل التعريف للأعلى"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_REF_003": {
+      "id": "JS_REF_003",
+      "name": "Assignment to constant",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "reference",
+      "description": "محاولة تغيير ثابت",
+      "examples": [
+        {
+          "code": "const x = 5;\nx = 10;",
+          "error": "Assignment to constant variable"
+        }
+      ],
+      "fixes": [
+        {
+          "pattern": {},
+          "replacement": "let $1",
+          "description": "تغيير const إلى let"
+        }
+      ],
+      "autoFixable": true,
+      "language": "javascript",
+      "weight": 2.34,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_REF_004": {
+      "id": "JS_REF_004",
+      "name": "Super not allowed",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "reference",
+      "description": "super في مكان غير مناسب",
+      "examples": [
+        {
+          "code": "super();",
+          "error": "super keyword is unexpected"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_class_context",
+          "description": "وضع داخل كلاس"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_REF_005": {
+      "id": "JS_REF_005",
+      "name": "Identifier already declared",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "reference",
+      "description": "معرف معلن مسبقاً",
+      "examples": [
+        {
+          "code": "let x = 5;\nlet x = 10;",
+          "error": "Identifier 'x' has already been declared"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "rename_or_remove",
+          "description": "إعادة التسمية أو الإزالة"
+        },
+        {
+          "type": "use_assignment",
+          "description": "استخدام التعيين بدل التعريف"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_TYPE_001": {
+      "id": "JS_TYPE_001",
+      "name": "Cannot read property of undefined",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "قراءة خاصية من undefined أو null",
+      "examples": [
+        {
+          "code": "const obj = undefined;\nconsole.log(obj.name);",
+          "error": "Cannot read property 'name' of undefined"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "optional_chaining",
+          "description": "استخدام Optional Chaining (?.)"
+        },
+        {
+          "type": "null_check",
+          "description": "إضافة فحص null"
+        },
+        {
+          "type": "default_value",
+          "description": "قيمة افتراضية"
+        }
+      ],
+      "codeTransforms": [
+        {
+          "from": {},
+          "to": "$1?.$2"
+        },
+        {
+          "from": {},
+          "to": "($1 && $1.$2)"
+        },
+        {
+          "from": {},
+          "to": "($1 || {}).$2"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_TYPE_002": {
+      "id": "JS_TYPE_002",
+      "name": "Not a function",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "استدعاء غير دالة كدالة",
+      "examples": [
+        {
+          "code": "const x = 5;\nx();",
+          "error": "x is not a function"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "check_type",
+          "description": "التحقق من نوع المتغير"
+        },
+        {
+          "type": "check_method_name",
+          "description": "التحقق من اسم الدالة"
+        }
+      ],
+      "suggestions": [
+        "تأكد أن المتغير يحتوي على دالة",
+        "تحقق من إملاء اسم الدالة",
+        "قد تكون الدالة غير معرفة في الكائن"
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 1,
+      "successRate": 0
+    },
+    "javascript:JS_TYPE_003": {
+      "id": "JS_TYPE_003",
+      "name": "Cannot set property",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "تعيين خاصية على undefined أو null",
+      "examples": [
+        {
+          "code": "const obj = undefined;\nobj.name = \"test\";",
+          "error": "Cannot set property 'name' of undefined"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "initialize_object",
+          "description": "تهيئة الكائن"
+        },
+        {
+          "type": "null_check",
+          "description": "فحص null قبل التعيين"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_TYPE_004": {
+      "id": "JS_TYPE_004",
+      "name": "Not iterable",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "محاولة التكرار على قيمة غير قابلة للتكرار",
+      "examples": [
+        {
+          "code": "for(const x of undefined) {}",
+          "error": "undefined is not iterable"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "convert_to_array",
+          "description": "تحويل إلى مصفوفة"
+        },
+        {
+          "type": "default_array",
+          "description": "مصفوفة افتراضية فارغة"
+        }
+      ],
+      "codeTransforms": [
+        {
+          "from": {},
+          "to": "for ($1 $2 of ($3 || []))"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 1,
+      "successRate": 0
+    },
+    "javascript:JS_TYPE_005": {
+      "id": "JS_TYPE_005",
+      "name": "Cannot destructure",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "محاولة تفكيك قيمة undefined أو null",
+      "examples": [
+        {
+          "code": "const { name } = undefined;",
+          "error": "Cannot destructure property 'name' of 'undefined'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "default_object",
+          "description": "كائن افتراضي"
+        }
+      ],
+      "codeTransforms": [
+        {
+          "from": {},
+          "to": "$1 = $2 || {}"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_TYPE_006": {
+      "id": "JS_TYPE_006",
+      "name": "Not a constructor",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "استخدام new مع غير constructor",
+      "examples": [
+        {
+          "code": "const x = () => {};\nnew x();",
+          "error": "x is not a constructor"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_function",
+          "description": "استخدام function بدل arrow function"
+        },
+        {
+          "type": "remove_new",
+          "description": "إزالة new"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_TYPE_007": {
+      "id": "JS_TYPE_007",
+      "name": "Cannot convert to primitive",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "تحويل فاشل لقيمة بدائية",
+      "examples": [
+        {
+          "code": "const obj = {}; obj + 5;",
+          "error": "Cannot convert object to primitive value"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_tostring",
+          "description": "استخدام toString()"
+        },
+        {
+          "type": "use_valueof",
+          "description": "استخدام valueOf()"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_TYPE_008": {
+      "id": "JS_TYPE_008",
+      "name": "Invalid array length",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "طول مصفوفة غير صالح",
+      "examples": [
+        {
+          "code": "new Array(-1)",
+          "error": "Invalid array length"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_positive_number",
+          "description": "استخدام رقم موجب"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_TYPE_009": {
+      "id": "JS_TYPE_009",
+      "name": "Reduce of empty array",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "reduce على مصفوفة فارغة بدون قيمة ابتدائية",
+      "examples": [
+        {
+          "code": "[].reduce((a, b) => a + b)",
+          "error": "Reduce of empty array with no initial value"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_initial_value",
+          "description": "إضافة قيمة ابتدائية"
+        }
+      ],
+      "codeTransforms": [
+        {
+          "from": {},
+          "to": ".reduce($1, 0)"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_TYPE_010": {
+      "id": "JS_TYPE_010",
+      "name": "Object is not extensible",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "محاولة إضافة خاصية لكائن مجمد",
+      "examples": [
+        {
+          "code": "const obj = Object.freeze({});\nobj.x = 5;",
+          "error": "object is not extensible"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "copy_object",
+          "description": "إنشاء نسخة من الكائن"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_RANGE_001": {
+      "id": "JS_RANGE_001",
+      "name": "Maximum call stack exceeded",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "range",
+      "description": "تجاوز حد الاستدعاءات (تكرار لانهائي)",
+      "examples": [
+        {
+          "code": "function foo() { foo(); }\nfoo();",
+          "error": "Maximum call stack size exceeded"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_base_case",
+          "description": "إضافة حالة أساسية للتكرار"
+        },
+        {
+          "type": "use_iteration",
+          "description": "استخدام حلقة بدل التكرار"
+        }
+      ],
+      "suggestions": [
+        "تأكد من وجود شرط إيقاف للتكرار",
+        "تحقق من أن الشرط سيتحقق",
+        "استخدم حلقة while/for بدل التكرار"
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_RANGE_002": {
+      "id": "JS_RANGE_002",
+      "name": "Invalid count value",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "range",
+      "description": "قيمة عدد غير صالحة",
+      "examples": [
+        {
+          "code": "\"x\".repeat(-1)",
+          "error": "Invalid count value"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_positive_integer",
+          "description": "استخدام عدد صحيح موجب"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_RANGE_003": {
+      "id": "JS_RANGE_003",
+      "name": "Invalid Date",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "range",
+      "description": "تاريخ غير صالح",
+      "examples": [
+        {
+          "code": "new Date(\"invalid\")",
+          "error": "Invalid Date"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "validate_date_input",
+          "description": "التحقق من صحة مدخل التاريخ"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_RANGE_004": {
+      "id": "JS_RANGE_004",
+      "name": "Number precision",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "range",
+      "description": "قيمة دقة غير صالحة",
+      "examples": [
+        {
+          "code": "(5).toFixed(101)",
+          "error": "toFixed() digits argument must be between 0 and 100"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_valid_precision",
+          "description": "استخدام قيمة 0-100"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_ASYNC_001": {
+      "id": "JS_ASYNC_001",
+      "name": "Unhandled promise rejection",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "async",
+      "description": "وعد مرفوض بدون معالجة",
+      "examples": [
+        {
+          "code": "fetch(url).then(r => r.json())",
+          "error": "Unhandled promise rejection"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_catch",
+          "description": "إضافة .catch()"
+        },
+        {
+          "type": "use_try_catch",
+          "description": "استخدام try/catch مع await"
+        }
+      ],
+      "codeTransforms": [
+        {
+          "from": {},
+          "to": ".then($1).catch(err => console.error(err))"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_ASYNC_002": {
+      "id": "JS_ASYNC_002",
+      "name": "Await outside async",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "async",
+      "description": "await خارج async function",
+      "examples": [
+        {
+          "code": "function foo() { await bar(); }",
+          "error": "await is only valid in async function"
+        }
+      ],
+      "fixes": [
+        {
+          "pattern": {},
+          "replacement": "async function $1(",
+          "description": "إضافة async للدالة"
+        },
+        {
+          "type": "use_then",
+          "description": "استخدام .then() بدل await"
+        }
+      ],
+      "autoFixable": true,
+      "language": "javascript",
+      "weight": 2.34,
+      "usageCount": 1,
+      "successRate": 0
+    },
+    "javascript:JS_ASYNC_003": {
+      "id": "JS_ASYNC_003",
+      "name": "Promise executor async",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "async",
+      "description": "Promise executor كـ async function",
+      "examples": [
+        {
+          "code": "new Promise(async (resolve) => {})",
+          "error": "Promise executor should not be async"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "remove_async",
+          "description": "إزالة async من executor"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_ASYNC_004": {
+      "id": "JS_ASYNC_004",
+      "name": "Missing await",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "async",
+      "description": "نسيان await",
+      "examples": [
+        {
+          "code": "async function getData() { return fetch(url); }",
+          "error": "returning a Promise without await"
+        }
+      ],
+      "fixes": [
+        {
+          "pattern": {},
+          "replacement": "return await $1",
+          "description": "إضافة await"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_ASYNC_005": {
+      "id": "JS_ASYNC_005",
+      "name": "Race condition",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "async",
+      "description": "حالة سباق محتملة",
+      "examples": [
+        {
+          "code": "setTimeout(() => setCount(count + 1), 1000)",
+          "error": "stale closure"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_callback",
+          "description": "استخدام callback pattern"
+        },
+        {
+          "type": "use_ref",
+          "description": "استخدام useRef"
+        }
+      ],
+      "codeTransforms": [
+        {
+          "from": {},
+          "to": "setCount(c => c + 1)"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_LOGIC_001": {
+      "id": "JS_LOGIC_001",
+      "name": "Off by one",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "logic",
+      "description": "خطأ بواحد (Off-by-one)",
+      "examples": [
+        {
+          "code": "arr[arr.length]",
+          "error": "Index out of bounds"
+        }
+      ],
+      "fixes": [
+        {
+          "pattern": {},
+          "replacement": "[$1.length - 1]",
+          "description": "تصحيح الفهرس"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_LOGIC_002": {
+      "id": "JS_LOGIC_002",
+      "name": "Type coercion issue",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "logic",
+      "description": "مقارنة بدون تحقق من النوع",
+      "examples": [
+        {
+          "code": "if (x == \"5\")",
+          "error": "type coercion issue"
+        }
+      ],
+      "fixes": [
+        {
+          "pattern": {},
+          "replacement": "===",
+          "description": "استخدام === بدل =="
+        },
+        {
+          "pattern": {},
+          "replacement": "!==",
+          "description": "استخدام !== بدل !="
+        }
+      ],
+      "autoFixable": true,
+      "language": "javascript",
+      "weight": 1.56,
+      "usageCount": 1,
+      "successRate": 0
+    },
+    "javascript:JS_LOGIC_003": {
+      "id": "JS_LOGIC_003",
+      "name": "Mutation of parameter",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "logic",
+      "description": "تعديل معامل الدالة",
+      "examples": [
+        {
+          "code": "function foo(arr) { arr[0] = 5; }",
+          "error": "mutating argument"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "copy_param",
+          "description": "إنشاء نسخة من المعامل"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_LOGIC_004": {
+      "id": "JS_LOGIC_004",
+      "name": "Infinite loop",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "logic",
+      "description": "حلقة لا نهائية محتملة",
+      "examples": [
+        {
+          "code": "while(true) { }",
+          "error": "infinite loop"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_break_condition",
+          "description": "إضافة شرط إيقاف"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 1,
+      "successRate": 0
+    },
+    "javascript:JS_LOGIC_005": {
+      "id": "JS_LOGIC_005",
+      "name": "Unreachable code",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "logic",
+      "description": "كود لا يمكن الوصول إليه",
+      "examples": [
+        {
+          "code": "function foo() { return 5; console.log(\"never\"); }",
+          "error": "Unreachable code"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "remove_or_move",
+          "description": "إزالة أو نقل الكود"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_LOGIC_006": {
+      "id": "JS_LOGIC_006",
+      "name": "Assignment in condition",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "logic",
+      "description": "تعيين داخل شرط بدل مقارنة",
+      "examples": [
+        {
+          "code": "if (x = 5)",
+          "error": "assignment in condition"
+        }
+      ],
+      "fixes": [
+        {
+          "pattern": {},
+          "replacement": "===",
+          "description": "تحويل = إلى ==="
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 1,
+      "successRate": 0
+    },
+    "javascript:JS_LOGIC_007": {
+      "id": "JS_LOGIC_007",
+      "name": "Empty catch block",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "logic",
+      "description": "كتلة catch فارغة",
+      "examples": [
+        {
+          "code": "try { } catch(e) { }",
+          "error": "empty catch block"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_error_handling",
+          "description": "إضافة معالجة للخطأ"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_LOGIC_008": {
+      "id": "JS_LOGIC_008",
+      "name": "Floating point precision",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "logic",
+      "description": "مشكلة دقة الأرقام العشرية",
+      "examples": [
+        {
+          "code": "0.1 + 0.2 === 0.3",
+          "error": "floating point precision"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_tofixed",
+          "description": "استخدام toFixed()"
+        },
+        {
+          "type": "use_epsilon",
+          "description": "استخدام Number.EPSILON"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_PERF_001": {
+      "id": "JS_PERF_001",
+      "name": "Memory leak - event listener",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "performance",
+      "description": "تسرب ذاكرة - مستمع حدث غير محذوف",
+      "examples": [
+        {
+          "code": "window.addEventListener(\"resize\", handler)",
+          "error": "memory leak"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_cleanup",
+          "description": "إضافة تنظيف في componentWillUnmount/useEffect cleanup"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_PERF_002": {
+      "id": "JS_PERF_002",
+      "name": "Memory leak - interval",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "performance",
+      "description": "تسرب ذاكرة - interval غير محذوف",
+      "examples": [
+        {
+          "code": "setInterval(() => {}, 1000)",
+          "error": "interval memory leak"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "save_and_clear",
+          "description": "حفظ ID وإزالة عند الحاجة"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_PERF_003": {
+      "id": "JS_PERF_003",
+      "name": "Unnecessary re-render",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "performance",
+      "description": "إعادة رسم غير ضرورية",
+      "examples": [
+        {
+          "code": "useEffect(() => { setState(1); })",
+          "error": "infinite render loop"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_dependency_array",
+          "description": "إضافة مصفوفة التبعيات"
+        },
+        {
+          "type": "use_usememo",
+          "description": "استخدام useMemo/useCallback"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_PERF_004": {
+      "id": "JS_PERF_004",
+      "name": "Large bundle size",
+      "pattern": {},
+      "regex": {},
+      "severity": "info",
+      "category": "performance",
+      "description": "استيراد مكتبة كاملة بدلاً من الوظائف المطلوبة",
+      "examples": [
+        {
+          "code": "import _ from 'lodash'",
+          "error": "importing entire library"
+        }
+      ],
+      "fixes": [
+        {
+          "pattern": {},
+          "replacement": "import { debounce } from 'lodash/debounce'",
+          "description": "استيراد الدوال المحددة فقط"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_PERF_005": {
+      "id": "JS_PERF_005",
+      "name": "N+1 queries",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "performance",
+      "description": "استعلامات N+1",
+      "examples": [
+        {
+          "code": "for(const user of users) { await db.findPosts(user.id); }",
+          "error": "N+1 queries"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "batch_query",
+          "description": "استخدام استعلام واحد مع IN"
+        }
+      ],
+      "language": "javascript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SEC_001": {
+      "id": "JS_SEC_001",
+      "name": "XSS vulnerability",
+      "pattern": {},
+      "regex": {},
+      "severity": "critical",
+      "category": "security",
+      "description": "ثغرة XSS محتملة",
+      "examples": [
+        {
+          "code": "element.innerHTML = userInput",
+          "error": "XSS vulnerability"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_textcontent",
+          "description": "استخدام textContent بدل innerHTML"
+        },
+        {
+          "type": "sanitize_input",
+          "description": "تعقيم المدخلات"
+        }
+      ],
+      "language": "javascript",
+      "weight": 2.4,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SEC_002": {
+      "id": "JS_SEC_002",
+      "name": "SQL injection",
+      "pattern": {},
+      "regex": {},
+      "severity": "critical",
+      "category": "security",
+      "description": "ثغرة SQL Injection",
+      "examples": [
+        {
+          "code": "db.query(`SELECT * FROM users WHERE id = ${userId}`)",
+          "error": "SQL injection"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_parameterized",
+          "description": "استخدام استعلامات معلمة"
+        }
+      ],
+      "language": "javascript",
+      "weight": 2.4,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SEC_003": {
+      "id": "JS_SEC_003",
+      "name": "Eval usage",
+      "pattern": {},
+      "regex": {},
+      "severity": "critical",
+      "category": "security",
+      "description": "استخدام eval الخطير",
+      "examples": [
+        {
+          "code": "eval(userInput)",
+          "error": "eval is dangerous"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_json_parse",
+          "description": "استخدام JSON.parse لـ JSON"
+        },
+        {
+          "type": "use_safe_alternative",
+          "description": "استخدام بديل آمن"
+        }
+      ],
+      "language": "javascript",
+      "weight": 2.4,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SEC_004": {
+      "id": "JS_SEC_004",
+      "name": "Sensitive data exposure",
+      "pattern": {},
+      "regex": {},
+      "severity": "critical",
+      "category": "security",
+      "description": "تسريب بيانات حساسة",
+      "examples": [
+        {
+          "code": "console.log(\"Password:\", password)",
+          "error": "sensitive data exposure"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "remove_logging",
+          "description": "إزالة تسجيل البيانات الحساسة"
+        }
+      ],
+      "language": "javascript",
+      "weight": 2.4,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SEC_005": {
+      "id": "JS_SEC_005",
+      "name": "Hardcoded credentials",
+      "pattern": {},
+      "regex": {},
+      "severity": "critical",
+      "category": "security",
+      "description": "بيانات اعتماد مكتوبة في الكود",
+      "examples": [
+        {
+          "code": "const apiKey = \"sk-12345\"",
+          "error": "hardcoded credentials"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_env_vars",
+          "description": "استخدام متغيرات البيئة"
+        }
+      ],
+      "language": "javascript",
+      "weight": 2.4,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "javascript:JS_SEC_006": {
+      "id": "JS_SEC_006",
+      "name": "Prototype pollution",
+      "pattern": {},
+      "regex": {},
+      "severity": "critical",
+      "category": "security",
+      "description": "تلوث Prototype",
+      "examples": [
+        {
+          "code": "obj[key] = value // key could be __proto__",
+          "error": "prototype pollution"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "validate_key",
+          "description": "التحقق من المفتاح قبل التعيين"
+        }
+      ],
+      "language": "javascript",
+      "weight": 2.4,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "typescript:TS_TYPE_001": {
+      "id": "TS_TYPE_001",
+      "name": "Type mismatch",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "عدم تطابق الأنواع",
+      "examples": [
+        {
+          "code": "const x: string = 5;",
+          "error": "Type 'number' is not assignable to type 'string'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "change_type",
+          "description": "تغيير نوع المتغير"
+        },
+        {
+          "type": "cast_value",
+          "description": "تحويل القيمة"
+        }
+      ],
+      "language": "typescript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "typescript:TS_TYPE_002": {
+      "id": "TS_TYPE_002",
+      "name": "Property does not exist",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "الخاصية غير موجودة في النوع",
+      "examples": [
+        {
+          "code": "const obj: {} = {};\nobj.name;",
+          "error": "Property 'name' does not exist on type '{}'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_property_to_type",
+          "description": "إضافة الخاصية للنوع"
+        },
+        {
+          "type": "use_type_assertion",
+          "description": "استخدام type assertion"
+        }
+      ],
+      "language": "typescript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "typescript:TS_TYPE_003": {
+      "id": "TS_TYPE_003",
+      "name": "Object possibly undefined",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "الكائن قد يكون undefined",
+      "examples": [
+        {
+          "code": "function foo(x?: string) { return x.length; }",
+          "error": "Object is possibly 'undefined'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_null_check",
+          "description": "إضافة فحص null"
+        },
+        {
+          "type": "use_optional_chaining",
+          "description": "استخدام ?."
+        },
+        {
+          "type": "use_non_null_assertion",
+          "description": "استخدام !"
+        }
+      ],
+      "language": "typescript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "typescript:TS_TYPE_004": {
+      "id": "TS_TYPE_004",
+      "name": "Argument type mismatch",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "نوع المعامل غير متوافق",
+      "examples": [
+        {
+          "code": "function foo(x: number) {}\nfoo(\"5\");",
+          "error": "Argument of type 'string' is not assignable to parameter of type 'number'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "convert_argument",
+          "description": "تحويل المعامل"
+        },
+        {
+          "type": "change_function_signature",
+          "description": "تغيير توقيع الدالة"
+        }
+      ],
+      "language": "typescript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "typescript:TS_TYPE_005": {
+      "id": "TS_TYPE_005",
+      "name": "Missing property",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "خاصية مطلوبة مفقودة",
+      "examples": [
+        {
+          "code": "interface User { name: string; }\nconst user: User = {};",
+          "error": "Property 'name' is missing"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_missing_property",
+          "description": "إضافة الخاصية المفقودة"
+        },
+        {
+          "type": "make_optional",
+          "description": "جعل الخاصية اختيارية"
+        }
+      ],
+      "language": "typescript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "typescript:TS_TYPE_006": {
+      "id": "TS_TYPE_006",
+      "name": "Generic type requires arguments",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "النوع العام يتطلب معاملات",
+      "examples": [
+        {
+          "code": "const arr: Array = [];",
+          "error": "Generic type 'Array' requires 1 type argument"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_type_argument",
+          "description": "إضافة معامل النوع"
+        }
+      ],
+      "language": "typescript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "typescript:TS_TYPE_007": {
+      "id": "TS_TYPE_007",
+      "name": "Cannot find module",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "import",
+      "description": "لا يمكن إيجاد الوحدة",
+      "examples": [
+        {
+          "code": "import x from 'nonexistent';",
+          "error": "Cannot find module 'nonexistent'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "install_package",
+          "description": "تثبيت الحزمة"
+        },
+        {
+          "type": "create_declaration",
+          "description": "إنشاء ملف تعريف"
+        }
+      ],
+      "language": "typescript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "typescript:TS_TYPE_008": {
+      "id": "TS_TYPE_008",
+      "name": "No overload matches",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "لا يوجد overload مطابق",
+      "examples": [
+        {
+          "code": "addEventListener(\"click\", (e: number) => {})",
+          "error": "No overload matches this call"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "fix_arguments",
+          "description": "تصحيح المعاملات"
+        }
+      ],
+      "language": "typescript",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "typescript:TS_TYPE_009": {
+      "id": "TS_TYPE_009",
+      "name": "Implicit any",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "type",
+      "description": "نوع any ضمني",
+      "examples": [
+        {
+          "code": "function foo(x) { return x; }",
+          "error": "Parameter 'x' implicitly has an 'any' type"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_type_annotation",
+          "description": "إضافة تحديد النوع"
+        }
+      ],
+      "language": "typescript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "typescript:TS_TYPE_010": {
+      "id": "TS_TYPE_010",
+      "name": "This implicitly has any",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "type",
+      "description": "this له نوع any ضمني",
+      "examples": [
+        {
+          "code": "const obj = { foo() { return this.bar; } }",
+          "error": "'this' implicitly has type 'any'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_this_type",
+          "description": "إضافة نوع this"
+        }
+      ],
+      "language": "typescript",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_SYNTAX_001": {
+      "id": "PY_SYNTAX_001",
+      "name": "IndentationError",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "خطأ في المسافة البادئة",
+      "examples": [
+        {
+          "code": "if True:\nprint(\"hi\")",
+          "error": "IndentationError: expected an indented block"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "fix_indentation",
+          "description": "تصحيح المسافة البادئة"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_SYNTAX_002": {
+      "id": "PY_SYNTAX_002",
+      "name": "SyntaxError colon",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "نقطتين مفقودة",
+      "examples": [
+        {
+          "code": "if True\n    print(\"hi\")",
+          "error": "SyntaxError: expected ':'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_colon",
+          "description": "إضافة النقطتين"
+        }
+      ],
+      "autoFixable": true,
+      "language": "python",
+      "weight": 2.34,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_SYNTAX_003": {
+      "id": "PY_SYNTAX_003",
+      "name": "Invalid syntax",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "صياغة غير صالحة",
+      "examples": [
+        {
+          "code": "x = 5 +",
+          "error": "SyntaxError: invalid syntax"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "complete_expression",
+          "description": "إكمال التعبير"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_SYNTAX_004": {
+      "id": "PY_SYNTAX_004",
+      "name": "EOL in string",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "نص غير مغلق",
+      "examples": [
+        {
+          "code": "x = 'hello",
+          "error": "EOL while scanning string literal"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "close_string",
+          "description": "إغلاق النص"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_SYNTAX_005": {
+      "id": "PY_SYNTAX_005",
+      "name": "Unmatched parenthesis",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "قوس غير متطابق",
+      "examples": [
+        {
+          "code": "print((5 + 3)",
+          "error": "unmatched parenthesis"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "match_brackets",
+          "description": "مطابقة الأقواس"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_TYPE_001": {
+      "id": "PY_TYPE_001",
+      "name": "TypeError operand",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "عملية غير مدعومة بين الأنواع",
+      "examples": [
+        {
+          "code": "\"5\" + 3",
+          "error": "TypeError: unsupported operand type(s) for +"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "convert_type",
+          "description": "تحويل النوع"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_TYPE_002": {
+      "id": "PY_TYPE_002",
+      "name": "TypeError not callable",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "الكائن غير قابل للاستدعاء",
+      "examples": [
+        {
+          "code": "x = 5\nx()",
+          "error": "TypeError: 'int' object is not callable"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "check_callable",
+          "description": "التحقق من أن الكائن قابل للاستدعاء"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_TYPE_003": {
+      "id": "PY_TYPE_003",
+      "name": "TypeError not subscriptable",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "الكائن غير قابل للفهرسة",
+      "examples": [
+        {
+          "code": "x = 5\nx[0]",
+          "error": "TypeError: 'int' object is not subscriptable"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "check_subscriptable",
+          "description": "التحقق من نوع الكائن"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_TYPE_004": {
+      "id": "PY_TYPE_004",
+      "name": "TypeError not iterable",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "الكائن غير قابل للتكرار",
+      "examples": [
+        {
+          "code": "for x in 5: pass",
+          "error": "TypeError: 'int' object is not iterable"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "make_iterable",
+          "description": "تحويل لكائن قابل للتكرار"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_TYPE_005": {
+      "id": "PY_TYPE_005",
+      "name": "TypeError argument",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "خطأ في نوع المعامل",
+      "examples": [
+        {
+          "code": "len(5)",
+          "error": "TypeError: object of type 'int' has no len()"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "fix_argument_type",
+          "description": "تصحيح نوع المعامل"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_NAME_001": {
+      "id": "PY_NAME_001",
+      "name": "NameError not defined",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "reference",
+      "description": "اسم غير معرف",
+      "examples": [
+        {
+          "code": "print(undefined_var)",
+          "error": "NameError: name 'undefined_var' is not defined"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "define_variable",
+          "description": "تعريف المتغير"
+        },
+        {
+          "type": "check_spelling",
+          "description": "التحقق من الإملاء"
+        },
+        {
+          "type": "import_module",
+          "description": "استيراد الوحدة"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_NAME_002": {
+      "id": "PY_NAME_002",
+      "name": "NameError global",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "reference",
+      "description": "متغير عام غير معرف",
+      "examples": [
+        {
+          "code": "def foo():\n    global x\n    x += 1",
+          "error": "NameError: name 'x' is not defined"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "define_global",
+          "description": "تعريف المتغير العام"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_ATTR_001": {
+      "id": "PY_ATTR_001",
+      "name": "AttributeError",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "attribute",
+      "description": "الكائن لا يملك هذه الخاصية",
+      "examples": [
+        {
+          "code": "\"hello\".foo()",
+          "error": "AttributeError: 'str' object has no attribute 'foo'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "check_attribute",
+          "description": "التحقق من الخاصية"
+        },
+        {
+          "type": "use_hasattr",
+          "description": "استخدام hasattr()"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_ATTR_002": {
+      "id": "PY_ATTR_002",
+      "name": "AttributeError NoneType",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "attribute",
+      "description": "محاولة الوصول لخاصية من None",
+      "examples": [
+        {
+          "code": "x = None\nx.foo()",
+          "error": "AttributeError: 'NoneType' object has no attribute 'foo'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "check_none",
+          "description": "فحص None قبل الوصول"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_INDEX_001": {
+      "id": "PY_INDEX_001",
+      "name": "IndexError",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "index",
+      "description": "فهرس خارج النطاق",
+      "examples": [
+        {
+          "code": "x = [1, 2]\nx[5]",
+          "error": "IndexError: list index out of range"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "check_bounds",
+          "description": "التحقق من حدود المصفوفة"
+        },
+        {
+          "type": "use_try_except",
+          "description": "استخدام try/except"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_KEY_001": {
+      "id": "PY_KEY_001",
+      "name": "KeyError",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "key",
+      "description": "مفتاح غير موجود",
+      "examples": [
+        {
+          "code": "d = {}; d['key']",
+          "error": "KeyError: 'key'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_get",
+          "description": "استخدام .get()"
+        },
+        {
+          "type": "check_key",
+          "description": "فحص المفتاح أولاً"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_VALUE_001": {
+      "id": "PY_VALUE_001",
+      "name": "ValueError",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "value",
+      "description": "قيمة غير صالحة",
+      "examples": [
+        {
+          "code": "int(\"abc\")",
+          "error": "ValueError: invalid literal for int() with base 10: 'abc'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "validate_input",
+          "description": "التحقق من صحة المدخل"
+        },
+        {
+          "type": "use_try_except",
+          "description": "استخدام try/except"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_IMPORT_001": {
+      "id": "PY_IMPORT_001",
+      "name": "ModuleNotFoundError",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "import",
+      "description": "الوحدة غير موجودة",
+      "examples": [
+        {
+          "code": "import nonexistent",
+          "error": "ModuleNotFoundError: No module named 'nonexistent'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "install_package",
+          "description": "تثبيت الحزمة (pip install)"
+        },
+        {
+          "type": "check_spelling",
+          "description": "التحقق من الإملاء"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_IMPORT_002": {
+      "id": "PY_IMPORT_002",
+      "name": "ImportError cannot import",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "import",
+      "description": "لا يمكن استيراد الاسم",
+      "examples": [
+        {
+          "code": "from os import nonexistent",
+          "error": "ImportError: cannot import name 'nonexistent'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "check_export",
+          "description": "التحقق من الصادرات"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "python:PY_IMPORT_003": {
+      "id": "PY_IMPORT_003",
+      "name": "Circular import",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "import",
+      "description": "استيراد دائري",
+      "examples": [
+        {
+          "code": "# a.py: from b import x\n# b.py: from a import y",
+          "error": "ImportError: circular import"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "restructure_imports",
+          "description": "إعادة هيكلة الاستيرادات"
+        },
+        {
+          "type": "lazy_import",
+          "description": "استخدام استيراد كسول"
+        }
+      ],
+      "language": "python",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_001": {
+      "id": "REACT_001",
+      "name": "Invalid hook call",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "hook",
+      "description": "استدعاء Hook خارج المكون",
+      "examples": [
+        {
+          "code": "const x = useState(0); // outside component",
+          "error": "Invalid hook call"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "move_inside_component",
+          "description": "نقل داخل المكون"
+        }
+      ],
+      "suggestions": [
+        "Hooks يجب استدعاءها داخل function component",
+        "لا تستدعِ hooks داخل حلقات أو شروط",
+        "تأكد من وجود نسخة واحدة من React"
+      ],
+      "language": "react",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_002": {
+      "id": "REACT_002",
+      "name": "Hook rules violation",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "hook",
+      "description": "استدعاء Hook داخل شرط",
+      "examples": [
+        {
+          "code": "if (condition) { const [x, setX] = useState(0); }",
+          "error": "Hook called conditionally"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "move_hook_outside_condition",
+          "description": "نقل Hook خارج الشرط"
+        }
+      ],
+      "language": "react",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_003": {
+      "id": "REACT_003",
+      "name": "Missing key prop",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "list",
+      "description": "مفتاح key مفقود",
+      "examples": [
+        {
+          "code": "items.map(item => <div>{item}</div>)",
+          "error": "Each child should have a unique \"key\" prop"
+        }
+      ],
+      "fixes": [
+        {
+          "pattern": {},
+          "replacement": ".map(($1, index) => <$2 key={index}",
+          "description": "إضافة key"
+        }
+      ],
+      "suggestions": [
+        "استخدم ID فريد إن وجد",
+        "تجنب استخدام index إلا للقوائم الثابتة"
+      ],
+      "language": "react",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_004": {
+      "id": "REACT_004",
+      "name": "Cannot update unmounted",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "lifecycle",
+      "description": "تحديث حالة لمكون تم إزالته",
+      "examples": [
+        {
+          "code": "useEffect(() => { fetch(url).then(() => setState(data)); }, [])",
+          "error": "Can't update unmounted component"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_cleanup",
+          "description": "إضافة cleanup function"
+        },
+        {
+          "type": "use_mounted_ref",
+          "description": "استخدام isMounted ref"
+        }
+      ],
+      "language": "react",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_005": {
+      "id": "REACT_005",
+      "name": "Too many re-renders",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "render",
+      "description": "إعادة رسم لا نهائية",
+      "examples": [
+        {
+          "code": "function App() { const [x, setX] = useState(0); setX(1); return <div/>; }",
+          "error": "Too many re-renders"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "wrap_in_effect",
+          "description": "وضع setState في useEffect"
+        },
+        {
+          "type": "wrap_in_handler",
+          "description": "وضع في event handler"
+        }
+      ],
+      "language": "react",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_006": {
+      "id": "REACT_006",
+      "name": "Prop types mismatch",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "props",
+      "description": "نوع prop غير متوافق",
+      "examples": [
+        {
+          "code": "<MyComp name={5} /> // name should be string",
+          "error": "Invalid prop `name` of type `number` supplied"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "fix_prop_type",
+          "description": "تصحيح نوع الـ prop"
+        }
+      ],
+      "language": "react",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_007": {
+      "id": "REACT_007",
+      "name": "Uncontrolled to controlled",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "input",
+      "description": "تحول من uncontrolled لـ controlled",
+      "examples": [
+        {
+          "code": "const [val, setVal] = useState();\n<input value={val} />",
+          "error": "changing uncontrolled to controlled"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "set_initial_value",
+          "description": "تعيين قيمة ابتدائية"
+        }
+      ],
+      "codeTransforms": [
+        {
+          "from": {},
+          "to": "useState('')"
+        }
+      ],
+      "language": "react",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_008": {
+      "id": "REACT_008",
+      "name": "UseEffect missing dependency",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "hook",
+      "description": "تبعية مفقودة في useEffect",
+      "examples": [
+        {
+          "code": "useEffect(() => { console.log(count); }, [])",
+          "error": "missing dependency: 'count'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_dependency",
+          "description": "إضافة التبعية"
+        },
+        {
+          "type": "use_callback",
+          "description": "استخدام useCallback"
+        }
+      ],
+      "language": "react",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_009": {
+      "id": "REACT_009",
+      "name": "JSX expressions must have one parent",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "jsx",
+      "description": "يجب أن يكون هناك عنصر أب واحد",
+      "examples": [
+        {
+          "code": "return <div/><span/>",
+          "error": "JSX expressions must have one parent element"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "wrap_in_fragment",
+          "description": "تغليف بـ Fragment"
+        }
+      ],
+      "language": "react",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_010": {
+      "id": "REACT_010",
+      "name": "Cannot read property setState",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "this",
+      "description": "this غير معرف في class component",
+      "examples": [
+        {
+          "code": "class App extends React.Component {\n  handleClick() { this.setState({}); }\n}",
+          "error": "Cannot read property setState of undefined"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "bind_method",
+          "description": "ربط الدالة في constructor"
+        },
+        {
+          "type": "use_arrow_function",
+          "description": "استخدام arrow function"
+        }
+      ],
+      "language": "react",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_HOOK_001": {
+      "id": "REACT_HOOK_001",
+      "name": "useState wrong update",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "hook",
+      "description": "تحديث state خاطئ",
+      "examples": [
+        {
+          "code": "setCount(count + 1) // in setTimeout",
+          "error": "state not updating correctly"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_updater_function",
+          "description": "استخدام updater function"
+        }
+      ],
+      "codeTransforms": [
+        {
+          "from": {},
+          "to": "setCount(c => c + 1)"
+        }
+      ],
+      "language": "react",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_HOOK_002": {
+      "id": "REACT_HOOK_002",
+      "name": "useEffect infinite loop",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "hook",
+      "description": "حلقة لا نهائية في useEffect",
+      "examples": [
+        {
+          "code": "useEffect(() => { setData(fetch()); })",
+          "error": "useEffect causing infinite loop"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_empty_deps",
+          "description": "إضافة مصفوفة تبعيات فارغة"
+        }
+      ],
+      "language": "react",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "react:REACT_HOOK_003": {
+      "id": "REACT_HOOK_003",
+      "name": "useMemo/useCallback unnecessary",
+      "pattern": {},
+      "regex": {},
+      "severity": "info",
+      "category": "performance",
+      "description": "useMemo/useCallback غير ضروري",
+      "examples": [
+        {
+          "code": "const x = useMemo(() => 5, [])",
+          "error": "unnecessary useMemo"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "remove_hook",
+          "description": "إزالة الـ hook غير الضروري"
+        }
+      ],
+      "language": "react",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "sql:SQL_SYNTAX_001": {
+      "id": "SQL_SYNTAX_001",
+      "name": "Missing FROM",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "جملة FROM مفقودة",
+      "examples": [
+        {
+          "code": "SELECT name",
+          "error": "missing FROM clause"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_from",
+          "description": "إضافة FROM table_name"
+        }
+      ],
+      "language": "sql",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "sql:SQL_SYNTAX_002": {
+      "id": "SQL_SYNTAX_002",
+      "name": "Column ambiguous",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "عمود غامض (موجود في أكثر من جدول)",
+      "examples": [
+        {
+          "code": "SELECT id FROM users, orders",
+          "error": "column id is ambiguous"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "qualify_column",
+          "description": "تحديد اسم الجدول (table.column)"
+        }
+      ],
+      "language": "sql",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "sql:SQL_SYNTAX_003": {
+      "id": "SQL_SYNTAX_003",
+      "name": "Unknown column",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "reference",
+      "description": "عمود غير موجود",
+      "examples": [
+        {
+          "code": "SELECT nonexistent FROM users",
+          "error": "Unknown column 'nonexistent'"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "check_column_name",
+          "description": "التحقق من اسم العمود"
+        }
+      ],
+      "language": "sql",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "sql:SQL_SYNTAX_004": {
+      "id": "SQL_SYNTAX_004",
+      "name": "Group by error",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "خطأ في GROUP BY",
+      "examples": [
+        {
+          "code": "SELECT name, COUNT(*) FROM users",
+          "error": "name must appear in GROUP BY"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_group_by",
+          "description": "إضافة GROUP BY"
+        },
+        {
+          "type": "add_aggregate",
+          "description": "إضافة دالة تجميع"
+        }
+      ],
+      "language": "sql",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "sql:SQL_SYNTAX_005": {
+      "id": "SQL_SYNTAX_005",
+      "name": "Invalid value for column",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "قيمة غير صالحة للعمود",
+      "examples": [
+        {
+          "code": "INSERT INTO users (age) VALUES ('text')",
+          "error": "invalid input syntax for type integer"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "fix_value_type",
+          "description": "تصحيح نوع القيمة"
+        }
+      ],
+      "language": "sql",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "sql:SQL_PERF_001": {
+      "id": "SQL_PERF_001",
+      "name": "SELECT *",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "performance",
+      "description": "تجنب SELECT *",
+      "examples": [
+        {
+          "code": "SELECT * FROM users",
+          "error": "avoid SELECT *"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "specify_columns",
+          "description": "تحديد الأعمدة المطلوبة"
+        }
+      ],
+      "suggestions": [
+        "حدد الأعمدة المطلوبة فقط",
+        "يقلل من نقل البيانات",
+        "يحسن استخدام الفهارس"
+      ],
+      "language": "sql",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "sql:SQL_PERF_002": {
+      "id": "SQL_PERF_002",
+      "name": "Missing index",
+      "pattern": {},
+      "regex": {},
+      "severity": "info",
+      "category": "performance",
+      "description": "فهرس مفقود",
+      "examples": [
+        {
+          "code": "SELECT * FROM users WHERE email = \"x\"",
+          "error": "consider adding index on email"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "create_index",
+          "description": "إنشاء فهرس"
+        }
+      ],
+      "language": "sql",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "sql:SQL_PERF_003": {
+      "id": "SQL_PERF_003",
+      "name": "N+1 query",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "performance",
+      "description": "استعلام N+1",
+      "examples": [
+        {
+          "code": "for user in users:\n  db.query(\"SELECT * FROM posts WHERE user_id = ?\")",
+          "error": "N+1 query problem"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_join",
+          "description": "استخدام JOIN"
+        },
+        {
+          "type": "use_in",
+          "description": "استخدام WHERE IN"
+        }
+      ],
+      "language": "sql",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "sql:SQL_SEC_001": {
+      "id": "SQL_SEC_001",
+      "name": "SQL Injection",
+      "pattern": {},
+      "regex": {},
+      "severity": "critical",
+      "category": "security",
+      "description": "ثغرة SQL Injection",
+      "examples": [
+        {
+          "code": "db.query(\"SELECT * FROM users WHERE id = \" + userId)",
+          "error": "SQL injection vulnerability"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "use_parameterized",
+          "description": "استخدام استعلامات معلمة"
+        },
+        {
+          "type": "use_orm",
+          "description": "استخدام ORM"
+        }
+      ],
+      "language": "sql",
+      "weight": 2.4,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "java:JAVA_001": {
+      "id": "JAVA_001",
+      "name": "NullPointerException",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "null",
+      "description": "استثناء المؤشر الفارغ",
+      "examples": [
+        {
+          "code": "String s = null;\ns.length();",
+          "error": "NullPointerException"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "null_check",
+          "description": "فحص null"
+        },
+        {
+          "type": "use_optional",
+          "description": "استخدام Optional"
+        }
+      ],
+      "language": "java",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "java:JAVA_002": {
+      "id": "JAVA_002",
+      "name": "ArrayIndexOutOfBoundsException",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "index",
+      "description": "فهرس خارج حدود المصفوفة",
+      "examples": [
+        {
+          "code": "int[] arr = {1, 2};\narr[5];",
+          "error": "ArrayIndexOutOfBoundsException"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "check_bounds",
+          "description": "التحقق من الحدود"
+        }
+      ],
+      "language": "java",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "java:JAVA_003": {
+      "id": "JAVA_003",
+      "name": "ClassNotFoundException",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "class",
+      "description": "الصنف غير موجود",
+      "examples": [
+        {
+          "code": "Class.forName(\"NonExistent\")",
+          "error": "ClassNotFoundException"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_dependency",
+          "description": "إضافة التبعية"
+        },
+        {
+          "type": "check_classpath",
+          "description": "التحقق من classpath"
+        }
+      ],
+      "language": "java",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "java:JAVA_004": {
+      "id": "JAVA_004",
+      "name": "Cannot find symbol",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "symbol",
+      "description": "رمز غير موجود",
+      "examples": [
+        {
+          "code": "System.out.println(undefinedVar);",
+          "error": "cannot find symbol"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "declare_variable",
+          "description": "تعريف المتغير"
+        },
+        {
+          "type": "import_class",
+          "description": "استيراد الصنف"
+        }
+      ],
+      "language": "java",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "java:JAVA_005": {
+      "id": "JAVA_005",
+      "name": "Incompatible types",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "أنواع غير متوافقة",
+      "examples": [
+        {
+          "code": "int x = \"5\";",
+          "error": "incompatible types"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "cast_type",
+          "description": "تحويل النوع"
+        },
+        {
+          "type": "change_variable_type",
+          "description": "تغيير نوع المتغير"
+        }
+      ],
+      "language": "java",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "java:JAVA_006": {
+      "id": "JAVA_006",
+      "name": "Missing return statement",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "syntax",
+      "description": "جملة return مفقودة",
+      "examples": [
+        {
+          "code": "public int foo() { }",
+          "error": "missing return statement"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_return",
+          "description": "إضافة return"
+        }
+      ],
+      "language": "java",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "java:JAVA_007": {
+      "id": "JAVA_007",
+      "name": "Unreported exception",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "exception",
+      "description": "استثناء غير معالج",
+      "examples": [
+        {
+          "code": "public void read() { throw new IOException(); }",
+          "error": "unreported exception"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_throws",
+          "description": "إضافة throws"
+        },
+        {
+          "type": "add_try_catch",
+          "description": "إضافة try/catch"
+        }
+      ],
+      "language": "java",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "csharp:CS_001": {
+      "id": "CS_001",
+      "name": "NullReferenceException",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "null",
+      "description": "مرجع null",
+      "examples": [
+        {
+          "code": "string s = null;\ns.Length;",
+          "error": "NullReferenceException"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "null_check",
+          "description": "فحص null"
+        },
+        {
+          "type": "use_null_conditional",
+          "description": "استخدام ?."
+        }
+      ],
+      "language": "csharp",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "csharp:CS_002": {
+      "id": "CS_002",
+      "name": "CS0103 name does not exist",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "reference",
+      "description": "الاسم غير موجود",
+      "examples": [
+        {
+          "code": "Console.WriteLine(undefinedVar);",
+          "error": "name 'undefinedVar' does not exist"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "declare_variable",
+          "description": "تعريف المتغير"
+        },
+        {
+          "type": "add_using",
+          "description": "إضافة using"
+        }
+      ],
+      "language": "csharp",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "csharp:CS_003": {
+      "id": "CS_003",
+      "name": "CS0029 cannot convert",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "لا يمكن التحويل الضمني",
+      "examples": [
+        {
+          "code": "int x = \"5\";",
+          "error": "Cannot implicitly convert type"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "explicit_cast",
+          "description": "تحويل صريح"
+        },
+        {
+          "type": "use_parse",
+          "description": "استخدام Parse"
+        }
+      ],
+      "language": "csharp",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "csharp:CS_004": {
+      "id": "CS_004",
+      "name": "CS0246 type not found",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "النوع غير موجود",
+      "examples": [
+        {
+          "code": "NonExistentClass x;",
+          "error": "type could not be found"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_using",
+          "description": "إضافة using"
+        },
+        {
+          "type": "add_reference",
+          "description": "إضافة مرجع للمكتبة"
+        }
+      ],
+      "language": "csharp",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "csharp:CS_005": {
+      "id": "CS_005",
+      "name": "CS0161 not all paths return",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "control",
+      "description": "ليس كل المسارات تعيد قيمة",
+      "examples": [
+        {
+          "code": "int Foo(bool x) { if(x) return 1; }",
+          "error": "not all code paths return a value"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_return",
+          "description": "إضافة return للمسار الناقص"
+        }
+      ],
+      "language": "csharp",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "cpp:CPP_001": {
+      "id": "CPP_001",
+      "name": "Segmentation fault",
+      "pattern": {},
+      "regex": {},
+      "severity": "critical",
+      "category": "memory",
+      "description": "خطأ تقسيم الذاكرة",
+      "examples": [
+        {
+          "code": "int* p = nullptr;\n*p = 5;",
+          "error": "Segmentation fault"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "check_pointer",
+          "description": "فحص المؤشر قبل الاستخدام"
+        },
+        {
+          "type": "check_bounds",
+          "description": "التحقق من الحدود"
+        }
+      ],
+      "language": "cpp",
+      "weight": 2.4,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "cpp:CPP_002": {
+      "id": "CPP_002",
+      "name": "Memory leak",
+      "pattern": {},
+      "regex": {},
+      "severity": "warning",
+      "category": "memory",
+      "description": "تسرب ذاكرة",
+      "examples": [
+        {
+          "code": "int* p = new int(5);\n// forgot delete",
+          "error": "memory leak"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_delete",
+          "description": "إضافة delete"
+        },
+        {
+          "type": "use_smart_pointer",
+          "description": "استخدام smart pointer"
+        }
+      ],
+      "language": "cpp",
+      "weight": 1.2,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "cpp:CPP_003": {
+      "id": "CPP_003",
+      "name": "Undefined reference",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "linker",
+      "description": "مرجع غير معرف",
+      "examples": [
+        {
+          "code": "void foo(); // declaration only\nfoo();",
+          "error": "undefined reference to foo"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "add_definition",
+          "description": "إضافة التعريف"
+        },
+        {
+          "type": "link_library",
+          "description": "ربط المكتبة"
+        }
+      ],
+      "language": "cpp",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "cpp:CPP_004": {
+      "id": "CPP_004",
+      "name": "Was not declared in this scope",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "reference",
+      "description": "غير معلن في هذا النطاق",
+      "examples": [
+        {
+          "code": "cout << undefinedVar;",
+          "error": "'undefinedVar' was not declared in this scope"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "declare_variable",
+          "description": "تعريف المتغير"
+        },
+        {
+          "type": "add_include",
+          "description": "إضافة #include"
+        }
+      ],
+      "language": "cpp",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "cpp:CPP_005": {
+      "id": "CPP_005",
+      "name": "No matching function",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "function",
+      "description": "لا توجد دالة مطابقة",
+      "examples": [
+        {
+          "code": "void foo(int);\nfoo(\"string\");",
+          "error": "no matching function for call to foo"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "fix_arguments",
+          "description": "تصحيح المعاملات"
+        },
+        {
+          "type": "add_overload",
+          "description": "إضافة overload"
+        }
+      ],
+      "language": "cpp",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "cpp:CPP_006": {
+      "id": "CPP_006",
+      "name": "Invalid conversion",
+      "pattern": {},
+      "regex": {},
+      "severity": "error",
+      "category": "type",
+      "description": "تحويل غير صالح",
+      "examples": [
+        {
+          "code": "int* p = 5;",
+          "error": "invalid conversion from int to int*"
+        }
+      ],
+      "fixes": [
+        {
+          "type": "explicit_cast",
+          "description": "تحويل صريح"
+        },
+        {
+          "type": "fix_type",
+          "description": "تصحيح النوع"
+        }
+      ],
+      "language": "cpp",
+      "weight": 1.7999999999999998,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "common:DEBUG_001": {
+      "id": "DEBUG_001",
+      "name": "Console.log left in code",
+      "pattern": {},
+      "severity": "info",
+      "category": "debug",
+      "description": "تركت جملة طباعة للتصحيح",
+      "suggestion": "إزالة أو تعليق جمل الطباعة قبل النشر",
+      "language": "common",
+      "weight": 1,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "common:DEBUG_002": {
+      "id": "DEBUG_002",
+      "name": "TODO/FIXME comment",
+      "pattern": {},
+      "severity": "info",
+      "category": "comment",
+      "description": "تعليق TODO/FIXME",
+      "suggestion": "معالجة أو توثيق هذه التعليقات",
+      "language": "common",
+      "weight": 1,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "common:BEST_001": {
+      "id": "BEST_001",
+      "name": "Magic number",
+      "pattern": {},
+      "severity": "info",
+      "category": "style",
+      "description": "رقم سحري - استخدم ثابت",
+      "suggestion": "استبدل الأرقام السحرية بثوابت معنونة",
+      "language": "common",
+      "weight": 1,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "common:BEST_002": {
+      "id": "BEST_002",
+      "name": "Long function",
+      "pattern": {},
+      "severity": "info",
+      "category": "style",
+      "description": "دالة طويلة جداً",
+      "suggestion": "تقسيم الدالة لدوال أصغر",
+      "language": "common",
+      "weight": 1,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "common:BEST_003": {
+      "id": "BEST_003",
+      "name": "Deep nesting",
+      "pattern": {},
+      "severity": "warning",
+      "category": "style",
+      "description": "تعشيش عميق جداً",
+      "suggestion": "استخدام early return أو تقسيم المنطق",
+      "language": "common",
+      "weight": 1,
+      "usageCount": 0,
+      "successRate": 0
+    },
+    "example:javascript:brackets": {
+      "examples": [
+        {
+          "input": {
+            "code": "function calculateTotal(items) {\n    let total = 0;\n    for (let item of items) {\n        total += item.price;\n    // Missing closing brace\n}",
+            "error": "Unexpected end of input",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "function calculateTotal(items) {\n    let total = 0;\n    for (let item of items) {\n        total += item.price;\n    }\n    return total;\n}",
+            "explanation": "قوس الدالة غير مغلق - يجب إضافة } لإغلاق كتلة for والدالة",
+            "category": "brackets"
+          }
+        },
+        {
+          "input": {
+            "code": "const obj = {\n    name: 'Test',\n    getValue: function() {\n        return this.name\n    }\n",
+            "error": "Unexpected end of input",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "const obj = {\n    name: 'Test',\n    getValue: function() {\n        return this.name;\n    }\n};",
+            "explanation": "الكائن غير مكتمل - تحتاج لإغلاق الدالة والكائن",
+            "category": "brackets"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:comma": {
+      "examples": [
+        {
+          "input": {
+            "code": "const config = {\n    host: 'localhost',\n    port: 3000,\n    debug: true,\n};",
+            "error": "Trailing comma in object",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "const config = {\n    host: 'localhost',\n    port: 3000,\n    debug: true\n};",
+            "explanation": "فاصلة زائدة في نهاية الكائن - قد تسبب مشاكل في بعض البيئات القديمة",
+            "category": "comma"
+          }
+        },
+        {
+          "input": {
+            "code": "const arr = [1, 2, 3,, 5];",
+            "error": "Unexpected comma",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "const arr = [1, 2, 3, 5];",
+            "explanation": "فاصلة مزدوجة تنشئ عنصر فارغ في المصفوفة",
+            "category": "comma"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:string": {
+      "examples": [
+        {
+          "input": {
+            "code": "const message = 'Hello, it's me';",
+            "error": "Unexpected identifier",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "const message = \"Hello, it's me\";",
+            "explanation": "علامة الاقتباس المفردة داخل نص مغلق بعلامات مفردة - استخدم علامات مزدوجة أو escape",
+            "category": "string"
+          }
+        },
+        {
+          "input": {
+            "code": "const path = 'C:\\Users\\name';",
+            "error": "Invalid escape sequence",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "const path = 'C:\\\\Users\\\\name';",
+            "explanation": "backslash يحتاج escape في النصوص",
+            "category": "string"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:null_access": {
+      "examples": [
+        {
+          "input": {
+            "code": "function getUser(users, id) {\n    const user = users.find(u => u.id === id);\n    return user.name;\n}",
+            "error": "Cannot read property 'name' of undefined",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "function getUser(users, id) {\n    const user = users.find(u => u.id === id);\n    return user?.name ?? 'Unknown';\n}",
+            "explanation": "find قد يعيد undefined إذا لم يجد تطابق - استخدم optional chaining",
+            "category": "null_access"
+          }
+        },
+        {
+          "input": {
+            "code": "async function fetchData() {\n    const response = await fetch('/api/data');\n    const data = await response.json();\n    return data.results.items.map(item => item.value);\n}",
+            "error": "Cannot read property 'map' of undefined",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "async function fetchData() {\n    const response = await fetch('/api/data');\n    const data = await response.json();\n    return data?.results?.items?.map(item => item?.value) ?? [];\n}",
+            "explanation": "البيانات من API قد لا تحتوي على كل المستويات المتوقعة",
+            "category": "null_access"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:type_coercion": {
+      "examples": [
+        {
+          "input": {
+            "code": "function sum(a, b) {\n    return a + b;\n}\nconsole.log(sum('5', 3));",
+            "error": "Unexpected type coercion",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "function sum(a, b) {\n    return Number(a) + Number(b);\n}\nconsole.log(sum('5', 3));",
+            "explanation": "جمع نص مع رقم يعطي نتيجة غير متوقعة - تحويل للأرقام أولاً",
+            "category": "type_coercion"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:not_function": {
+      "examples": [
+        {
+          "input": {
+            "code": "const numbers = [1, 2, 3];\nnumbers();",
+            "error": "numbers is not a function",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "const numbers = [1, 2, 3];\n// numbers is an array, not a function\nnumbers.forEach(n => console.log(n));",
+            "explanation": "محاولة استدعاء مصفوفة كدالة",
+            "category": "not_function"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:not_iterable": {
+      "examples": [
+        {
+          "input": {
+            "code": "function processItems(data) {\n    for (const item of data) {\n        console.log(item);\n    }\n}\nprocessItems(null);",
+            "error": "data is not iterable",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "function processItems(data) {\n    for (const item of data ?? []) {\n        console.log(item);\n    }\n}\nprocessItems(null);",
+            "explanation": "null ليس قابل للتكرار - أضف قيمة افتراضية",
+            "category": "not_iterable"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:undefined_variable": {
+      "examples": [
+        {
+          "input": {
+            "code": "function calculatePrice(quantity) {\n    const basePrice = 10;\n    return quantity * baseprice;\n}",
+            "error": "baseprice is not defined",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "function calculatePrice(quantity) {\n    const basePrice = 10;\n    return quantity * basePrice;\n}",
+            "explanation": "خطأ إملائي في اسم المتغير - JavaScript حساس لحالة الأحرف",
+            "category": "undefined_variable"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:tdz": {
+      "examples": [
+        {
+          "input": {
+            "code": "console.log(x);\nlet x = 5;",
+            "error": "Cannot access 'x' before initialization",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "let x = 5;\nconsole.log(x);",
+            "explanation": "استخدام المتغير قبل تعريفه (Temporal Dead Zone)",
+            "category": "tdz"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:scope": {
+      "examples": [
+        {
+          "input": {
+            "code": "function outer() {\n    function inner() {\n        console.log(secret);\n    }\n    inner();\n}\nconst secret = 'hidden';\nouter();",
+            "error": "secret is not defined",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "const secret = 'hidden';\nfunction outer() {\n    function inner() {\n        console.log(secret);\n    }\n    inner();\n}\nouter();",
+            "explanation": "المتغير معرف بعد استدعاء الدالة - انقله للأعلى",
+            "category": "scope"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:missing_await": {
+      "examples": [
+        {
+          "input": {
+            "code": "async function getData() {\n    const response = fetch('/api/data');\n    const data = response.json();\n    return data;\n}",
+            "error": "response.json is not a function",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "async function getData() {\n    const response = await fetch('/api/data');\n    const data = await response.json();\n                return data;\n}",
+            "explanation": "fetch يعيد Promise - يجب استخدام await",
+            "category": "missing_await"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:await_outside_async": {
+      "examples": [
+        {
+          "input": {
+            "code": "function loadUser(id) {\n    const user = await fetchUser(id);\n    return user;\n}",
+            "error": "await is only valid in async function",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "async function loadUser(id) {\n    const user = await fetchUser(id);\n    return user;\n}",
+            "explanation": "await يجب أن يكون داخل دالة async",
+            "category": "await_outside_async"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:unhandled_promise": {
+      "examples": [
+        {
+          "input": {
+            "code": "function saveData(data) {\n    fetch('/api/save', {\n        method: 'POST',\n        body: JSON.stringify(data)\n    }).then(res => res.json());\n}",
+            "error": "Unhandled promise rejection",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "async function saveData(data) {\n    try {\n        const response = await fetch('/api/save', {\n            method: 'POST',\n            body: JSON.stringify(data)\n        });\n        return await response.json();\n    } catch (error) {\n        console.error('Failed to save:', error);\n        throw error;\n    }\n}",
+            "explanation": "Promise بدون معالجة للأخطاء - استخدم try/catch أو .catch()",
+            "category": "unhandled_promise"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:race_condition": {
+      "examples": [
+        {
+          "input": {
+            "code": "function SearchComponent() {\n    const [results, setResults] = useState([]);\n    const [query, setQuery] = useState('');\n\n    useEffect(() => {\n        fetch(`/api/search?q=${query}`)\n            .then(r => r.json())\n            .then(data => setResults(data));\n    }, [query]);\n\n    return <div>...</div>;\n}",
+            "error": "Race condition in useEffect",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "function SearchComponent() {\n    const [results, setResults] = useState([]);\n    const [query, setQuery] = useState('');\n\n    useEffect(() => {\n        let cancelled = false;\n        \n        fetch(`/api/search?q=${query}`)\n            .then(r => r.json())\n            .then(data => {\n                if (!cancelled) {\n                    setResults(data);\n                }\n            });\n\n        return () => { cancelled = true; };\n    }, [query]);\n\n    return <div>...</div>;\n}",
+            "explanation": "طلبات متعددة قد تصل بترتيب خاطئ - استخدم cleanup",
+            "category": "race_condition"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:off_by_one": {
+      "examples": [
+        {
+          "input": {
+            "code": "function getLastItem(arr) {\n    return arr[arr.length];\n}",
+            "error": "undefined returned instead of last item",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "function getLastItem(arr) {\n    return arr[arr.length - 1];\n}",
+            "explanation": "الفهارس تبدأ من 0 - آخر عنصر هو length - 1",
+            "category": "off_by_one"
+          }
+        },
+        {
+          "input": {
+            "code": "for (let i = 0; i <= arr.length; i++) {\n    console.log(arr[i]);\n}",
+            "error": "undefined at end of loop",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "for (let i = 0; i < arr.length; i++) {\n    console.log(arr[i]);\n}",
+            "explanation": "استخدم < بدل <= لتجنب تجاوز حدود المصفوفة",
+            "category": "off_by_one"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:assignment_vs_comparison": {
+      "examples": [
+        {
+          "input": {
+            "code": "if (status = 'active') {\n    doSomething();\n}",
+            "error": "Assignment in condition instead of comparison",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "if (status === 'active') {\n    doSomething();\n}",
+            "explanation": "= هو تعيين، === هو مقارنة",
+            "category": "assignment_vs_comparison"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:loose_equality": {
+      "examples": [
+        {
+          "input": {
+            "code": "if (value == null) {\n    // handle null\n}",
+            "error": "== null checks both null and undefined",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "if (value === null || value === undefined) {\n    // handle null or undefined\n}",
+            "explanation": "== null يتحقق من null و undefined معاً - كن صريحاً",
+            "category": "loose_equality"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:infinite_loop": {
+      "examples": [
+        {
+          "input": {
+            "code": "let i = 0;\nwhile (i < 10) {\n    console.log(i);\n    // forgot to increment i\n}",
+            "error": "Infinite loop detected",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "let i = 0;\nwhile (i < 10) {\n    console.log(i);\n    i++;\n}",
+            "explanation": "الحلقة لا تنتهي - نسيت زيادة العداد",
+            "category": "infinite_loop"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:mutation": {
+      "examples": [
+        {
+          "input": {
+            "code": "function addItem(arr, item) {\n    arr.push(item);\n    return arr;\n}\nconst original = [1, 2, 3];\nconst newArr = addItem(original, 4);\n// original is also modified!",
+            "error": "Unexpected mutation of original array",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "function addItem(arr, item) {\n    return [...arr, item];\n}\nconst original = [1, 2, 3];\nconst newArr = addItem(original, 4);\n// original stays [1, 2, 3]",
+            "explanation": "push يعدل المصفوفة الأصلية - استخدم spread لإنشاء نسخة جديدة",
+            "category": "mutation"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:memory_leak": {
+      "examples": [
+        {
+          "input": {
+            "code": "useEffect(() => {\n    const interval = setInterval(() => {\n        fetchData();\n    }, 5000);\n}, []);",
+            "error": "Memory leak from uncleaned interval",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "useEffect(() => {\n    const interval = setInterval(() => {\n        fetchData();\n    }, 5000);\n    \n    return () => clearInterval(interval);\n}, []);",
+            "explanation": "setInterval يستمر بعد إزالة المكون - أضف cleanup",
+            "category": "memory_leak"
+          }
+        },
+        {
+          "input": {
+            "code": "useEffect(() => {\n    window.addEventListener('resize', handleResize);\n}, []);",
+            "error": "Event listener not removed",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "useEffect(() => {\n    window.addEventListener('resize', handleResize);\n    return () => window.removeEventListener('resize', handleResize);\n}, []);",
+            "explanation": "مستمع الحدث يتراكم مع كل mount - أزله في cleanup",
+            "category": "memory_leak"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:unnecessary_render": {
+      "examples": [
+        {
+          "input": {
+            "code": "function Parent() {\n    const [count, setCount] = useState(0);\n    \n    const handleClick = () => {\n        // creates new function every render\n    };\n    \n    return <Child onClick={handleClick} />;\n}",
+            "error": "Unnecessary re-renders",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "function Parent() {\n    const [count, setCount] = useState(0);\n    \n    const handleClick = useCallback(() => {\n        // stable function reference\n    }, []);\n    \n    return <Child onClick={handleClick} />;\n}",
+            "explanation": "الدالة تُنشأ من جديد كل render - استخدم useCallback",
+            "category": "unnecessary_render"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:xss": {
+      "examples": [
+        {
+          "input": {
+            "code": "function displayComment(comment) {\n    document.getElementById('comments').innerHTML = comment;\n}",
+            "error": "XSS vulnerability",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "function displayComment(comment) {\n    const sanitized = DOMPurify.sanitize(comment);\n    document.getElementById('comments').innerHTML = sanitized;\n}",
+            "explanation": "innerHTML مع مدخلات المستخدم يسمح بـ XSS - عقم المدخلات",
+            "category": "xss"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:sql_injection": {
+      "examples": [
+        {
+          "input": {
+            "code": "app.get('/user', (req, res) => {\n    const query = `SELECT * FROM users WHERE id = '${req.query.id}'`;\n    db.query(query);\n});",
+            "error": "SQL Injection vulnerability",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "app.get('/user', (req, res) => {\n    const query = 'SELECT * FROM users WHERE id = ?';\n    db.query(query, [req.query.id]);\n});",
+            "explanation": "لا تدمج المدخلات مباشرة في SQL - استخدم prepared statements",
+            "category": "sql_injection"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:javascript:hardcoded_secrets": {
+      "examples": [
+        {
+          "input": {
+            "code": "const config = {\n    apiKey: 'sk-12345abcdef',\n    dbPassword: 'secret123'\n};",
+            "error": "Hardcoded credentials",
+            "language": "javascript"
+          },
+          "output": {
+            "fixedCode": "const config = {\n    apiKey: process.env.API_KEY,\n    dbPassword: process.env.DB_PASSWORD\n};",
+            "explanation": "لا تكتب المفاتيح في الكود - استخدم متغيرات البيئة",
+            "category": "hardcoded_secrets"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:python:missing_colon": {
+      "examples": [
+        {
+          "input": {
+            "code": "def calculate_total(items)\n    total = 0\n    for item in items:\n        total += item.price\n    return total",
+            "error": "SyntaxError: expected ':'",
+            "language": "python"
+          },
+          "output": {
+            "fixedCode": "def calculate_total(items):\n    total = 0\n    for item in items:\n        total += item.price\n    return total",
+            "explanation": "نقطتين مفقودة بعد تعريف الدالة",
+            "category": "missing_colon"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:python:indentation": {
+      "examples": [
+        {
+          "input": {
+            "code": "if x > 5:\nprint(\"x is big\")",
+            "error": "IndentationError: expected an indented block",
+            "language": "python"
+          },
+          "output": {
+            "fixedCode": "if x > 5:\n    print(\"x is big\")",
+            "explanation": "المسافة البادئة مطلوبة بعد if",
+            "category": "indentation"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:python:type_mismatch": {
+      "examples": [
+        {
+          "input": {
+            "code": "def add(a, b):\n    return a + b\n\nresult = add(\"5\", 3)",
+            "error": "TypeError: can only concatenate str (not \"int\") to str",
+            "language": "python"
+          },
+          "output": {
+            "fixedCode": "def add(a, b):\n    return int(a) + int(b)\n\nresult = add(\"5\", 3)",
+            "explanation": "لا يمكن جمع نص مع رقم - حول للنوع المطلوب",
+            "category": "type_mismatch"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:python:none_iteration": {
+      "examples": [
+        {
+          "input": {
+            "code": "items = None\nfor item in items:\n    print(item)",
+            "error": "TypeError: 'NoneType' object is not iterable",
+            "language": "python"
+          },
+          "output": {
+            "fixedCode": "items = None\nfor item in items or []:\n    print(item)",
+            "explanation": "لا يمكن التكرار على None - أضف قيمة افتراضية",
+            "category": "none_iteration"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:python:typo": {
+      "examples": [
+        {
+          "input": {
+            "code": "def greet(name):\n    message = f\"Hello, {nmae}!\"\n    return message",
+            "error": "NameError: name 'nmae' is not defined",
+            "language": "python"
+          },
+          "output": {
+            "fixedCode": "def greet(name):\n    message = f\"Hello, {name}!\"\n    return message",
+            "explanation": "خطأ إملائي في اسم المتغير",
+            "category": "typo"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:react:hook_order": {
+      "examples": [
+        {
+          "input": {
+            "code": "function UserList({ users }) {\n    if (users.length === 0) {\n        return <p>No users</p>;\n    }\n    \n    const [selected, setSelected] = useState(null);\n    \n    return (\n        <ul>\n            {users.map(u => <li key={u.id}>{u.name}</li>)}\n        </ul>\n    );\n}",
+            "error": "Rendered more hooks than during the previous render",
+            "language": "react"
+          },
+          "output": {
+            "fixedCode": "function UserList({ users }) {\n    const [selected, setSelected] = useState(null);\n    \n    if (users.length === 0) {\n        return <p>No users</p>;\n    }\n    \n    return (\n        <ul>\n            {users.map(u => <li key={u.id}>{u.name}</li>)}\n        </ul>\n    );\n}",
+            "explanation": "Hooks يجب أن تكون قبل أي early return",
+            "category": "hook_order"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:react:infinite_loop": {
+      "examples": [
+        {
+          "input": {
+            "code": "function Counter() {\n    const [count, setCount] = useState(0);\n    \n    useEffect(() => {\n        setCount(count + 1);\n    });\n    \n    return <div>{count}</div>;\n}",
+            "error": "Maximum update depth exceeded",
+            "language": "react"
+          },
+          "output": {
+            "fixedCode": "function Counter() {\n    const [count, setCount] = useState(0);\n    \n    useEffect(() => {\n        // Only run once on mount\n    }, []);\n    \n    return <div>{count}</div>;\n}",
+            "explanation": "useEffect بدون مصفوفة تبعيات يسبب حلقة لا نهائية",
+            "category": "infinite_loop"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:react:missing_key": {
+      "examples": [
+        {
+          "input": {
+            "code": "function ItemList({ items }) {\n    return (\n        <ul>\n            {items.map(item => \n                <li>{item.name}</li>\n            )}\n        </ul>\n    );\n}",
+            "error": "Each child in a list should have a unique \"key\" prop",
+            "language": "react"
+          },
+          "output": {
+            "fixedCode": "function ItemList({ items }) {\n    return (\n        <ul>\n            {items.map(item => \n                <li key={item.id}>{item.name}</li>\n            )}\n        </ul>\n    );\n}",
+            "explanation": "كل عنصر في القائمة يحتاج key فريد",
+            "category": "missing_key"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:sql:missing_semicolon": {
+      "examples": [
+        {
+          "input": {
+            "code": "SELECT name, email FROM users WHERE age > 18",
+            "error": "Syntax error: missing semicolon",
+            "language": "sql"
+          },
+          "output": {
+            "fixedCode": "SELECT name, email FROM users WHERE age > 18;",
+            "explanation": "فاصلة منقوطة مطلوبة في نهاية الاستعلام",
+            "category": "missing_semicolon"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:sql:table_name": {
+      "examples": [
+        {
+          "input": {
+            "code": "SELECT * FROM users, orders WHERE users.id = order.user_id",
+            "error": "Unknown table 'order'",
+            "language": "sql"
+          },
+          "output": {
+            "fixedCode": "SELECT * FROM users, orders WHERE users.id = orders.user_id",
+            "explanation": "خطأ إملائي في اسم الجدول - orders بدل order",
+            "category": "table_name"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "example:sql:select_star": {
+      "examples": [
+        {
+          "input": {
+            "code": "SELECT * FROM users WHERE email LIKE '%@gmail.com'",
+            "error": "Performance: SELECT * should be avoided",
+            "language": "sql"
+          },
+          "output": {
+            "fixedCode": "SELECT id, name, email FROM users WHERE email LIKE '%@gmail.com'",
+            "explanation": "SELECT * يجلب كل الأعمدة - حدد الأعمدة المطلوبة فقط",
+            "category": "select_star"
+          }
+        }
+      ],
+      "successfulFixes": 0
+    },
+    "fix:javascript:JS_FIX_SEMICOLON": {
+      "id": "JS_FIX_SEMICOLON",
+      "name": "إضافة فاصلة منقوطة",
+      "pattern": {},
+      "replacement": "$1;$2",
+      "priority": 1,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_TRAILING_COMMA": {
+      "id": "JS_FIX_TRAILING_COMMA",
+      "name": "إزالة الفاصلة الزائدة",
+      "pattern": {},
+      "replacement": "$1",
+      "priority": 2,
+      "autoApply": true,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_DOUBLE_SEMICOLON": {
+      "id": "JS_FIX_DOUBLE_SEMICOLON",
+      "name": "إزالة الفاصلة المنقوطة المكررة",
+      "pattern": {},
+      "replacement": ";",
+      "priority": 1,
+      "autoApply": true,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_VAR_TO_CONST": {
+      "id": "JS_FIX_VAR_TO_CONST",
+      "name": "تحويل var إلى const",
+      "pattern": {},
+      "replacement": "const $1 = $2;",
+      "priority": 3,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_VAR_TO_LET": {
+      "id": "JS_FIX_VAR_TO_LET",
+      "name": "تحويل var إلى let",
+      "pattern": {},
+      "replacement": "let",
+      "priority": 3,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_DOUBLE_QUOTES": {
+      "id": "JS_FIX_DOUBLE_QUOTES",
+      "name": "تحويل إلى علامات اقتباس مفردة",
+      "pattern": {},
+      "replacement": "'$1'",
+      "priority": 5,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_TEMPLATE_LITERAL": {
+      "id": "JS_FIX_TEMPLATE_LITERAL",
+      "name": "تحويل إلى Template Literal",
+      "pattern": {},
+      "replacement": "`$2${$3}$5`",
+      "priority": 4,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_STRICT_EQUALITY": {
+      "id": "JS_FIX_STRICT_EQUALITY",
+      "name": "تحويل == إلى ===",
+      "pattern": {},
+      "replacement": "$1===",
+      "priority": 2,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_STRICT_INEQUALITY": {
+      "id": "JS_FIX_STRICT_INEQUALITY",
+      "name": "تحويل != إلى !==",
+      "pattern": {},
+      "replacement": "!==",
+      "priority": 2,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_OPTIONAL_CHAINING": {
+      "id": "JS_FIX_OPTIONAL_CHAINING",
+      "name": "إضافة Optional Chaining",
+      "pattern": {},
+      "replacement": "$1?.$2",
+      "priority": 3,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_NULLISH_COALESCING": {
+      "id": "JS_FIX_NULLISH_COALESCING",
+      "name": "تحويل || إلى ?? للقيم الفارغة",
+      "pattern": {},
+      "replacement": "$1 ?? $2",
+      "priority": 4,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_ADD_ASYNC": {
+      "id": "JS_FIX_ADD_ASYNC",
+      "name": "إضافة async للدالة",
+      "pattern": {},
+      "replacement": "async $1",
+      "priority": 1,
+      "autoApply": true,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_ADD_CATCH": {
+      "id": "JS_FIX_ADD_CATCH",
+      "name": "إضافة .catch() للـ Promise",
+      "pattern": {},
+      "replacement": "$1.catch(err => console.error(err))",
+      "priority": 2,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_PROMISE_TO_ASYNC": {
+      "id": "JS_FIX_PROMISE_TO_ASYNC",
+      "name": "تحويل Promise إلى async/await",
+      "type": "fix_rule",
+      "priority": 4,
+      "autoApply": false,
+      "language": "javascript"
+    },
+    "fix:javascript:JS_FIX_ARROW_IMPLICIT_RETURN": {
+      "id": "JS_FIX_ARROW_IMPLICIT_RETURN",
+      "name": "تحويل لـ implicit return",
+      "pattern": {},
+      "replacement": "=> $1",
+      "priority": 4,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_ARROW_PARENS": {
+      "id": "JS_FIX_ARROW_PARENS",
+      "name": "إضافة أقواس لمعامل Arrow Function",
+      "pattern": {},
+      "replacement": "($1) =>",
+      "priority": 5,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_IMPORT_ORDER": {
+      "id": "JS_FIX_IMPORT_ORDER",
+      "name": "ترتيب الاستيرادات",
+      "type": "fix_rule",
+      "priority": 5,
+      "autoApply": false,
+      "language": "javascript"
+    },
+    "fix:javascript:JS_FIX_ARRAY_SPREAD": {
+      "id": "JS_FIX_ARRAY_SPREAD",
+      "name": "استخدام spread بدل concat",
+      "pattern": {},
+      "replacement": "[...$1, ...$2]",
+      "priority": 4,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_OBJECT_SHORTHAND": {
+      "id": "JS_FIX_OBJECT_SHORTHAND",
+      "name": "استخدام Object Shorthand",
+      "pattern": {},
+      "replacement": "$1",
+      "priority": 4,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_REMOVE_CONSOLE": {
+      "id": "JS_FIX_REMOVE_CONSOLE",
+      "name": "إزالة console.log",
+      "pattern": {},
+      "replacement": "",
+      "priority": 5,
+      "autoApply": false,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:javascript:JS_FIX_REMOVE_DEBUGGER": {
+      "id": "JS_FIX_REMOVE_DEBUGGER",
+      "name": "إزالة debugger",
+      "pattern": {},
+      "replacement": "",
+      "priority": 1,
+      "autoApply": true,
+      "language": "javascript",
+      "type": "fix_rule"
+    },
+    "fix:python:PY_FIX_ADD_COLON": {
+      "id": "PY_FIX_ADD_COLON",
+      "name": "إضافة نقطتين",
+      "pattern": {},
+      "replacement": "$1$2 $3:",
+      "priority": 1,
+      "autoApply": true,
+      "language": "python",
+      "type": "fix_rule"
+    },
+    "fix:python:PY_FIX_INDENTATION": {
+      "id": "PY_FIX_INDENTATION",
+      "name": "تصحيح المسافة البادئة",
+      "type": "fix_rule",
+      "priority": 1,
+      "autoApply": true,
+      "language": "python"
+    },
+    "fix:python:PY_FIX_COMPARISON": {
+      "id": "PY_FIX_COMPARISON",
+      "name": "تصحيح المقارنة مع None",
+      "pattern": {},
+      "replacement": "$1 is None",
+      "priority": 2,
+      "autoApply": true,
+      "language": "python",
+      "type": "fix_rule"
+    },
+    "fix:python:PY_FIX_NOT_COMPARISON": {
+      "id": "PY_FIX_NOT_COMPARISON",
+      "name": "تصحيح المقارنة مع not None",
+      "pattern": {},
+      "replacement": "$1 is not None",
+      "priority": 2,
+      "autoApply": true,
+      "language": "python",
+      "type": "fix_rule"
+    },
+    "fix:python:PY_FIX_FSTRING": {
+      "id": "PY_FIX_FSTRING",
+      "name": "تحويل إلى f-string",
+      "pattern": {},
+      "replacement": "f'$2'",
+      "priority": 3,
+      "autoApply": false,
+      "language": "python",
+      "type": "fix_rule"
+    },
+    "fix:python:PY_FIX_LIST_COMP": {
+      "id": "PY_FIX_LIST_COMP",
+      "name": "تحويل إلى list comprehension",
+      "pattern": {},
+      "replacement": "$1 = [$4 for $2 in $3]",
+      "priority": 4,
+      "autoApply": false,
+      "language": "python",
+      "type": "fix_rule"
+    },
+    "fix:python:PY_FIX_DICT_GET": {
+      "id": "PY_FIX_DICT_GET",
+      "name": "استخدام .get() للقاموس",
+      "pattern": {},
+      "replacement": "$3 = $2.get($1)",
+      "priority": 3,
+      "autoApply": false,
+      "language": "python",
+      "type": "fix_rule"
+    },
+    "fix:react:REACT_FIX_ADD_KEY": {
+      "id": "REACT_FIX_ADD_KEY",
+      "name": "إضافة key prop",
+      "pattern": {},
+      "replacement": ".map(($1, $2) => $3 key={$2 || $1.id}",
+      "priority": 1,
+      "autoApply": false,
+      "language": "react",
+      "type": "fix_rule"
+    },
+    "fix:react:REACT_FIX_FRAGMENT": {
+      "id": "REACT_FIX_FRAGMENT",
+      "name": "استخدام Fragment",
+      "pattern": {},
+      "replacement": "<>$1</>",
+      "priority": 3,
+      "autoApply": false,
+      "language": "react",
+      "type": "fix_rule"
+    },
+    "fix:react:REACT_FIX_CLASSNAME": {
+      "id": "REACT_FIX_CLASSNAME",
+      "name": "تحويل class إلى className",
+      "pattern": {},
+      "replacement": "$1className=",
+      "priority": 1,
+      "autoApply": true,
+      "language": "react",
+      "type": "fix_rule"
+    },
+    "fix:react:REACT_FIX_SELF_CLOSING": {
+      "id": "REACT_FIX_SELF_CLOSING",
+      "name": "إغلاق العناصر الفارغة ذاتياً",
+      "pattern": {},
+      "replacement": "<$1$2 />",
+      "priority": 2,
+      "autoApply": true,
+      "language": "react",
+      "type": "fix_rule"
+    },
+    "fix:react:REACT_FIX_USESTATE_INIT": {
+      "id": "REACT_FIX_USESTATE_INIT",
+      "name": "تهيئة useState",
+      "pattern": {},
+      "replacement": "const [$1, set$1] = useState('')",
+      "priority": 2,
+      "autoApply": false,
+      "language": "react",
+      "type": "fix_rule"
+    },
+    "fix:react:REACT_FIX_USEEFFECT_DEPS": {
+      "id": "REACT_FIX_USEEFFECT_DEPS",
+      "name": "إضافة مصفوفة التبعيات لـ useEffect",
+      "pattern": {},
+      "replacement": "useEffect(() => {$1}, [])",
+      "priority": 2,
+      "autoApply": false,
+      "language": "react",
+      "type": "fix_rule"
+    },
+    "fix:react:REACT_FIX_CALLBACK_STATE": {
+      "id": "REACT_FIX_CALLBACK_STATE",
+      "name": "استخدام callback مع setState",
+      "pattern": {},
+      "replacement": "set$1(prev => prev + $3)",
+      "priority": 2,
+      "autoApply": false,
+      "language": "react",
+      "type": "fix_rule"
+    },
+    "fix:typescript:TS_FIX_ADD_TYPE": {
+      "id": "TS_FIX_ADD_TYPE",
+      "name": "إضافة نوع للمعامل",
+      "pattern": {},
+      "replacement": "function $1($2: any)",
+      "priority": 3,
+      "autoApply": false,
+      "language": "typescript",
+      "type": "fix_rule"
+    },
+    "fix:typescript:TS_FIX_NON_NULL": {
+      "id": "TS_FIX_NON_NULL",
+      "name": "إضافة Non-null assertion",
+      "pattern": {},
+      "replacement": "$1!.$2",
+      "priority": 4,
+      "autoApply": false,
+      "language": "typescript",
+      "type": "fix_rule"
+    },
+    "fix:typescript:TS_FIX_OPTIONAL_PROP": {
+      "id": "TS_FIX_OPTIONAL_PROP",
+      "name": "جعل الخاصية اختيارية",
+      "pattern": {},
+      "replacement": "$1?: $2",
+      "priority": 3,
+      "autoApply": false,
+      "language": "typescript",
+      "type": "fix_rule"
+    },
+    "fix:typescript:TS_FIX_AS_CONST": {
+      "id": "TS_FIX_AS_CONST",
+      "name": "إضافة as const",
+      "pattern": {},
+      "replacement": "const $1 = $2 as const",
+      "priority": 4,
+      "autoApply": false,
+      "language": "typescript",
+      "type": "fix_rule"
+    },
+    "fix:sql:SQL_FIX_UPPERCASE": {
+      "id": "SQL_FIX_UPPERCASE",
+      "name": "تحويل الكلمات المحجوزة للحروف الكبيرة",
+      "pattern": {},
+      "priority": 3,
+      "autoApply": false,
+      "language": "sql",
+      "type": "fix_rule"
+    },
+    "fix:sql:SQL_FIX_SEMICOLON": {
+      "id": "SQL_FIX_SEMICOLON",
+      "name": "إضافة فاصلة منقوطة",
+      "pattern": {},
+      "replacement": "$1;",
+      "priority": 2,
+      "autoApply": false,
+      "language": "sql",
+      "type": "fix_rule"
+    },
+    "fix:sql:SQL_FIX_ALIAS": {
+      "id": "SQL_FIX_ALIAS",
+      "name": "إضافة AS للأسماء المستعارة",
+      "pattern": {},
+      "replacement": "$1 AS $2",
+      "priority": 4,
+      "autoApply": false,
+      "language": "sql",
+      "type": "fix_rule"
+    },
+    "fix:html:HTML_FIX_SELF_CLOSING": {
+      "id": "HTML_FIX_SELF_CLOSING",
+      "name": "إغلاق العناصر الفارغة",
+      "pattern": {},
+      "replacement": "<$1$2 />",
+      "priority": 2,
+      "autoApply": true,
+      "language": "html",
+      "type": "fix_rule"
+    },
+    "fix:html:HTML_FIX_LOWERCASE_TAGS": {
+      "id": "HTML_FIX_LOWERCASE_TAGS",
+      "name": "تحويل الوسوم للحروف الصغيرة",
+      "pattern": {},
+      "priority": 3,
+      "autoApply": false,
+      "language": "html",
+      "type": "fix_rule"
+    },
+    "fix:html:HTML_FIX_DOUBLE_QUOTES": {
+      "id": "HTML_FIX_DOUBLE_QUOTES",
+      "name": "توحيد علامات الاقتباس",
+      "pattern": {},
+      "replacement": "$1=\"$2\"",
+      "priority": 4,
+      "autoApply": false,
+      "language": "html",
+      "type": "fix_rule"
+    },
+    "fix:html:HTML_FIX_ALT_ATTR": {
+      "id": "HTML_FIX_ALT_ATTR",
+      "name": "إضافة alt للصور",
+      "pattern": {},
+      "replacement": "<img alt=\"\"$1>",
+      "priority": 2,
+      "autoApply": false,
+      "language": "html",
+      "type": "fix_rule"
+    },
+    "fix:css:CSS_FIX_MISSING_SEMICOLON": {
+      "id": "CSS_FIX_MISSING_SEMICOLON",
+      "name": "إضافة فاصلة منقوطة",
+      "pattern": {},
+      "replacement": "$1;\n$2",
+      "priority": 1,
+      "autoApply": true,
+      "language": "css",
+      "type": "fix_rule"
+    },
+    "fix:css:CSS_FIX_ZERO_UNITS": {
+      "id": "CSS_FIX_ZERO_UNITS",
+      "name": "إزالة الوحدات من الصفر",
+      "pattern": {},
+      "replacement": ": 0",
+      "priority": 3,
+      "autoApply": true,
+      "language": "css",
+      "type": "fix_rule"
+    },
+    "fix:css:CSS_FIX_HEX_SHORT": {
+      "id": "CSS_FIX_HEX_SHORT",
+      "name": "تقصير قيم HEX",
+      "pattern": {},
+      "replacement": "#$1$2$3",
+      "priority": 4,
+      "autoApply": false,
+      "language": "css",
+      "type": "fix_rule"
+    },
+    "fix:css:CSS_FIX_VENDOR_PREFIX_ORDER": {
+      "id": "CSS_FIX_VENDOR_PREFIX_ORDER",
+      "name": "ترتيب vendor prefixes",
+      "type": "fix_rule",
+      "priority": 4,
+      "autoApply": false,
+      "language": "css"
+    }
+  },
+  "weights": {},
+  "accuracy": 0,
+  "stats": {
+    "totalPatterns": 128,
+    "totalExamples": 41,
+    "trainingSessions": 1,
+    "lastTraining": "2026-01-30T17:41:49.604Z",
+    "accuracy": 0,
+    "trainingDuration": 15
+  },
+  "exportedAt": "2026-01-30T17:41:49.606Z",
+  "lastUpdated": "2026-01-30T18:31:24.058Z",
+  "languages": {
+    "javascript": {
+      "categories": [
+        "syntaxErrors",
+        "referenceErrors",
+        "typeErrors",
+        "logicErrors",
+        "asyncErrors",
+        "bestPracticeViolations"
+      ],
+      "totalPatterns": 21
+    },
+    "python": {
+      "categories": [
+        "syntaxErrors",
+        "typeErrors",
+        "nameErrors",
+        "logicErrors"
+      ],
+      "totalPatterns": 10
+    },
+    "java": {
+      "categories": [
+        "syntaxErrors",
+        "nullPointerExceptions",
+        "resourceLeaks"
+      ],
+      "totalPatterns": 4
+    }
+  }
+}

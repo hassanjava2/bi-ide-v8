@@ -1,0 +1,73 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-01-30T18:46:10.925Z",
+  "description": "دليل شامل لإنشاء مصنع لابتوبات من الصفر",
+  "categories": {
+    "feasibility": [
+      "Market Analysis",
+      "Financial Planning",
+      "Legal Requirements"
+    ],
+    "infrastructure": [
+      "Site Selection",
+      "Facility Design",
+      "Equipment"
+    ],
+    "supplyChain": [
+      "Components",
+      "Suppliers",
+      "Inventory Management"
+    ],
+    "production": [
+      "SMT Line",
+      "Assembly Line",
+      "Testing Line"
+    ],
+    "workforce": [
+      "Organization",
+      "Training",
+      "Certification"
+    ],
+    "quality": [
+      "ISO Standards",
+      "SPC",
+      "Problem Solving"
+    ],
+    "engineering": [
+      "Design Phases",
+      "Thermal",
+      "Mechanical",
+      "Electrical"
+    ],
+    "software": [
+      "MES",
+      "ERP",
+      "PLM",
+      "BIOS"
+    ],
+    "products": [
+      "Consumer",
+      "Business",
+      "Gaming",
+      "Workstation"
+    ]
+  },
+  "stats": {
+    "totalExamples": 32,
+    "scenarios": 5,
+    "conversations": 9,
+    "qaItems": 18
+  },
+  "topics": [
+    "دراسة الجدوى والتخطيط",
+    "الموقع والبنية التحتية",
+    "المكونات وسلسلة التوريد",
+    "خطوط الإنتاج والمعدات",
+    "القوى العاملة",
+    "أنظمة الجودة",
+    "التصميم الهندسي",
+    "الأنظمة والبرمجيات",
+    "خطوط المنتجات",
+    "الشهادات والتوافق"
+  ]
+}

@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bi-ide-config
+  namespace: bi-ide-v8
+data:
+  # API Configuration
+  api-url: "https://api.bi-ide.com"
+  ws-url: "wss://api.bi-ide.com"
+  
+  # Application Settings
+  APP_NAME: "BI-IDE v8"
+  APP_VERSION: "8.0.0"
+  APP_ENV: "production"
+  
+  # Database Configuration
+  DB_POOL_SIZE: "20"
+  DB_MAX_OVERFLOW: "10"
+  DB_POOL_TIMEOUT: "30"
+  DB_POOL_RECYCLE: "3600"
+  
+  # Redis Configuration
+  REDIS_POOL_SIZE: "50"
+  REDIS_TIMEOUT: "5"
+  
+  # Cache Configuration
+  CACHE_TTL: "3600"
+  CACHE_MAX_SIZE: "10000"
+  
+  # Rate Limiting
+  RATE_LIMIT_DEFAULT: "100/minute"
+  RATE_LIMIT_AI: "20/minute"
+  RATE_LIMIT_UPLOAD: "10/minute"
+  
+  # Feature Flags
+  FEATURE_AI_ASSISTANT: "true"
+  FEATURE_REALTIME_COLLAB: "true"
+  FEATURE_ADVANCED_ANALYTICS: "true"
+  FEATURE_BETA_MODELS: "false"
+  
+  # AI Configuration
+  AI_MODEL_DEFAULT: "gpt-4"
+  AI_MAX_TOKENS: "4000"
+  AI_TEMPERATURE: "0.7"
+  AI_TIMEOUT: "60"
+  
+  # Monitoring
+  METRICS_ENABLED: "true"
+  TRACING_ENABLED: "true"
+  LOG_LEVEL: "info"
+  
+  # Security
+  CORS_ORIGINS: "https://bi-ide.com,https://app.bi-ide.com"
+  SESSION_TIMEOUT: "86400"
+  MAX_UPLOAD_SIZE: "104857600"
+  
+  # Performance
+  WORKER_PROCESSES: "4"
+  REQUEST_TIMEOUT: "300"
+  KEEP_ALIVE_TIMEOUT: "5"

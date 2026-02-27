@@ -39,8 +39,8 @@ class InvoiceDB(Base):
     notes = Column(Text, default="")
     due_date = Column(Date, default=lambda: (datetime.now() + timedelta(days=30)).date())
     paid_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 # ─────────────────── Inventory ───────────────────
@@ -61,8 +61,8 @@ class InventoryItemDB(Base):
     cost_price = Column(Numeric(15, 2), default=0)
     supplier = Column(String(300), default="")
     location = Column(String(200), default="")
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 # ─────────────────── Employees ───────────────────
@@ -83,8 +83,8 @@ class EmployeeDB(Base):
     hire_date = Column(Date, nullable=True)
     status = Column(String(20), default="active", index=True)
     metadata_json = Column(JSON, default=dict)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 # ─────────────────── Transactions ───────────────────
@@ -95,14 +95,14 @@ class TransactionDB(Base):
     __tablename__ = "transactions"
 
     id = Column(String, primary_key=True, default=gen_uuid)
-    date = Column(DateTime, default=datetime.utcnow)
+    date = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     type = Column(String(50), nullable=False)  # income, expense, transfer
     category = Column(String(100), index=True)
     amount = Column(Numeric(15, 2), nullable=False)
     description = Column(Text, default="")
     reference = Column(String(200), default="")
     invoice_id = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 # ─────────────────── Users (for RBAC) ───────────────────
@@ -121,8 +121,8 @@ class UserDB(Base):
     is_active = Column(Boolean, default=True)
     permissions = Column(JSON, default=list)  # Additional fine-grained permissions
     last_login = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 # ─────────────────── System Config ───────────────────
@@ -135,4 +135,4 @@ class SystemConfigDB(Base):
     key = Column(String(200), primary_key=True)
     value = Column(Text, nullable=True)
     description = Column(Text, nullable=True)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))

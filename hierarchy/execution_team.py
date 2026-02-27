@@ -8,11 +8,10 @@
 - Innovation Sprint: سباق ابتكار
 - Quality Assurance: ضمان جودة
 """
-import sys; sys.path.insert(0, '.'); import encoding_fix; encoding_fix.safe_print("")
 
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any, Callable
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 import asyncio
 import uuid
@@ -74,7 +73,7 @@ class TaskForce:
         self.mission_id = str(uuid.uuid4())[:8]
         self.mission = mission
         self.members = members
-        self.created_at = datetime.now()
+        self.created_at = datetime.now(timezone.utc)
         self.tasks: List[ExecutionTask] = []
         self.status = "active"
         print(f"⚡ Task Force '{mission}' created with {len(members)} members")
@@ -85,7 +84,7 @@ class TaskForce:
         """تكليف مهمة"""
         deadline = None
         if deadline_hours:
-            deadline = datetime.now() + timedelta(hours=deadline_hours)
+            deadline = datetime.now(timezone.utc) + timedelta(hours=deadline_hours)
         
         task = ExecutionTask(
             task_id=f"{self.mission_id}_{len(self.tasks)}",
@@ -94,7 +93,7 @@ class TaskForce:
             priority=priority,
             assigned_to=assignee,
             status=TaskStatus.PENDING,
-            created_at=datetime.now(),
+            created_at=datetime.now(timezone.utc),
             deadline=deadline
         )
         
@@ -130,7 +129,7 @@ class TaskForce:
         return ExecutionReport(
             report_id=f"rpt_{self.mission_id}",
             task_id=self.mission_id,
-            completed_at=datetime.now(),
+            completed_at=datetime.now(timezone.utc),
             success=failed == 0,
             summary=f"Mission {self.mission}: {completed}/{len(pending)} tasks completed",
             details={'completed': completed, 'failed': failed},

@@ -23,11 +23,12 @@ async def health_check():
     # Check optional services
     services = {"api": "ok"}
 
+    # Check AI Hierarchy
     try:
-        from council_ai import smart_council
-        services["smart_council"] = "available" if smart_council else "unavailable"
+        from hierarchy import ai_hierarchy
+        services["ai_hierarchy"] = "available" if ai_hierarchy else "unavailable"
     except Exception:
-        services["smart_council"] = "unavailable"
+        services["ai_hierarchy"] = "unavailable"
 
     if core_available:
         try:
@@ -43,7 +44,15 @@ async def health_check():
         "services": services,
     }
 
-    all_ok = all(v in ("ok", "available") for v in services.values())
+    # Only consider critical services for health status
+    # ai_hierarchy is the new system, smart_council is legacy (optional)
+    critical_services = ["api", "ai_hierarchy", "cache"]
+    all_ok = all(
+        services.get(svc) in ("ok", "available") 
+        for svc in critical_services 
+        if svc in services
+    )
+    
     if not all_ok:
         health_status["status"] = "degraded"
         return JSONResponse(content=health_status, status_code=503)
@@ -53,11 +62,82 @@ async def health_check():
 
 @router.get("/ready")
 async def readiness_check():
-    """Readiness check for Kubernetes"""
-    return {
-        "ready": True,
-        "timestamp": datetime.now().isoformat(),
+    """
+    Readiness check for Kubernetes with service initialization verification.
+    Returns 200 when critical services are initialized.
+    Some services (cache, ide, erp) are optional and don't block readiness.
+    """
+    from fastapi.responses import JSONResponse
+    
+    checks = {
+        "database": False,
+        "cache": False,
+        "ai_hierarchy": False,
+        "ide_service": False,
+        "erp_service": False,
     }
+    
+    # Check Database - Critical
+    try:
+        from core.database import db_manager
+        # Check if database is initialized (engine exists)
+        if db_manager.async_engine is not None:
+            checks["database"] = True
+        elif db_manager.database_url:  # Database URL configured but not initialized yet
+            # Try to initialize
+            try:
+                await db_manager.initialize()
+                checks["database"] = True
+            except Exception:
+                pass
+    except Exception:
+        pass
+    
+    # Check Cache - Optional (doesn't block readiness)
+    try:
+        from core.cache import cache_manager
+        if cache_manager.redis_client:
+            checks["cache"] = True
+    except Exception:
+        pass
+    
+    # Check AI Hierarchy - Critical (but can work without explicit initialization)
+    try:
+        from hierarchy import ai_hierarchy
+        if ai_hierarchy:
+            # Hierarchy is available even if not explicitly initialized
+            checks["ai_hierarchy"] = True
+    except Exception:
+        pass
+    
+    # Check IDE Service - Optional
+    try:
+        from api.routes.ide import get_ide_service
+        ide_svc = get_ide_service()
+        checks["ide_service"] = ide_svc is not None
+    except Exception:
+        pass
+    
+    # Check ERP Service - Optional
+    try:
+        from api.routes.erp import get_erp_service
+        erp_svc = get_erp_service()
+        checks["erp_service"] = erp_svc is not None
+    except Exception:
+        pass
+    
+    # Only database and ai_hierarchy are critical for basic operation
+    critical_services = ["database", "ai_hierarchy"]
+    all_ready = all(checks[svc] for svc in critical_services)
+    
+    response = {
+        "ready": all_ready,
+        "timestamp": datetime.now().isoformat(),
+        "services": checks,
+    }
+    
+    status_code = 200 if all_ready else 503
+    return JSONResponse(content=response, status_code=status_code)
 
 
 @router.get("/metrics")

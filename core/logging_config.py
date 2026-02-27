@@ -6,12 +6,12 @@ import os
 import json
 import logging
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from functools import wraps
 
 # Ensure UTF-8 encoding on Windows (but NOT during pytest)
-if sys.platform == 'win32' and 'PYTEST_RUNNING' not in os.environ and not getattr(sys, '_encoding_fix_applied', False):
+if sys.platform == 'win32' and 'PYTEST_RUNNING' not in os.environ:
     import io
     if hasattr(sys.stdout, 'buffer') and getattr(sys.stdout, 'encoding', '') != 'utf-8':
         sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
@@ -28,7 +28,7 @@ class JSONFormatter(logging.Formatter):
     
     def format(self, record: logging.LogRecord) -> str:
         log_data = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -130,17 +130,17 @@ def log_execution_time(func):
     """Decorator to log function execution time"""
     @wraps(func)
     def wrapper(*args, **kwargs):
-        start = datetime.utcnow()
+        start = datetime.now(timezone.utc)
         try:
             result = func(*args, **kwargs)
-            duration = (datetime.utcnow() - start).total_seconds()
+            duration = (datetime.now(timezone.utc) - start).total_seconds()
             logger.debug(
                 f"Function {func.__name__} executed in {duration:.3f}s",
                 extra={'extra_data': {'duration': duration, 'function': func.__name__}}
             )
             return result
         except Exception as e:
-            duration = (datetime.utcnow() - start).total_seconds()
+            duration = (datetime.now(timezone.utc) - start).total_seconds()
             logger.error(
                 f"Function {func.__name__} failed after {duration:.3f}s: {e}",
                 exc_info=True,
