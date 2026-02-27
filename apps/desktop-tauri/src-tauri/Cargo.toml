@@ -1,0 +1,52 @@
+[package]
+name = "bi-ide-desktop"
+version = "0.1.0"
+description = "BI-IDE Desktop - AI-Powered Development Environment"
+authors = ["BI-IDE Team"]
+license = "MIT"
+repository = ""
+edition = "2021"
+rust-version = "1.75"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon", "devtools"] }
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-notification = "2"
+tauri-plugin-process = "2"
+tauri-plugin-os = "2"
+tauri-plugin-http = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+thiserror = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+notify = "6"  # File watching
+git2 = { version = "0.18", features = ["vendored-openssl"] }  # Git operations
+which = "6"  # Find executables
+dirs = "5"  # Standard directories
+sysinfo = "0.30"
+lazy_static = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# BI-IDE internal protocol
+bi-ide-protocol = { path = "../../../libs/protocol" }
+
+# Encryption and security
+ring = "0.17"
+base64 = "0.22"
+
+# HTTP client for sync
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+devtools = ["tauri/devtools"]

@@ -1,0 +1,40 @@
+[workspace]
+members = [
+    "libs/protocol",
+    "apps/desktop-tauri/src-tauri",
+    "agents/desktop-agent-rs",
+    "services/sync-service",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["BI-IDE Team"]
+license = "MIT"
+repository = "https://github.com/bi/bi-ide-v8"
+
+[workspace.dependencies]
+# Core
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+thiserror = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Protocol
+bi-ide-protocol = { path = "libs/protocol" }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+opt-level = 1

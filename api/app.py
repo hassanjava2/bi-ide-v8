@@ -306,6 +306,8 @@ def create_app() -> FastAPI:
     from api.routes.admin import router as admin_router
     from api.routes.rtx4090 import router as rtx4090_router
     from api.routes.community import router as community_router
+    from api.routes.downloads import router as downloads_router
+    from api.routes.training_data import router as training_data_router
     try:
         from mobile.api.mobile_routes import router as mobile_router
     except ImportError:
@@ -323,7 +325,9 @@ def create_app() -> FastAPI:
     app.include_router(ideas_router)
     app.include_router(admin_router)
     app.include_router(rtx4090_router)
+    app.include_router(training_data_router)
     app.include_router(community_router, prefix="/api/v1")
+    app.include_router(downloads_router)
     if mobile_router:
         app.include_router(mobile_router, prefix="/api/v1")
 

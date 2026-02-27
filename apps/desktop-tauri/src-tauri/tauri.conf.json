@@ -1,0 +1,101 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "BI-IDE Desktop",
+  "version": "0.1.0",
+  "identifier": "com.biide.desktop",
+  "build": {
+    "frontendDist": "../../../ui/dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "BI-IDE Desktop",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "center": true,
+        "visible": false,
+        "shadow": true
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self'",
+        "connect-src": "'self' http://localhost:8000 ws://localhost:8000 https://api.bi-ide.local",
+        "img-src": "'self' data: blob:",
+        "style-src": "'self' 'unsafe-inline'",
+        "script-src": "'self' 'wasm-unsafe-eval'",
+        "font-src": "'self' data:"
+      },
+      "dangerousDisableAssetCspModification": false,
+      "capabilities": [
+        {
+          "identifier": "desktop-capability",
+          "windows": ["main"],
+          "permissions": [
+            "core:default",
+            "shell:allow-open",
+            "dialog:allow-open",
+            "dialog:allow-save",
+            "dialog:allow-ask",
+            "dialog:allow-message",
+            "fs:allow-read",
+            "fs:allow-write",
+            "fs:allow-read-dir",
+            "fs:allow-copy-file",
+            "fs:allow-create",
+            "fs:allow-exists",
+            "fs:allow-rename",
+            "fs:allow-remove",
+            "notification:default",
+            "process:default",
+            "os:default",
+            "http:default"
+          ]
+        }
+      ]
+    },
+    "trayIcon": {
+      "id": "main-tray",
+      "iconPath": "icons/icon.png",
+      "tooltip": "BI-IDE Desktop"
+    }
+  },
+  "bundle": {
+    "active": false,
+    "targets": ["app", "dmg", "deb", "rpm", "msi"],
+    "icon": [],
+    "resources": [],
+    "copyright": "Copyright (c) 2026 BI-IDE",
+    "category": "DeveloperTool",
+    "shortDescription": "AI-Powered Desktop IDE",
+    "longDescription": "BI-IDE Desktop is an autonomous AI-powered development environment with multi-device sync and local training capabilities.",
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    },
+    "macOS": {
+      "frameworks": [],
+      "minimumSystemVersion": "10.15"
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libgtk-3-0", "libwebkit2gtk-4.0-37"]
+      }
+    }
+  },
+  "plugins": {
+    "shell": {
+      "open": true
+    }
+  }
+}

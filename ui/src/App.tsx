@@ -10,6 +10,7 @@ import IDE from './pages/IDE'
 import Training from './pages/Training'
 import Settings from './pages/Settings'
 import MetaControl from './pages/MetaControl'
+import Downloads from './pages/Downloads'
 import { ProtectedRoute } from './components/Auth/ProtectedRoute'
 import { useAuth } from './hooks/useAuth'
 import { useLiveData } from './hooks/useLiveData'
@@ -83,6 +84,11 @@ function App() {
         <Route path="/settings" element={
           <ProtectedRoute>
             <Settings />
+          </ProtectedRoute>
+        } />
+        <Route path="/downloads" element={
+          <ProtectedRoute>
+            <Downloads />
           </ProtectedRoute>
         } />
         <Route path="/meta" element={

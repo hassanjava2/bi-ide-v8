@@ -246,6 +246,45 @@ export const getFinancialReport = (period: string = 'month') =>
 export const getERP_AI_Insights = () =>
   fetchApi('/api/v1/erp/ai-insights');
 
+// ========== Desktop Downloads ==========
+
+export interface InstallerItem {
+  id: string;
+  name: string;
+  platform: 'windows' | 'macos' | 'linux' | 'other';
+  arch?: string | null;
+  size_bytes: number;
+  version: string;
+}
+
+export const getInstallers = async (): Promise<{ items: InstallerItem[]; count: number }> => {
+  return fetchApi('/api/v1/downloads/installers');
+};
+
+export const downloadInstaller = async (installerId: string, fileName: string) => {
+  const token = getAccessToken();
+  const res = await fetch(`/api/v1/downloads/installers/${encodeURIComponent(installerId)}`, {
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => null);
+    throw new Error(errorData?.detail || `HTTP ${res.status}`);
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+};
+
 // Default export for compatibility
 export const api = {
   login,
@@ -285,7 +324,9 @@ export const api = {
   getEmployees,
   getPayroll,
   getFinancialReport,
-  getERP_AI_Insights
+  getERP_AI_Insights,
+  getInstallers,
+  downloadInstaller
 };
 
 export default api;

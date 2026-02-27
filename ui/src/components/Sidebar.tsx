@@ -7,6 +7,7 @@ import {
   MessageCircle, 
   Code2, 
   Brain,
+  Download,
   Settings,
   Crown,
   Layers
@@ -20,6 +21,7 @@ const MENU_ITEMS = [
   { path: '/community', icon: MessageCircle, label: 'المجتمع' },
   { path: '/ide', icon: Code2, label: 'بيئة التطوير' },
   { path: '/training', icon: Brain, label: 'التدريب' },
+  { path: '/downloads', icon: Download, label: 'التنزيلات' },
   { path: '/meta', icon: Layers, label: 'التحكم الفوقي' },
   { path: '/settings', icon: Settings, label: 'الإعدادات' },
 ] as const

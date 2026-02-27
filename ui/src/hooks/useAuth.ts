@@ -24,7 +24,7 @@ export const useAuth = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('bi_access_token') || localStorage.getItem('access_token');
     if (token) {
       fetchUser();
     } else {
@@ -50,7 +50,8 @@ export const useAuth = () => {
     try {
       const data = await authApi.login(username, password);
       localStorage.setItem('access_token', data.access_token);
-      setUser(data.user);
+      localStorage.setItem('bi_access_token', data.access_token);
+      await fetchUser();
       return true;
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Login failed');
@@ -82,6 +83,7 @@ export const useAuth = () => {
 
   const logout = useCallback(() => {
     localStorage.removeItem('access_token');
+    localStorage.removeItem('bi_access_token');
     setUser(null);
     setError(null);
   }, []);

@@ -1,0 +1,53 @@
+[package]
+name = "bi-ide-desktop-agent"
+version = "0.2.0"
+edition = "2021"
+authors = ["BI-IDE Team"]
+description = "Desktop Agent for BI-IDE - Local execution and training"
+license = "MIT"
+
+[dependencies]
+# BI-IDE Protocol
+bi-ide-protocol = { path = "../../libs/protocol" }
+
+# Core
+anyhow = "1"
+thiserror = "1"
+tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+# HTTP Client
+reqwest = { version = "0.12", features = ["json", "rustls-tls", "multipart"] }
+
+# File System
+notify = "6"
+walkdir = "2"
+tempfile = "3"
+
+# Process Management
+sysinfo = "0.30"
+nix = { version = "0.27", features = ["process"] }
+
+# Crypto
+ring = "0.17"
+base64 = "0.22"
+
+# Configuration
+dirs = "5"
+toml = "0.8"
+clap = { version = "4", features = ["derive", "env"] }
+hostname = "0.4"
+parking_lot = "0.12"
+
+# Async
+futures = "0.3"
+async-trait = "0.1"
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockito = "1"
