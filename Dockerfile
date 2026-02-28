@@ -1,51 +1,112 @@
-FROM python:3.11-slim as builder
+# ═══════════════════════════════════════════════════════════════════════════════
+# BI-IDE v8 - ملف Dockerfile للبناء متعدد المراحل
+# Multi-stage build for production deployment
+# ═══════════════════════════════════════════════════════════════════════════════
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# المرحلة 1: البناء (Builder Stage)
+# هذي المرحلة لتثبيت الاعتماديات وتجميع الملفات المطلوبة
+# ═══════════════════════════════════════════════════════════════════════════════
+FROM python:3.11-slim AS builder
+
+# إعداد متغيرات البيئة للبناء
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# مجلد العمل
 WORKDIR /app
 
-# Install system dependencies
+# ═══════════════════════════════════════════════════════════════════════════════
+# تثبيت الاعتماديات النظامية المطلوبة للـ ML والبناء
+# ═══════════════════════════════════════════════════════════════════════════════
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    gcc \
+    g++ \
     libpq-dev \
+    libffi-dev \
+    libssl-dev \
+    python3-dev \
+    git \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+# ═══════════════════════════════════════════════════════════════════════════════
+# نسخ و تثبيت متطلبات Python
+# ═══════════════════════════════════════════════════════════════════════════════
+COPY requirements-prod.txt .
 
-# Production stage
-FROM python:3.11-slim
+# إنشاء virtual environment وتثبيت الاعتماديات
+RUN python -m venv /opt/venv && \
+    /opt/venv/bin/pip install --upgrade pip setuptools wheel && \
+    /opt/venv/bin/pip install --no-cache-dir -r requirements-prod.txt
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# المرحلة 2: وقت التشغيل (Runtime Stage)
+# هذي المرحلة النهائية - نسخ فقط الملفات الضرورية
+# ═══════════════════════════════════════════════════════════════════════════════
+FROM python:3.11-slim AS runtime
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# إنشاء مستخدم غير جذري للأمان
+# ═══════════════════════════════════════════════════════════════════════════════
+RUN groupadd --gid 1000 biide && \
+    useradd --uid 1000 --gid biide --shell /bin/bash --create-home biide
+
+# مجلد العمل
 WORKDIR /app
 
-# Install runtime dependencies only
+# ═══════════════════════════════════════════════════════════════════════════════
+# تثبيت الاعتماديات النظامية للتشغيل فقط (بدون أدوات البناء)
+# ═══════════════════════════════════════════════════════════════════════════════
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Copy Python packages from builder
-COPY --from=builder /root/.local /root/.local
-ENV PATH=/root/.local/bin:$PATH
+# ═══════════════════════════════════════════════════════════════════════════════
+# نسخ الـ virtual environment من مرحلة البناء
+# ═══════════════════════════════════════════════════════════════════════════════
+COPY --from=builder /opt/venv /opt/venv
 
-# Copy application code
-COPY . .
+# تفعيل الـ virtual environment
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=utf-8
 
-# Create necessary directories
-RUN mkdir -p data learning_data logs
+# ═══════════════════════════════════════════════════════════════════════════════
+# نسخ كود التطبيق مع تحديد المستخدم المناسب
+# ═══════════════════════════════════════════════════════════════════════════════
+COPY --chown=biide:biide . .
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONIOENCODING=utf-8
+# ═══════════════════════════════════════════════════════════════════════════════
+# إنشاء المجلدات الضرورية وتعيين الصلاحيات
+# ═══════════════════════════════════════════════════════════════════════════════
+RUN mkdir -p data learning_data logs uploads && \
+    chown -R biide:biide /app
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+# التبديل للمستخدم غير الجذري
+USER biide
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# فحص الصحة - للتأكد من أن التطبيق يعمل بشكل صحيح
+# Health check to ensure application is running properly
+# ═══════════════════════════════════════════════════════════════════════════════
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-# Expose port
+# ═══════════════════════════════════════════════════════════════════════════════
+# تعريف المنفذ
+# ═══════════════════════════════════════════════════════════════════════════════
 EXPOSE 8000
 
-# Run the application
-# Run the application with the new modular entry point
-CMD ["python", "-m", "uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# ═══════════════════════════════════════════════════════════════════════════════
+# تشغيل التطبيق باستخدام Uvicorn
+# ═══════════════════════════════════════════════════════════════════════════════
+CMD ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]

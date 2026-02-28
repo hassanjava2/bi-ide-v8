@@ -16,6 +16,7 @@ from core.user_service import UserService
 from core.config import get_settings
 
 from jose import JWTError, jwt
+from passlib.context import CryptContext
 
 # Configuration
 _settings = get_settings()
@@ -82,10 +83,9 @@ async def authenticate_user(username: str, password: str, db: AsyncSession) -> O
     if not user or not user.is_active:
         return None
     
-    # Verify password
-    import bcrypt
-    password_bytes = password.encode('utf-8')[:72]
-    if not bcrypt.checkpw(password_bytes, user.hashed_password.encode('utf-8')):
+    # Verify password using passlib
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    if not pwd_context.verify(password, user.hashed_password):
         return None
     
     # Note: last_login update moved to background task to avoid blocking

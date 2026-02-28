@@ -16,7 +16,7 @@ def connect_ide_to_learning(ide_service, hierarchy):
     original_save = ide_service.fs.save_file if hasattr(ide_service.fs, 'save_file') else None
     
     def save_and_learn(file_id, content):
-        ""يحفظ الملف ويتعلم"""
+        """يحفظ الملف ويتعلم"""
         # الحفظ الأصلي
         if original_save:
             result = original_save(file_id, content)

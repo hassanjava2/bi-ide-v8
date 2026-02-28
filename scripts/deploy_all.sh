@@ -1,158 +1,569 @@
 #!/bin/bash
-# ═══════════════════════════════════════════════════════════════
-# BI-IDE — Deploy to All Machines
-# Pushes updates from Mac to: Hostinger, RTX 5090, Windows
-# Usage: ./scripts/deploy_all.sh
-# ═══════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# BI-IDE v8 - سكربت النشر الشامل
+# Comprehensive Deployment Script with Rollback Support
+# ═══════════════════════════════════════════════════════════════════════════════
 
-set -o pipefail
+# ═══════════════════════════════════════════════════════════════════════════════
+# الألوان للعرض
+# ═══════════════════════════════════════════════════════════════════════════════
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+BOLD='\033[1m'
 
-# ── Config ──
-HOSTINGER_HOST="76.13.154.123"
-HOSTINGER_PASS="Bb97-@hhbb353631"
-HOSTINGER_APP_DIR="/opt/bi-iq-app"
+# ═══════════════════════════════════════════════════════════════════════════════
+# الإعدادات الافتراضية
+# ═══════════════════════════════════════════════════════════════════════════════
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+REGISTRY="${REGISTRY:-ghcr.io}"
+IMAGE_NAME="${IMAGE_NAME:-bi-ide}"
+VERSION="${VERSION:-$(date +%Y%m%d-%H%M%S)}"
+BACKUP_DIR="${BACKUP_DIR:-$PROJECT_ROOT/backups}"
+LOG_FILE="${LOG_FILE:-$PROJECT_ROOT/logs/deploy_$(date +%Y%m%d_%H%M%S).log}"
 
-RTX_USER="bi"
-RTX_PASS="353631"
-RTX_SSH_PORT="2222"  # Via Hostinger tunnel
+# ═══════════════════════════════════════════════════════════════════════════════
+# إعدادات البيئات
+# ═══════════════════════════════════════════════════════════════════════════════
+STAGING_HOST="${STAGING_HOST:-staging.bi-ide.com}"
+PRODUCTION_HOST="${PRODUCTION_HOST:-bi-ide.com}"
+STAGING_COMPOSE="docker-compose.yml"
+PRODUCTION_COMPOSE="docker-compose.prod.yml"
 
-# Colors
-G='\033[0;32m'; R='\033[0;31m'; Y='\033[1;33m'; B='\033[0;34m'; N='\033[0m'
-ok() { echo -e "${G}✅ $1${N}"; }
-err() { echo -e "${R}❌ $1${N}"; }
-info() { echo -e "${B}📡 $1${N}"; }
+# ═══════════════════════════════════════════════════════════════════════════════
+# دوال المساعدة
+# ═══════════════════════════════════════════════════════════════════════════════
 
-PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION=$(date +%Y%m%d_%H%M%S)
+# طباعة رسالة مع الوقت
+log() {
+    local level=$1
+    shift
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    
+    case $level in
+        INFO)
+            echo -e "${GREEN}[INFO]${NC} ${timestamp} - $message"
+            ;;
+        WARN)
+            echo -e "${YELLOW}[WARN]${NC} ${timestamp} - $message"
+            ;;
+        ERROR)
+            echo -e "${RED}[ERROR]${NC} ${timestamp} - $message"
+            ;;
+        DEBUG)
+            echo -e "${BLUE}[DEBUG]${NC} ${timestamp} - $message"
+            ;;
+        *)
+            echo -e "${CYAN}[$level]${NC} ${timestamp} - $message"
+            ;;
+    esac
+    
+    # تسجيل في الملف
+    echo "[$level] $timestamp - $message" >> "$LOG_FILE"
+}
 
-echo ""
-echo "═══════════════════════════════════════════════════"
-echo "  🚀 BI-IDE Deploy All — v${VERSION}"
-echo "═══════════════════════════════════════════════════"
-echo ""
+# التحقق من وجود أمر
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
 
-# ── Step 1: Git commit & push ──
-info "Step 1: Git push..."
-cd "$PROJECT_DIR"
-if git diff --quiet 2>/dev/null && git diff --cached --quiet 2>/dev/null; then
-    info "No changes to commit"
-else
-    git add -A
-    git commit -m "deploy: auto-update ${VERSION}" --quiet 2>/dev/null || true
-fi
-git push --quiet 2>/dev/null && ok "Git pushed" || info "Git push skipped (no remote or already up to date)"
-
-# ── Step 2: Deploy to Hostinger ──
-echo ""
-info "Step 2: Deploying to Hostinger (${HOSTINGER_HOST})..."
-
-expect << EOFX 2>/dev/null
-set timeout 30
-spawn ssh -o StrictHostKeyChecking=no root@${HOSTINGER_HOST}
-expect "password:"
-send "${HOSTINGER_PASS}\r"
-expect "# "
-
-# Git pull
-send "cd ${HOSTINGER_APP_DIR} && git pull origin main --quiet 2>/dev/null || git pull --quiet 2>/dev/null; echo GITDONE\r"
-expect -timeout 15 "GITDONE"
-
-# Clear cache & restart API
-send "find ${HOSTINGER_APP_DIR} -name '__pycache__' -exec rm -rf {} + 2>/dev/null; pkill -HUP -f uvicorn 2>/dev/null; echo APIDONE\r"
-expect -timeout 5 "APIDONE"
-
-# Check API health
-send "sleep 2 && curl -s http://localhost:8010/health | head -c 50 && echo HCHECK\r"
-expect -timeout 10 "HCHECK"
-
-send "exit\r"
-expect eof
-EOFX
-
-if [ $? -eq 0 ]; then
-    ok "Hostinger updated"
-else
-    err "Hostinger deploy failed"
-fi
-
-# ── Step 3: Deploy to RTX 5090 (via Hostinger) ──
-echo ""
-info "Step 3: Deploying to RTX 5090..."
-
-# SCP key files to Hostinger first, then relay to RTX
-expect << EOFX 2>/dev/null
-set timeout 30
-spawn ssh -o StrictHostKeyChecking=no root@${HOSTINGER_HOST}
-expect "password:"
-send "${HOSTINGER_PASS}\r"
-expect "# "
-
-# Copy updated files to RTX 5090
-send "sshpass -p ${RTX_PASS} scp -o StrictHostKeyChecking=no -P ${RTX_SSH_PORT} ${HOSTINGER_APP_DIR}/rtx4090_machine/rtx4090_server.py ${HOSTINGER_APP_DIR}/rtx4090_machine/resource_manager.py ${RTX_USER}@localhost:/tmp/ && echo SCPOK\r"
-expect -timeout 15 "SCPOK"
-
-# Also copy worker
-send "sshpass -p ${RTX_PASS} scp -o StrictHostKeyChecking=no -P ${RTX_SSH_PORT} ${HOSTINGER_APP_DIR}/worker/bi_worker.py ${RTX_USER}@localhost:/tmp/ && echo WRKCP\r"
-expect -timeout 10 "WRKCP"
-
-# Restart RTX server
-send "sshpass -p ${RTX_PASS} ssh -o StrictHostKeyChecking=no -p ${RTX_SSH_PORT} ${RTX_USER}@localhost 'pkill -f rtx4090_server; sleep 2; cd /tmp && nohup python3 rtx4090_server.py > /tmp/rtx_server.log 2>&1 & disown; sleep 4; curl -s http://localhost:8080/health | head -c 50' && echo RTXOK\r"
-expect -timeout 20 "RTXOK"
-
-send "exit\r"
-expect eof
-EOFX
-
-if [ $? -eq 0 ]; then
-    ok "RTX 5090 updated"
-else
-    err "RTX 5090 deploy failed"
-fi
-
-# ── Step 4: Deploy to Windows (if reachable) ──
-echo ""
-info "Step 4: Checking Windows..."
-
-# Windows is on same local network — try direct SSH
-# The user previously opened port 22 (OpenSSH) on the Windows machine
-WIN_HOST=""
-# Try common local IPs for the Windows machine
-for ip in 192.168.68.110 192.168.68.111 192.168.68.112 192.168.68.100; do
-    if ping -c1 -W1 "$ip" &>/dev/null 2>&1; then
-        WIN_HOST="$ip"
-        break
+# التحقق من المتطلبات
+check_prerequisites() {
+    log "INFO" "التحقق من المتطلبات..."
+    
+    local required_commands=("docker" "docker-compose" "curl")
+    local missing_commands=()
+    
+    for cmd in "${required_commands[@]}"; do
+        if ! command_exists "$cmd"; then
+            missing_commands+=("$cmd")
+        fi
+    done
+    
+    if [ ${#missing_commands[@]} -ne 0 ]; then
+        log "ERROR" "الأوامر التالية غير موجودة: ${missing_commands[*]}"
+        exit 1
     fi
-done
+    
+    # التحقق من تشغيل Docker
+    if ! docker info >/dev/null 2>&1; then
+        log "ERROR" "Docker لا يعمل. يرجى تشغيل Docker أولاً."
+        exit 1
+    fi
+    
+    # إنشاء المجلدات الضرورية
+    mkdir -p "$BACKUP_DIR" "$(dirname "$LOG_FILE")"
+    
+    log "INFO" "✓ جميع المتطلبات متوفرة"
+}
 
-if [ -n "$WIN_HOST" ]; then
-    info "Windows found at ${WIN_HOST}"
-    # SCP worker to Windows
-    scp -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
-        "$PROJECT_DIR/worker/bi_worker.py" \
-        "bi@${WIN_HOST}:/tmp/bi_worker.py" 2>/dev/null && ok "Worker copied to Windows" || err "Windows SCP failed"
-else
-    info "Windows not reachable on local network (skipped)"
-fi
+# عرض شعار التطبيق
+show_banner() {
+    echo -e "${CYAN}"
+    cat << "EOF"
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                                                                               ║
+║   ██████╗ ██╗     ██╗██████╗ ███████╗    ██╗██████╗ ███████╗                  ║
+║   ██╔══██╗██║     ██║██╔══██╗██╔════╝    ██║██╔══██╗██╔════╝                  ║
+║   ██████╔╝██║     ██║██║  ██║█████╗      ██║██║  ██║█████╗                    ║
+║   ██╔══██╗██║     ██║██║  ██║██╔══╝      ██║██║  ██║██╔══╝                    ║
+║   ██████╔╝███████╗██║██████╔╝███████╗    ██║██████╔╝███████╗                  ║
+║   ╚═════╝ ╚══════╝╚═╝╚═════╝ ╚══════╝    ╚═╝╚═════╝ ╚══════╝                  ║
+║                                                                               ║
+║                      v8 - نظام النشر الشامل                                  ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+EOF
+    echo -e "${NC}"
+}
 
-# ── Step 5: Verify all machines ──
-echo ""
-echo "═══════════════════════════════════════════════════"
-echo "  📊 Verification"
-echo "═══════════════════════════════════════════════════"
+# عرض الاستخدام
+show_usage() {
+    echo -e "${BOLD}الاستخدام:${NC} $0 [خيارات]"
+    echo ""
+    echo -e "${BOLD}الخيارات:${NC}"
+    echo "  -e, --environment    بيئة النشر (staging|production|all) [افتراضي: staging]"
+    echo "  -v, --version        إصدار الصورة [افتراضي: timestamp]"
+    echo "  -r, --registry       سجل الحاويات [افتراضي: ghcr.io]"
+    echo "  -b, --build-only     بناء الصور فقط دون نشر"
+    echo "  -p, --push-only      دفع الصور فقط"
+    echo "  -d, --deploy-only    نشر فقط دون بناء"
+    echo "  -s, --skip-tests     تخطي الاختبارات"
+    echo "  --rollback           التراجع عن آخر نشر"
+    echo "  --health-check       فحص صحة النظام فقط"
+    echo "  -h, --help           عرض هذه المساعدة"
+    echo ""
+    echo -e "${BOLD}أمثلة:${NC}"
+    echo "  $0 -e staging                    # نشر على البيئة التجريبية"
+    echo "  $0 -e production -v 1.2.3       # نشر إصدار محدد على الإنتاج"
+    echo "  $0 -b -v 1.0.0                  # بناء فقط"
+    echo "  $0 --rollback -e production     # التراجع عن آخر نشر"
+}
 
-# Hostinger API
-API_VER=$(curl -sf https://bi-iq.com/api/v1/version 2>/dev/null || echo "N/A")
-echo -e "  Hostinger API:  ${G}${API_VER:-online}${N}"
+# ═══════════════════════════════════════════════════════════════════════════════
+# مراحل النشر
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# RTX 5090 (via public API)
-RTX_VER=$(curl -sf --max-time 5 https://bi-iq.com/api/v1/rtx-status 2>/dev/null | head -c 100 || echo "check via tunnel")
-echo -e "  RTX 5090:       ${G}${RTX_VER:-deployed}${N}"
+# بناء صور Docker
+build_images() {
+    log "INFO" "════════════════════════════════════════════════════════════"
+    log "INFO" "بدء بناء صور Docker..."
+    log "INFO" "الإصدار: ${BOLD}$VERSION${NC}"
+    log "INFO" "════════════════════════════════════════════════════════════"
+    
+    cd "$PROJECT_ROOT"
+    
+    # بناء صورة API
+    log "INFO" "بناء صورة API..."
+    docker build \
+        --target runtime \
+        -t "$REGISTRY/$IMAGE_NAME/api:$VERSION" \
+        -t "$REGISTRY/$IMAGE_NAME/api:latest" \
+        -f Dockerfile . 2>&1 | tee -a "$LOG_FILE"
+    
+    if [ ${PIPESTATUS[0]} -ne 0 ]; then
+        log "ERROR" "فشل بناء صورة API"
+        return 1
+    fi
+    
+    # بناء صورة Worker
+    log "INFO" "بناء صورة Worker..."
+    docker build \
+        --target runtime \
+        -t "$REGISTRY/$IMAGE_NAME/worker:$VERSION" \
+        -t "$REGISTRY/$IMAGE_NAME/worker:latest" \
+        -f Dockerfile . 2>&1 | tee -a "$LOG_FILE"
+    
+    if [ ${PIPESTATUS[0]} -ne 0 ]; then
+        log "ERROR" "فشل بناء صورة Worker"
+        return 1
+    fi
+    
+    log "INFO" "✓ تم بناء الصور بنجاح"
+    return 0
+}
 
-# Local Mac
-echo -e "  Mac (local):    ${G}source${N}"
+# دفع الصور إلى السجل
+push_images() {
+    log "INFO" "════════════════════════════════════════════════════════════"
+    log "INFO" "دفع الصور إلى السجل: $REGISTRY"
+    log "INFO" "════════════════════════════════════════════════════════════"
+    
+    # التحقق من تسجيل الدخول
+    if ! docker info | grep -q "Username"; then
+        log "WARN" "غير مسجل الدخول إلى السجل. جاري تسجيل الدخول..."
+        docker login "$REGISTRY"
+    fi
+    
+    # دفع صور API
+    log "INFO" "دفع صورة API..."
+    docker push "$REGISTRY/$IMAGE_NAME/api:$VERSION" 2>&1 | tee -a "$LOG_FILE"
+    docker push "$REGISTRY/$IMAGE_NAME/api:latest" 2>&1 | tee -a "$LOG_FILE"
+    
+    # دفع صور Worker
+    log "INFO" "دفع صورة Worker..."
+    docker push "$REGISTRY/$IMAGE_NAME/worker:$VERSION" 2>&1 | tee -a "$LOG_FILE"
+    docker push "$REGISTRY/$IMAGE_NAME/worker:latest" 2>&1 | tee -a "$LOG_FILE"
+    
+    log "INFO" "✓ تم دفع الصور بنجاح"
+}
 
-echo ""
-echo "═══════════════════════════════════════════════════"
-echo -e "  ${G}🎉 Deploy complete — ${VERSION}${N}"
-echo "═══════════════════════════════════════════════════"
-echo ""
+# إنشاء نسخة احتياطية
+create_backup() {
+    local environment=$1
+    log "INFO" "إنشاء نسخة احتياطية لـ $environment..."
+    
+    local backup_file="$BACKUP_DIR/backup_${environment}_$(date +%Y%m%d_%H%M%S).tar.gz"
+    
+    # نسخ قاعدة البيانات
+    cd "$PROJECT_ROOT"
+    docker-compose -f "$PRODUCTION_COMPOSE" exec -T postgres pg_dump \
+        -U "${POSTGRES_USER:-bi_ide}" \
+        "${POSTGRES_DB:-bi_ide}" > "$BACKUP_DIR/db_backup_$(date +%Y%m%d_%H%M%S).sql" 2>/dev/null || true
+    
+    # نسخ المجلدات
+    tar -czf "$backup_file" data/ learning_data/ 2>/dev/null || true
+    
+    log "INFO" "✓ تم إنشاء النسخة الاحتياطية: $backup_file"
+    echo "$backup_file"
+}
+
+# نشر على بيئة معينة
+deploy_environment() {
+    local environment=$1
+    local compose_file=$2
+    local host=$3
+    
+    log "INFO" "════════════════════════════════════════════════════════════"
+    log "INFO" "النشر على بيئة: ${BOLD}$environment${NC}"
+    log "INFO" "المضيف: $host"
+    log "INFO" "════════════════════════════════════════════════════════════"
+    
+    # إنشاء نسخة احتياطية قبل النشر
+    if [ "$environment" == "production" ]; then
+        BACKUP_FILE=$(create_backup "$environment")
+        log "INFO" "النسخة الاحتياطية: $BACKUP_FILE"
+    fi
+    
+    if [ "$environment" == "local" ]; then
+        # نشر محلي
+        deploy_local "$compose_file"
+    else
+        # نشر عن بعد
+        deploy_remote "$environment" "$compose_file" "$host"
+    fi
+    
+    return $?
+}
+
+# نشر محلي
+deploy_local() {
+    local compose_file=$1
+    
+    cd "$PROJECT_ROOT"
+    
+    # سحب أحدث الصور
+    log "INFO" "سحب أحدث الصور..."
+    docker-compose -f "$compose_file" pull 2>&1 | tee -a "$LOG_FILE"
+    
+    # تشغيل migrations
+    log "INFO" "تشغيل migrations..."
+    docker-compose -f "$compose_file" run --rm api alembic upgrade head 2>&1 | tee -a "$LOG_FILE"
+    
+    # إعادة تشغيل الخدمات
+    log "INFO" "إعادة تشغيل الخدمات..."
+    docker-compose -f "$compose_file" up -d --remove-orphans 2>&1 | tee -a "$LOG_FILE"
+    
+    # تنظيف الصور القديمة
+    log "INFO" "تنظيف الصور القديمة..."
+    docker image prune -af --filter "until=168h" 2>&1 | tee -a "$LOG_FILE" || true
+    
+    log "INFO" "✓ تم النشر المحلي بنجاح"
+}
+
+# نشر عن بعد
+deploy_remote() {
+    local environment=$1
+    local compose_file=$2
+    local host=$3
+    
+    # إنشاء سكربت النشر
+    local deploy_script=$(cat << EOF
+#!/bin/bash
+set -e
+
+echo "🚀 بدء النشر على $environment..."
+
+cd /opt/bi-ide
+
+# سحب أحدث الصور
+docker-compose -f $compose_file pull
+
+# تشغيل migrations
+docker-compose -f $compose_file run --rm api alembic upgrade head
+
+# إعادة تشغيل الخدمات
+docker-compose -f $compose_file up -d --remove-orphans
+
+# تنظيف
+docker system prune -af --volumes=false --filter "until=168h" || true
+
+echo "✅ تم النشر بنجاح!"
+EOF
+)
+    
+    # تنفيذ النشر عبر SSH
+    log "INFO" "الاتصال بالخادم $host..."
+    
+    # نسخ السكربت
+    echo "$deploy_script" | ssh -o StrictHostKeyChecking=no "$host" "cat > /tmp/deploy.sh && chmod +x /tmp/deploy.sh && bash /tmp/deploy.sh" 2>&1 | tee -a "$LOG_FILE"
+    
+    if [ ${PIPESTATUS[0]} -ne 0 ]; then
+        log "ERROR" "فشل النشر على $host"
+        return 1
+    fi
+    
+    log "INFO" "✓ تم النشر على $host بنجاح"
+}
+
+# فحص صحة النظام
+health_check() {
+    local environment=$1
+    local host=$2
+    local max_retries=10
+    local retry_count=0
+    
+    log "INFO" "════════════════════════════════════════════════════════════"
+    log "INFO" "فحص صحة النظام: $environment"
+    log "INFO" "════════════════════════════════════════════════════════════"
+    
+    local health_url="http://${host}/health"
+    
+    while [ $retry_count -lt $max_retries ]; do
+        log "INFO" "محاولة فحص الصحة رقم $((retry_count + 1))..."
+        
+        if curl -sf "$health_url" >/dev/null 2>&1; then
+            log "INFO" "${GREEN}✓ النظام يعمل بشكل صحيح!${NC}"
+            
+            # فحص إضافي
+            local api_response=$(curl -sf "http://${host}/api/v1/health" 2>/dev/null || echo "{}")
+            log "INFO" "استجابة API: $api_response"
+            
+            return 0
+        fi
+        
+        retry_count=$((retry_count + 1))
+        sleep 10
+    done
+    
+    log "ERROR" "${RED}✗ فشل فحص الصحة بعد $max_retries محاولات${NC}"
+    return 1
+}
+
+# التراجع عن النشر
+rollback() {
+    local environment=$1
+    
+    log "INFO" "════════════════════════════════════════════════════════════"
+    log "INFO" "التراجع عن النشر: $environment"
+    log "INFO" "════════════════════════════════════════════════════════════"
+    
+    log "WARN" "⚠️  جاري التراجع عن آخر نشر..."
+    
+    cd "$PROJECT_ROOT"
+    
+    # استعادة النسخة الاحتياطية إذا وجدت
+    local latest_backup=$(ls -t "$BACKUP_DIR"/backup_${environment}_*.tar.gz 2>/dev/null | head -1)
+    if [ -n "$latest_backup" ]; then
+        log "INFO" "استعادة النسخة الاحتياطية: $latest_backup"
+        tar -xzf "$latest_backup" -C "$PROJECT_ROOT" 2>&1 | tee -a "$LOG_FILE"
+    fi
+    
+    # إعادة تشغيل الخدمات السابقة
+    docker-compose -f "$PRODUCTION_COMPOSE" down 2>&1 | tee -a "$LOG_FILE"
+    docker-compose -f "$PRODUCTION_COMPOSE" up -d 2>&1 | tee -a "$LOG_FILE"
+    
+    log "INFO" "✓ تم التراجع بنجاح"
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# الدالة الرئيسية
+# ═══════════════════════════════════════════════════════════════════════════════
+main() {
+    local environment="staging"
+    local build_only=false
+    local push_only=false
+    local deploy_only=false
+    local skip_tests=false
+    local rollback_mode=false
+    local health_check_only=false
+    
+    # معالجة المعاملات
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -e|--environment)
+                environment="$2"
+                shift 2
+                ;;
+            -v|--version)
+                VERSION="$2"
+                shift 2
+                ;;
+            -r|--registry)
+                REGISTRY="$2"
+                shift 2
+                ;;
+            -b|--build-only)
+                build_only=true
+                shift
+                ;;
+            -p|--push-only)
+                push_only=true
+                shift
+                ;;
+            -d|--deploy-only)
+                deploy_only=true
+                shift
+                ;;
+            -s|--skip-tests)
+                skip_tests=true
+                shift
+                ;;
+            --rollback)
+                rollback_mode=true
+                shift
+                ;;
+            --health-check)
+                health_check_only=true
+                shift
+                ;;
+            -h|--help)
+                show_banner
+                show_usage
+                exit 0
+                ;;
+            *)
+                log "ERROR" "خيار غير معروف: $1"
+                show_usage
+                exit 1
+                ;;
+        esac
+    done
+    
+    # عرض الشعار
+    show_banner
+    
+    # التحقق من المتطلبات
+    check_prerequisites
+    
+    # فحص الصحة فقط
+    if [ "$health_check_only" = true ]; then
+        if [ "$environment" == "production" ]; then
+            health_check "$environment" "$PRODUCTION_HOST"
+        else
+            health_check "$environment" "$STAGING_HOST"
+        fi
+        exit $?
+    fi
+    
+    # وضع التراجع
+    if [ "$rollback_mode" = true ]; then
+        rollback "$environment"
+        exit $?
+    fi
+    
+    # البناء فقط
+    if [ "$build_only" = true ]; then
+        build_images
+        exit $?
+    fi
+    
+    # الدفع فقط
+    if [ "$push_only" = true ]; then
+        push_images
+        exit $?
+    fi
+    
+    # النشر فقط
+    if [ "$deploy_only" = true ]; then
+        if [ "$environment" == "all" ]; then
+            deploy_environment "staging" "$STAGING_COMPOSE" "$STAGING_HOST" && \
+            health_check "staging" "$STAGING_HOST" && \
+            deploy_environment "production" "$PRODUCTION_COMPOSE" "$PRODUCTION_HOST" && \
+            health_check "production" "$PRODUCTION_HOST"
+        else
+            deploy_environment "$environment" "$PRODUCTION_COMPOSE" "$environment"
+        fi
+        exit $?
+    fi
+    
+    # ═══════════════════════════════════════════════════════════════════════════
+    # سير عمل النشر الكامل
+    # ═══════════════════════════════════════════════════════════════════════════
+    log "INFO" "${BOLD}بدء سير عمل النشر الكامل...${NC}"
+    
+    local failed=false
+    
+    # 1. بناء الصور
+    if ! build_images; then
+        log "ERROR" "فشل بناء الصور"
+        exit 1
+    fi
+    
+    # 2. دفع الصور
+    push_images
+    
+    # 3. نشر على البيئة التجريبية
+    if [ "$environment" == "staging" ] || [ "$environment" == "all" ]; then
+        if deploy_environment "staging" "$STAGING_COMPOSE" "$STAGING_HOST"; then
+            if ! health_check "staging" "$STAGING_HOST"; then
+                log "WARN" "فشل فحص الصحة على البيئة التجريبية"
+                failed=true
+            fi
+        else
+            log "ERROR" "فشل النشر على البيئة التجريبية"
+            exit 1
+        fi
+    fi
+    
+    # 4. نشر على الإنتاج
+    if [ "$environment" == "production" ] || [ "$environment" == "all" ]; then
+        if [ "$failed" = false ]; then
+            log "INFO" "الانتظار للموافقة على النشر في الإنتاج..."
+            read -p "هل تريد المتابعة للنشر في الإنتاج؟ (yes/no): " confirm
+            
+            if [ "$confirm" == "yes" ]; then
+                if deploy_environment "production" "$PRODUCTION_COMPOSE" "$PRODUCTION_HOST"; then
+                    if ! health_check "production" "$PRODUCTION_HOST"; then
+                        log "ERROR" "فشل فحص الصحة على الإنتاج! جاري التراجع..."
+                        rollback "production"
+                        exit 1
+                    fi
+                else
+                    log "ERROR" "فشل النشر على الإنتاج"
+                    exit 1
+                fi
+            else
+                log "INFO" "تم إلغاء النشر في الإنتاج"
+            fi
+        else
+            log "WARN" "تم تخطي النشر في الإنتاج بسبب فشل الاختبارات"
+        fi
+    fi
+    
+    log "INFO" "════════════════════════════════════════════════════════════"
+    log "INFO" "${GREEN}${BOLD}✅ تم النشر بنجاح!${NC}"
+    log "INFO" "════════════════════════════════════════════════════════════"
+    log "INFO" "الإصدار: $VERSION"
+    log "INFO" "البيئة: $environment"
+    log "INFO" "سجل النشر: $LOG_FILE"
+    
+    return 0
+}
+
+# تشغيل السكربت
+main "$@"

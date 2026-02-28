@@ -1,0 +1,165 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# BI-IDE v8 - Docker Compose للتدريب على GPU
+# GPU Training Environment with NVIDIA Docker
+# ═══════════════════════════════════════════════════════════════════════════════
+
+version: '3.9'
+
+services:
+  # ═════════════════════════════════════════════════════════════════════════════
+  # خدمة التدريب على GPU - RTX 4090/5090
+  # ═════════════════════════════════════════════════════════════════════════════
+  gpu-trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    container_name: bi-ide-gpu-trainer
+    restart: unless-stopped
+    
+    runtime: nvidia
+    
+    environment:
+      # NVIDIA GPU
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      
+      # قاعدة البيانات
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-bi_ide}:${POSTGRES_PASSWORD:-bi_ide_dev}@postgres:5432/${POSTGRES_DB:-bi_ide}
+      
+      # Redis
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/0
+      
+      # الأمان
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      
+      # إعدادات التطبيق
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      
+      # إعدادات GPU
+      CUDA_VISIBLE_DEVICES: 0
+      PYTORCH_CUDA_ALLOC_CONF: max_split_size_mb:512
+      
+      # Python
+      PYTHONIOENCODING: utf-8
+      PYTHONDONTWRITEBYTECODE: 1
+      PYTHONUNBUFFERED: 1
+    
+    # المنافذ
+    ports:
+      - "${GPU_TRAINER_PORT:-8080}:8080"
+    
+    # المجلدات المستمرة
+    volumes:
+      - ./data:/app/data
+      - ./learning_data:/app/learning_data
+      - ./logs:/app/logs
+      - ./models:/app/models
+      - ./checkpoints:/app/checkpoints
+      - nvidia_cache:/root/.nv
+    
+    # موارد GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    networks:
+      - bi-ide-network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+  # ═════════════════════════════════════════════════════════════════════════════
+  # خدمة المراقبة GPU
+  # ═════════════════════════════════════════════════════════════════════════════
+  gpu-monitor:
+    image: nvidia/dcgm-exporter:3.3.0
+    container_name: bi-ide-gpu-monitor
+    restart: unless-stopped
+    
+    runtime: nvidia
+    
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+    
+    ports:
+      - "${GPU_METRICS_PORT:-9400}:9400"
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    networks:
+      - bi-ide-network
+
+  # ═════════════════════════════════════════════════════════════════════════════
+  # Jupyter Lab للتجارب
+  # ═════════════════════════════════════════════════════════════════════════════
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    container_name: bi-ide-jupyter
+    restart: unless-stopped
+    
+    runtime: nvidia
+    
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+      JUPYTER_ENABLE_LAB: "yes"
+      JUPYTER_TOKEN: ${JUPYTER_TOKEN:-bi-ide}
+    
+    ports:
+      - "${JUPYTER_PORT:-8888}:8888"
+    
+    volumes:
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+      - ./models:/app/models
+    
+    command: >
+      jupyter lab
+      --ip=0.0.0.0
+      --port=8888
+      --no-browser
+      --allow-root
+      --NotebookApp.token=${JUPYTER_TOKEN:-bi-ide}
+      --NotebookApp.password=''
+    
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    
+    networks:
+      - bi-ide-network
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# المجلدات المستمرة
+# ═══════════════════════════════════════════════════════════════════════════════
+volumes:
+  nvidia_cache:
+    driver: local
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# الشبكات
+# ═══════════════════════════════════════════════════════════════════════════════
+networks:
+  bi-ide-network:
+    external: true

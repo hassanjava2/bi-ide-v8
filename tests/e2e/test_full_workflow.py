@@ -13,32 +13,12 @@ from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timedelta
 
-from api.app import create_app
+from api.app import app
 
 
 @pytest.fixture
 def client():
     """Create test client with ERP service initialized"""
-    app = create_app()
-
-    # Initialize ERP service (lifespan skips this when PYTEST_RUNNING=1)
-    from core.database import db_manager
-    import asyncio
-
-    async def _init_erp():
-        await db_manager.initialize()
-        try:
-            from erp.erp_database_service import get_erp_db_service
-            from api.routes.erp import set_erp_db_service
-            erp_db = get_erp_db_service(None)
-            await erp_db.initialize()
-            set_erp_db_service(erp_db)
-        except Exception as e:
-            print(f"⚠️ ERP init in test: {e}")
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(_init_erp())
-
     with TestClient(app) as c:
         yield c
 

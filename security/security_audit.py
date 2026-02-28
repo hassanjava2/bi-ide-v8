@@ -371,14 +371,14 @@ class SecretScanner(BaseScanner):
     
     SECRET_PATTERNS = {
         'AWS Access Key': r'AKIA[0-9A-Z]{16}',
-        'AWS Secret Key': r'['\"'][0-9a-zA-Z/+]{40}['\'" ]',
-        'Generic API Key': r'[aA][pP][iI]_?[kK][eE][yY][\s]*[=:]+[\s]*['\'"][a-zA-Z0-9_\-]{16,}['\'"]',
+        'AWS Secret Key': r'[\"\'][0-9a-zA-Z/+]{40}[\"\' ]',
+        'Generic API Key': r'[aA][pP][iI]_?[kK][eE][yY][\s]*[=:]+[\s]*["\'][a-zA-Z0-9_\-]{16,}["\']',
         'Private Key': r'-----BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY-----',
         'JWT Token': r'eyJ[a-zA-Z0-9_-]*\.eyJ[a-zA-Z0-9_-]*\.[a-zA-Z0-9_-]*',
         'GitHub Token': r'gh[pousr]_[A-Za-z0-9_]{36,}',
         'Slack Token': r'xox[baprs]-[0-9a-zA-Z]{10,48}',
-        'Generic Secret': r'[sS][eE][cC][rR][eE][tT][\s]*[=:]+[\s]*['\'"][a-zA-Z0-9_\-]{8,}['\'"]',
-        'Password': r'[pP][aA][sS][sS][wW][oO][rR][dD][\s]*[=:]+[\s]*['\'"][^'\'"]{8,}['\'"]',
+        'Generic Secret': r'[sS][eE][cC][rR][eE][tT][\s]*[=:]+[\s]*["\'][a-zA-Z0-9_\-]{8,}["\']',
+        'Password': r'[pP][aA][sS][sS][wW][oO][rR][dD][\s]*[=:]+[\s]*["\'][^"\']{8,}["\']',
         'Database URL': r'(postgres|mysql|mongodb)://[^:]+:[^@]+@[^/]+',
     }
     

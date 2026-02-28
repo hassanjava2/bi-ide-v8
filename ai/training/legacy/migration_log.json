@@ -1,0 +1,274 @@
+{
+  "timestamp": "2026-03-01T00:34:06.962536",
+  "total_scripts": 18,
+  "migrated": 11,
+  "skipped": 5,
+  "failed": 0,
+  "partial": 2,
+  "scripts": [
+    {
+      "name": "advanced_training.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/advanced_training.py",
+      "target_path": null,
+      "description": "╔══════════════════════════════════════════════════════════════════════════════╗",
+      "features": [],
+      "status": "skipped",
+      "error_message": null,
+      "lines_of_code": 872
+    },
+    {
+      "name": "auto-finetune.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/auto-finetune.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/continuous_trainer.py",
+      "description": "Bi IDE – تدريب تلقائي بالخلفية",
+      "features": [
+        "onnx",
+        "idle_training",
+        "lora",
+        "background",
+        "auto_conditions",
+        "continuous"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 348
+    },
+    {
+      "name": "code_generation_training.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/code_generation_training.py",
+      "target_path": null,
+      "description": "╔══════════════════════════════════════════════════════════════════════════════╗",
+      "features": [],
+      "status": "skipped",
+      "error_message": null,
+      "lines_of_code": 978
+    },
+    {
+      "name": "continuous-train.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/continuous-train.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/continuous_trainer.py",
+      "description": "Bi IDE - Continuous training pipeline.",
+      "features": [
+        "onnx",
+        "curriculum",
+        "auto_trigger",
+        "chat",
+        "gguf",
+        "continuous",
+        "pipeline"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 240
+    },
+    {
+      "name": "convert-to-gguf.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/convert-to-gguf.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/model_converter.py",
+      "description": "Bi IDE – دمج LoRA وتحويل نموذج المحادثة إلى GGUF (Q4_K_M)",
+      "features": [
+        "lora",
+        "llamacpp",
+        "chat",
+        "gguf",
+        "continuous",
+        "quantization"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 131
+    },
+    {
+      "name": "convert-to-onnx.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/convert-to-onnx.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/model_converter.py",
+      "description": "Bi IDE – تحويل النموذج المُدرَّب لـ ONNX",
+      "features": [
+        "onnx",
+        "lora",
+        "optimum",
+        "export",
+        "continuous"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 166
+    },
+    {
+      "name": "evaluate-model.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/evaluate-model.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/evaluation_engine.py",
+      "description": "Bi IDE - تقييم النموذج",
+      "features": [
+        "continuous",
+        "model_evaluation",
+        "evaluation",
+        "perplexity"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 142
+    },
+    {
+      "name": "finetune-chat.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/finetune-chat.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/advanced_trainer.py",
+      "description": "Bi IDE – تدريب نموذج المحادثة (Qwen2.5-3B-Instruct + LoRA)",
+      "features": [
+        "chat_training",
+        "lora",
+        "chat",
+        "chatml",
+        "gguf",
+        "conversation",
+        "continuous"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 198
+    },
+    {
+      "name": "finetune-extended.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/finetune-extended.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/advanced_trainer.py",
+      "description": "Bi IDE – تدريب مكثف (10 ساعات)",
+      "features": [
+        "onnx",
+        "deep_learning",
+        "lora",
+        "chat",
+        "continuous",
+        "data_augmentation",
+        "extended_training"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 350
+    },
+    {
+      "name": "finetune.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/finetune.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/advanced_trainer.py",
+      "description": "Bi IDE – Fine-tuning Script",
+      "features": [
+        "completion",
+        "onnx",
+        "lora",
+        "continuous",
+        "base_training"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 283
+    },
+    {
+      "name": "monitor.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/monitor.py",
+      "target_path": null,
+      "description": "Bi IDE - Training monitor.",
+      "features": [
+        "reporting",
+        "onnx",
+        "monitoring"
+      ],
+      "status": "partial",
+      "error_message": null,
+      "lines_of_code": 87
+    },
+    {
+      "name": "package-artifacts.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/package-artifacts.py",
+      "target_path": null,
+      "description": "Bi IDE - Artifact Packager",
+      "features": [
+        "onnx"
+      ],
+      "status": "skipped",
+      "error_message": null,
+      "lines_of_code": 146
+    },
+    {
+      "name": "prepare-chat-data.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/prepare-chat-data.py",
+      "target_path": null,
+      "description": "Bi IDE - تحضير بيانات المحادثة (ChatML)",
+      "features": [
+        "data_preparation",
+        "chat",
+        "chatml"
+      ],
+      "status": "partial",
+      "error_message": null,
+      "lines_of_code": 166
+    },
+    {
+      "name": "run-16h.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/run-16h.py",
+      "target_path": null,
+      "description": "Bi IDE - تدريب محدود بوقت (مثلاً 16 ساعة)",
+      "features": [
+        "continuous",
+        "onnx"
+      ],
+      "status": "skipped",
+      "error_message": null,
+      "lines_of_code": 71
+    },
+    {
+      "name": "run_full_training.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/run_full_training.py",
+      "target_path": null,
+      "description": "╔══════════════════════════════════════════════════════════════════════════════╗",
+      "features": [],
+      "status": "skipped",
+      "error_message": null,
+      "lines_of_code": 306
+    },
+    {
+      "name": "smart-learn.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/smart-learn.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/continuous_trainer.py",
+      "description": "Bi IDE – التعلم الذكي الشامل",
+      "features": [
+        "onnx",
+        "curriculum",
+        "smart",
+        "lora",
+        "continuous",
+        "online_learning"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 677
+    },
+    {
+      "name": "train_ai.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/train_ai.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/advanced_trainer.py",
+      "description": "╔══════════════════════════════════════════════════════════════════════════════╗",
+      "features": [
+        "comprehensive",
+        "chat",
+        "patterns",
+        "code_training",
+        "continuous"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 1089
+    },
+    {
+      "name": "validate-data.py",
+      "source_path": "/Users/bi/Documents/bi-ide-v8/training/v6-scripts/validate-data.py",
+      "target_path": "/Users/bi/Documents/bi-ide-v8/ai/training/evaluation_engine.py",
+      "description": "Bi IDE - Validate training data quality.",
+      "features": [
+        "data_validation",
+        "quality_check"
+      ],
+      "status": "success",
+      "error_message": null,
+      "lines_of_code": 150
+    }
+  ]
+}

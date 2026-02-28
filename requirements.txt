@@ -107,3 +107,4 @@ fastapi-pagination>=0.12.0
 #
 # 5. Install with: pip install -r requirements.txt
 # ============================================
+passlib>=1.7.4
