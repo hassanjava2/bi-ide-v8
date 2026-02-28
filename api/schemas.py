@@ -3,11 +3,9 @@ BI-IDE API Schemas - Pydantic v2 Models
 نماذج التحقق من صحة طلبات واستجابات API
 """
 
-from __future__ import annotations
-
 from datetime import datetime
 from enum import Enum
-from typing import Any, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -1235,3 +1233,61 @@ class RefreshTokenResponse(BaseModel):
     token_type: str = "bearer"
     expires_in: int
 
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Rebuild all models (required when using 'from __future__ import annotations')
+# ═══════════════════════════════════════════════════════════════════════════════
+LoginRequest.model_rebuild()
+RegisterRequest.model_rebuild()
+TokenResponse.model_rebuild()
+UserProfile.model_rebuild()
+CouncilQuery.model_rebuild()
+CouncilVote.model_rebuild()
+CouncilDecision.model_rebuild()
+CouncilMember.model_rebuild()
+TrainingConfig.model_rebuild()
+TrainingStatus.model_rebuild()
+ModelInfo.model_rebuild()
+WorkerInfo.model_rebuild()
+SystemResources.model_rebuild()
+Alert.model_rebuild()
+LogEntry.model_rebuild()
+GenerateRequest.model_rebuild()
+GenerateResponse.model_rebuild()
+CodeCompletionRequest.model_rebuild()
+Invoice.model_rebuild()
+BusinessReport.model_rebuild()
+ErrorResponse.model_rebuild()
+PaginatedResponse.model_rebuild()
+CommandRequest.model_rebuild()
+CouncilMessageRequest.model_rebuild()
+CodeSuggestionRequest.model_rebuild()
+CodeAnalysisRequest.model_rebuild()
+RefactorSuggestRequest.model_rebuild()
+TestGenerateRequest.model_rebuild()
+SymbolDocumentationRequest.model_rebuild()
+TerminalCommandRequest.model_rebuild()
+TerminalSessionStartRequest.model_rebuild()
+GitCommitRequest.model_rebuild()
+GitSyncRequest.model_rebuild()
+DebugStartRequest.model_rebuild()
+DebugBreakpointRequest.model_rebuild()
+DebugCommandRequest.model_rebuild()
+DebugStopRequest.model_rebuild()
+InvoiceItem.model_rebuild()
+InvoiceCreateRequest.model_rebuild()
+TransactionRequest.model_rebuild()
+StockAdjustmentRequest.model_rebuild()
+PayrollRequest.model_rebuild()
+CustomerCreateRequest.model_rebuild()
+SpecializationExpandRequest.model_rebuild()
+WorkerRegisterRequest.model_rebuild()
+WorkerHeartbeatRequest.model_rebuild()
+TrainingTaskCreateRequest.model_rebuild()
+TrainingTaskClaimRequest.model_rebuild()
+TrainingTaskCompleteRequest.model_rebuild()
+DualThoughtRequest.model_rebuild()
+IdeaLedgerUpdateRequest.model_rebuild()
+RefreshTokenRequest.model_rebuild()
+RefreshTokenResponse.model_rebuild()
