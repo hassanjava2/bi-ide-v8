@@ -924,7 +924,7 @@ async def get_version():
         "git_date": git_date,
         "server_time": datetime.now(timezone.utc).isoformat(),
         "workers_online": sum(1 for w in state.workers.values() if w.get("status") == "online"),
-        "total_jobs": state.job_counter,
+        "total_jobs": len(state.jobs),
     }
 
 
