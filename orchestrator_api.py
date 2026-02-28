@@ -908,20 +908,9 @@ echo "🚀 Worker is running!"
 @router.get("/version")
 async def get_version():
     """Return current code version for auto-update checks."""
-    import subprocess as _sp
-    git_hash = "unknown"
-    git_date = "unknown"
-    try:
-        git_hash = _sp.run(["git", "rev-parse", "--short", "HEAD"],
-                           capture_output=True, text=True, timeout=3, cwd=str(Path(__file__).parent)).stdout.strip()
-        git_date = _sp.run(["git", "log", "-1", "--format=%ci"],
-                           capture_output=True, text=True, timeout=3, cwd=str(Path(__file__).parent)).stdout.strip()
-    except Exception:
-        pass
     return {
         "version": "4.0",
-        "git_hash": git_hash,
-        "git_date": git_date,
+        "build": "bd4b097",
         "server_time": datetime.now(timezone.utc).isoformat(),
         "workers_online": sum(1 for w in state.workers.values() if w.get("status") == "online"),
         "total_jobs": len(state.jobs),
