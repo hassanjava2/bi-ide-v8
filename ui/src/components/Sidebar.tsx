@@ -1,16 +1,17 @@
 import { memo, useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
-import { 
-  LayoutDashboard, 
-  Users, 
-  Building2, 
-  MessageCircle, 
-  Code2, 
+import {
+  LayoutDashboard,
+  Users,
+  Building2,
+  MessageCircle,
+  Code2,
   Brain,
   Download,
   Settings,
   Crown,
-  Layers
+  Layers,
+  Server
 } from 'lucide-react'
 
 // Static data moved outside component to prevent recreating on each render
@@ -21,6 +22,7 @@ const MENU_ITEMS = [
   { path: '/community', icon: MessageCircle, label: 'المجتمع' },
   { path: '/ide', icon: Code2, label: 'بيئة التطوير' },
   { path: '/training', icon: Brain, label: 'التدريب' },
+  { path: '/nodes', icon: Server, label: 'العقد المتصلة' },
   { path: '/downloads', icon: Download, label: 'التنزيلات' },
   { path: '/meta', icon: Layers, label: 'التحكم الفوقي' },
   { path: '/settings', icon: Settings, label: 'الإعدادات' },
@@ -37,7 +39,7 @@ const MenuItem = memo(function MenuItem({ path, icon: Icon, label }: MenuItemPro
   return (
     <NavLink
       to={path}
-      className={({ isActive }) => 
+      className={({ isActive }) =>
         `sidebar-item ${isActive ? 'active' : ''}`
       }
     >
@@ -108,11 +110,11 @@ function Sidebar() {
       <div className="p-6 border-b border-white/10">
         <Logo />
       </div>
-      
+
       <nav className="p-4 space-y-1">
         {menuItemsList}
       </nav>
-      
+
       <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10">
         <UserProfile />
       </div>

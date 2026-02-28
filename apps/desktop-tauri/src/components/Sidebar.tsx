@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { 
-  ChevronRight, 
-  ChevronDown, 
-  File, 
-  Folder, 
+import {
+  ChevronRight,
+  ChevronDown,
+  File,
+  Folder,
   FolderOpen,
   RefreshCw,
   Search,
@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { useStore, FileNode } from "../lib/store";
 import { fs, workspace, git, training, ai, trainingData, AiChatMessage } from "../lib/tauri";
+import { CouncilPanel } from "./CouncilPanel";
+import { HierarchyPanel } from "./HierarchyPanel";
 
 interface TreeNodeProps {
   node: FileNode;
@@ -75,7 +77,7 @@ function TreeNode({ node, depth, workspaceRoot, onToggle, onSelect }: TreeNodePr
         )}
         <span className="truncate">{node.name}</span>
       </div>
-      
+
       {node.isDir && isExpanded && node.children && (
         <div>
           {node.children.map((child) => (
@@ -95,7 +97,7 @@ function TreeNode({ node, depth, workspaceRoot, onToggle, onSelect }: TreeNodePr
 }
 
 export function Sidebar() {
-  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "ai" | "training">("explorer");
+  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "ai" | "training" | "council" | "hierarchy">("explorer");
   const [isLoading, setIsLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [isSendingChat, setIsSendingChat] = useState(false);
@@ -107,7 +109,7 @@ export function Sidebar() {
     },
   ]);
   const [isTrainingAction, setIsTrainingAction] = useState(false);
-  
+
   const {
     currentWorkspace,
     fileTree,
@@ -128,12 +130,12 @@ export function Sidebar() {
   // Load file tree
   const loadFileTree = useCallback(async () => {
     if (!currentWorkspace) return;
-    
+
     setIsLoading(true);
     try {
       const buildTree = async (path: string): Promise<FileNode[]> => {
         const entries = await workspace.getFiles(currentWorkspace.id, path);
-        
+
         const nodes: FileNode[] = await Promise.all(
           entries.map(async (entry) => {
             const node: FileNode = {
@@ -167,7 +169,7 @@ export function Sidebar() {
   // Load git status
   const loadGitStatus = useCallback(async () => {
     if (!currentWorkspace) return;
-    
+
     try {
       const status = await git.status(currentWorkspace.path);
       setGitState({
@@ -260,11 +262,11 @@ export function Sidebar() {
       isEnabled: status.enabled,
       currentJob: status.current_job
         ? {
-            id: status.current_job.job_id,
-            type: status.current_job.job_type,
-            progress: status.current_job.progress_percent,
-            status: status.current_job.status,
-          }
+          id: status.current_job.job_id,
+          type: status.current_job.job_type,
+          progress: status.current_job.progress_percent,
+          status: status.current_job.status,
+        }
         : undefined,
     });
   };
@@ -300,31 +302,28 @@ export function Sidebar() {
       <div className="flex border-b border-dark-700">
         <button
           onClick={() => setActiveTab("explorer")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors ${
-            activeTab === "explorer" 
-              ? "text-primary-400 border-b-2 border-primary-500" 
+          className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === "explorer"
+              ? "text-primary-400 border-b-2 border-primary-500"
               : "text-dark-400 hover:text-dark-200"
-          }`}
+            }`}
         >
           Explorer
         </button>
         <button
           onClick={() => setActiveTab("search")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors ${
-            activeTab === "search" 
-              ? "text-primary-400 border-b-2 border-primary-500" 
+          className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === "search"
+              ? "text-primary-400 border-b-2 border-primary-500"
               : "text-dark-400 hover:text-dark-200"
-          }`}
+            }`}
         >
           Search
         </button>
         <button
           onClick={() => setActiveTab("git")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${
-            activeTab === "git" 
-              ? "text-primary-400 border-b-2 border-primary-500" 
+          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "git"
+              ? "text-primary-400 border-b-2 border-primary-500"
               : "text-dark-400 hover:text-dark-200"
-          }`}
+            }`}
         >
           Git
           {gitState && !gitState.isClean && (
@@ -333,23 +332,32 @@ export function Sidebar() {
         </button>
         <button
           onClick={() => setActiveTab("ai")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${
-            activeTab === "ai"
+          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "ai"
               ? "text-primary-400 border-b-2 border-primary-500"
               : "text-dark-400 hover:text-dark-200"
-          }`}
+            }`}
         >
           AI
         </button>
         <button
-          onClick={() => setActiveTab("training")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${
-            activeTab === "training" 
-              ? "text-primary-400 border-b-2 border-primary-500" 
+          onClick={() => setActiveTab("council")}
+          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "council"
+              ? "text-yellow-400 border-b-2 border-yellow-500"
               : "text-dark-400 hover:text-dark-200"
-          }`}
+            }`}
+          title="مجلس الحكماء"
         >
-          <Cpu className="w-4 h-4 mx-auto" />
+          🏛️
+        </button>
+        <button
+          onClick={() => setActiveTab("hierarchy")}
+          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "hierarchy"
+              ? "text-cyan-400 border-b-2 border-cyan-500"
+              : "text-dark-400 hover:text-dark-200"
+            }`}
+          title="النظام الهرمي"
+        >
+          📊
         </button>
       </div>
 
@@ -362,7 +370,7 @@ export function Sidebar() {
               <span className="text-xs font-semibold text-dark-400 uppercase">
                 {currentWorkspace?.name || "No Folder"}
               </span>
-              <button 
+              <button
                 onClick={loadFileTree}
                 className="p-1 hover:bg-dark-800 rounded transition-colors"
                 disabled={isLoading}
@@ -413,11 +421,10 @@ export function Sidebar() {
               {chatMessages.map((message, index) => (
                 <div
                   key={index}
-                  className={`text-xs p-2 rounded ${
-                    message.role === "user"
+                  className={`text-xs p-2 rounded ${message.role === "user"
                       ? "bg-primary-700/40 text-primary-100"
                       : "bg-dark-700 text-dark-200"
-                  }`}
+                    }`}
                 >
                   {message.content}
                 </div>
@@ -540,7 +547,7 @@ export function Sidebar() {
                 <div className="text-sm font-medium">{trainingStatus.currentJob.type}</div>
                 <div className="mt-2">
                   <div className="h-2 bg-dark-700 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-primary-500 transition-all"
                       style={{ width: `${trainingStatus.currentJob.progress}%` }}
                     />
@@ -570,6 +577,9 @@ export function Sidebar() {
             </div>
           </div>
         )}
+
+        {activeTab === "council" && <CouncilPanel />}
+        {activeTab === "hierarchy" && <HierarchyPanel />}
       </div>
     </div>
   );

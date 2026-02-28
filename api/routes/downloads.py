@@ -27,6 +27,8 @@ def _detect_platform(file_name: str) -> str:
         return "macos"
     if lower.endswith(".msi") or lower.endswith(".exe"):
         return "windows"
+    if lower.endswith(".zip") and ("x64" in lower or "x86" in lower or "win" in lower):
+        return "windows"
     if lower.endswith(".deb") or lower.endswith(".rpm") or lower.endswith(".appimage"):
         return "linux"
     return "other"

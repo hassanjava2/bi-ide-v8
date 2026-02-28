@@ -226,6 +226,35 @@ def create_app() -> FastAPI:
         except Exception as e:
             print(f"⚠️ Checkpoint sync: {e}")
 
+        # Sync Manager (auto-sync to RTX 5090 + daily backup)
+        try:
+            from core.sync_manager import sync_manager
+            _spawn_step(
+                "Sync Manager started",
+                lambda: sync_manager.start(),
+                float(os.getenv("STARTUP_SYNC_TIMEOUT", "10")),
+                run_in_thread=True,
+            )
+        except Exception as e:
+            print(f"⚠️ Sync Manager: {e}")
+
+        # Training Coordinator (auto-generates training tasks)
+        # NOTE: The coordinator runs an INFINITE loop, so it must NOT use
+        # _spawn_step (which has a timeout). Instead, run as a persistent
+        # daemon thread.
+        try:
+            from core.training_coordinator import training_coordinator
+            from orchestrator_api import state as orchestrator_state
+
+            def _coordinator_thread():
+                asyncio.run(training_coordinator.start(orchestrator_state))
+
+            coord_t = threading.Thread(target=_coordinator_thread, daemon=True, name="training-coordinator")
+            coord_t.start()
+            print("✅ Training Coordinator started (persistent daemon)")
+        except Exception as e:
+            print(f"⚠️ Training Coordinator: {e}")
+
         print("=" * 60)
         print("✅ Startup tasks scheduled (API is ready to accept requests)")
         print("=" * 60)
@@ -237,6 +266,18 @@ def create_app() -> FastAPI:
         try:
             from api.routes.checkpoints import stop_checkpoint_sync
             await stop_checkpoint_sync()
+        except Exception:
+            pass
+
+        try:
+            from core.sync_manager import sync_manager
+            sync_manager.stop()
+        except Exception:
+            pass
+
+        try:
+            from core.training_coordinator import training_coordinator
+            training_coordinator.stop()
         except Exception:
             pass
 

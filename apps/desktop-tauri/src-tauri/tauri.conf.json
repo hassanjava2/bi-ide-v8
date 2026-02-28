@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "com.biide.desktop",
   "build": {
-    "frontendDist": "../../../ui/dist",
+    "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
@@ -29,7 +29,7 @@
     "security": {
       "csp": {
         "default-src": "'self'",
-        "connect-src": "'self' http://localhost:8000 ws://localhost:8000 https://api.bi-ide.local",
+        "connect-src": "'self' http://localhost:8000 ws://localhost:8000 https://bi-iq.com https://api.bi-ide.local",
         "img-src": "'self' data: blob:",
         "style-src": "'self' 'unsafe-inline'",
         "script-src": "'self' 'wasm-unsafe-eval'",
@@ -39,7 +39,9 @@
       "capabilities": [
         {
           "identifier": "desktop-capability",
-          "windows": ["main"],
+          "windows": [
+            "main"
+          ],
           "permissions": [
             "core:default",
             "shell:allow-open",
@@ -70,9 +72,18 @@
     }
   },
   "bundle": {
-    "active": false,
-    "targets": ["app", "dmg", "deb", "rpm", "msi"],
-    "icon": [],
+    "active": true,
+    "targets": [
+      "app",
+      "dmg"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
     "resources": [],
     "copyright": "Copyright (c) 2026 BI-IDE",
     "category": "DeveloperTool",
@@ -89,7 +100,10 @@
     },
     "linux": {
       "deb": {
-        "depends": ["libgtk-3-0", "libwebkit2gtk-4.0-37"]
+        "depends": [
+          "libgtk-3-0",
+          "libwebkit2gtk-4.0-37"
+        ]
       }
     }
   },

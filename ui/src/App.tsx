@@ -11,6 +11,7 @@ import Training from './pages/Training'
 import Settings from './pages/Settings'
 import MetaControl from './pages/MetaControl'
 import Downloads from './pages/Downloads'
+import Nodes from './pages/Nodes'
 import { ProtectedRoute } from './components/Auth/ProtectedRoute'
 import { useAuth } from './hooks/useAuth'
 import { useLiveData } from './hooks/useLiveData'
@@ -41,12 +42,12 @@ function App() {
   }
 
   if (!isAuthenticated) {
-    return <Login onLogin={() => {}} />
+    return <Login onLogin={() => { }} />
   }
 
   return (
-    <Layout 
-      systemStatus={systemStatus} 
+    <Layout
+      systemStatus={systemStatus}
       connectionStatus={{ isConnected, isFallback }}
       onLogout={logout}
     >
@@ -94,6 +95,11 @@ function App() {
         <Route path="/meta" element={
           <ProtectedRoute requiredRole="admin">
             <MetaControl />
+          </ProtectedRoute>
+        } />
+        <Route path="/nodes" element={
+          <ProtectedRoute>
+            <Nodes />
           </ProtectedRoute>
         } />
         <Route path="/login" element={<Navigate to="/" replace />} />
