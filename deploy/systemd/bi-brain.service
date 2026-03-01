@@ -1,0 +1,55 @@
+[Unit]
+Description=BI-IDE Brain Service - Auto-scheduling and model evaluation
+Documentation=https://bi-iq.com/docs/brain
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=bi-ide
+Group=bi-ide
+WorkingDirectory=/opt/bi-ide
+
+# Environment
+Environment=PYTHONPATH=/opt/bi-ide
+Environment=BRAIN_ENABLED=true
+Environment=BRAIN_CHECK_INTERVAL=60
+Environment=BRAIN_MAX_JOBS=3
+Environment=BRAIN_IDLE_TRAINING=true
+Environment=BRAIN_IDLE_CPU=30.0
+Environment=BRAIN_MIN_IMPROVEMENT=0.02
+Environment=BRAIN_AUTO_DEPLOY=0.95
+Environment=LOG_LEVEL=INFO
+
+# Load environment from file if exists
+EnvironmentFile=-/opt/bi-ide/.env
+
+# Main command
+ExecStart=/opt/bi-ide/.venv/bin/python -m brain.daemon
+
+# Restart policy
+Restart=always
+RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
+
+# Resource limits
+LimitNOFILE=65535
+LimitNPROC=4096
+
+# Security
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/bi-ide/data /opt/bi-ide/logs /opt/bi-ide/checkpoints
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bi-brain
+
+[Install]
+WantedBy=multi-user.target

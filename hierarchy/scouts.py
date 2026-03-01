@@ -99,33 +99,68 @@ class TechScout:
         return reports
     
     async def _check_github_trending(self) -> List[Dict]:
-        """فحص GitHub Trending"""
-        # ⚠️ WARNING: Mock data - GitHub API not implemented
-        # TODO: Implement real GitHub API integration
-        # Currently returns static placeholder data
-        print("⚠️ SCOUT WARNING: Using mock GitHub data. Real API not implemented.")
-        return [
-            {
-                '_warning': 'MOCK DATA',
-                'name': 'rust/rust', 
-                'description': 'تحسينات الأداء (placeholder)', 
-                'stars': 85000, 
-                'lang': 'Rust',
-                '_source': 'static_mock'
-            },
-            {
-                '_warning': 'MOCK DATA',
-                'name': 'python/poetry', 
-                'description': 'مدير حزم جديد (placeholder)', 
-                'stars': 25000, 
-                'lang': 'Python',
-                '_source': 'static_mock'
-            }
-        ]
+        """فحص GitHub Trending — Real HTTP fetch"""
+        try:
+            import urllib.request
+            import urllib.error
+            
+            # Use GitHub API to get trending-like repos (most starred recently)
+            url = "https://api.github.com/search/repositories?q=created:>2026-02-01&sort=stars&order=desc&per_page=5"
+            req = urllib.request.Request(url, headers={
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'BI-IDE-Scout/1.0'
+            })
+            
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode())
+            
+            repos = []
+            for item in data.get('items', [])[:5]:
+                repos.append({
+                    'name': item.get('full_name', ''),
+                    'description': item.get('description', 'No description'),
+                    'stars': item.get('stargazers_count', 0),
+                    'lang': item.get('language', 'Unknown'),
+                    '_source': 'github_api'
+                })
+            
+            print(f"✅ SCOUT: Fetched {len(repos)} trending repos from GitHub API")
+            return repos
+            
+        except Exception as e:
+            print(f"⚠️ SCOUT: GitHub API fetch failed ({e}) — returning empty list")
+            return []
     
     async def _check_security_advisories(self) -> List[Dict]:
-        """فحص التنبيهات الأمنية"""
-        return []
+        """فحص التنبيهات الأمنية — Real HTTP fetch"""
+        try:
+            import urllib.request
+            
+            # Use GitHub Advisory Database API
+            url = "https://api.github.com/advisories?per_page=3&severity=critical"
+            req = urllib.request.Request(url, headers={
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'BI-IDE-Scout/1.0'
+            })
+            
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode())
+            
+            advisories = []
+            for item in data[:3] if isinstance(data, list) else []:
+                advisories.append({
+                    'cve': item.get('cve_id', 'UNKNOWN'),
+                    'description': item.get('summary', 'No description')[:200],
+                    'severity': item.get('severity', 'unknown'),
+                    'package': item.get('vulnerabilities', [{}])[0].get('package', {}).get('name', 'unknown') if item.get('vulnerabilities') else 'unknown'
+                })
+            
+            print(f"✅ SCOUT: Fetched {len(advisories)} security advisories")
+            return advisories
+            
+        except Exception as e:
+            print(f"⚠️ SCOUT: Security advisory fetch failed ({e}) — returning empty list")
+            return []
 
 
 class MarketScout:
@@ -254,18 +289,32 @@ class CompetitorScout:
         return reports
     
     async def _monitor_website(self, url: str) -> Optional[Dict]:
-        """مراقبة موقع المنافس"""
-        # ⚠️ WARNING: Web scraping not implemented
-        # TODO: Implement real web scraping with appropriate rate limiting
-        # and robots.txt compliance
-        print(f"⚠️ SCOUT WARNING: Web scraping not implemented for {url}")
-        return {
-            '_warning': 'NOT IMPLEMENTED',
-            '_note': 'Web scraping module not available',
-            'url': url,
-            'headline': f'No updates from {url}',
-            'status': 'placeholder'
-        }
+        """مراقبة موقع المنافس — HTTP check"""
+        try:
+            import urllib.request
+            
+            req = urllib.request.Request(f"https://{url}", headers={
+                'User-Agent': 'BI-IDE-Scout/1.0'
+            })
+            with urllib.request.urlopen(req, timeout=5) as response:
+                status = response.status
+                content_length = response.headers.get('Content-Length', 'unknown')
+            
+            return {
+                'url': url,
+                'headline': f'{url} is online (HTTP {status})',
+                'status': 'monitored',
+                'http_status': status,
+                '_source': 'live_http_check'
+            }
+        except Exception as e:
+            # Site unreachable or error — still valid intel
+            return {
+                'url': url,
+                'headline': f'{url} unreachable: {str(e)[:100]}',
+                'status': 'error',
+                '_source': 'live_http_check'
+            }
     
     async def _check_pricing(self, competitor: str) -> Dict:
         """فحص أسعار المنافس"""

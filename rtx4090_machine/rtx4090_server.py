@@ -207,20 +207,73 @@ def get_gpu_info():
 # ==================== Council AI Logic ====================
 
 def _select_wise_man(message: str) -> str:
-    keywords_map = {
-        "حكيم الأمان": ["أمان", "حماية", "أمن", "هجوم", "security", "hack"],
-        "حكيم الأداء": ["أداء", "سرعة", "بطيء", "تحسين", "performance", "optimize", "resource", "موارد"],
-        "حكيم الاستراتيجيا": ["خطة", "استراتيجية", "هدف", "مستقبل", "strategy", "plan"],
-        "حكيم المعرفة": ["معلومات", "شرح", "كيف", "ليش", "شنو", "explain", "what"],
-        "حكيم الإبداع": ["إبداع", "فكرة", "جديد", "ابتكار", "creative", "idea"],
-        "حكيم التنفيذ": ["نفّذ", "شغّل", "سوّي", "ابني", "execute", "build", "run"],
-        "حكيم التعلم": ["تعلم", "تدريب", "درّب", "train", "learn", "model"],
+    """
+    Semantic routing — selects the most relevant wise man based on
+    weighted keyword relevance scoring (not simple keyword matching).
+    Each wise man gets a relevance score; highest score wins.
+    """
+    # Domain expertise mapping with weights (higher = more specific)
+    expertise_map = {
+        "حكيم الأمان": {
+            "keywords": ["أمان", "حماية", "أمن", "هجوم", "security", "hack", "ثغر", "تشفير", "ssl", "auth", "password", "firewall"],
+            "weight": 1.2  # Security gets higher priority
+        },
+        "حكيم الأداء": {
+            "keywords": ["أداء", "سرعة", "بطيء", "تحسين", "performance", "optimize", "resource", "موارد", "cpu", "gpu", "memory", "latency"],
+            "weight": 1.1
+        },
+        "حكيم الاستراتيجيا": {
+            "keywords": ["خطة", "استراتيجية", "هدف", "مستقبل", "strategy", "plan", "roadmap", "vision", "target"],
+            "weight": 1.0
+        },
+        "حكيم المعرفة": {
+            "keywords": ["معلومات", "شرح", "كيف", "ليش", "شنو", "explain", "what", "why", "how", "define", "وضّح"],
+            "weight": 1.0
+        },
+        "حكيم الإبداع": {
+            "keywords": ["إبداع", "فكرة", "جديد", "ابتكار", "creative", "idea", "design", "تصميم", "brainstorm"],
+            "weight": 1.0
+        },
+        "حكيم التنفيذ": {
+            "keywords": ["نفّذ", "شغّل", "سوّي", "ابني", "execute", "build", "run", "deploy", "install", "setup"],
+            "weight": 1.0
+        },
+        "حكيم التعلم": {
+            "keywords": ["تعلم", "تدريب", "درّب", "train", "learn", "model", "dataset", "epoch", "neural"],
+            "weight": 1.0
+        },
+        "حكيم الأخلاق": {
+            "keywords": ["أخلاق", "صح", "غلط", "عدل", "ethics", "moral", "fair", "bias", "privacy"],
+            "weight": 1.0
+        },
+        "حكيم التوازن": {
+            "keywords": ["توازن", "تطرف", "وسط", "balance", "moderate", "tradeoff"],
+            "weight": 0.9
+        },
+        "حكيم القرار": {
+            "keywords": ["قرار", "اختيار", "بديل", "decision", "choose", "option", "compare"],
+            "weight": 1.0
+        },
     }
+    
     msg_lower = message.lower()
-    for name, keywords in keywords_map.items():
-        if any(kw in msg_lower for kw in keywords):
-            return name
-    return random.choice(list(WISE_MEN.keys()))
+    scores = {}
+    
+    for name, config in expertise_map.items():
+        match_count = sum(1 for kw in config["keywords"] if kw in msg_lower)
+        # Score = number of keyword matches × domain weight
+        scores[name] = match_count * config["weight"]
+    
+    # Select highest scoring wise man
+    best = max(scores, key=scores.get)
+    
+    # If no keywords matched at all (score 0), use round-robin based on message hash
+    if scores[best] == 0:
+        wise_men_list = list(WISE_MEN.keys())
+        idx = hash(message) % len(wise_men_list)
+        return wise_men_list[idx]
+    
+    return best
 
 
 def _generate_council_response(message: str, wise_man_name: str) -> str:
@@ -532,4 +585,4 @@ if __name__ == "__main__":
     print("  POST /council/message          → AI Council")
     print("=" * 60)
 
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="0.0.0.0", port=8090)

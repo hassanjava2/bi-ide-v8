@@ -3,17 +3,33 @@
 
 يوفر نقاط النهاية لمراقبة النظام والعمال.
 Provides endpoints for system and worker monitoring.
+
+V2:
+- No fake in-memory stores
+- Real system snapshot via psutil
+- Persistent alerts/logs via JSON files
 """
 
 import asyncio
-from datetime import datetime, timedelta
+import json
+import platform
+import socket
+import time
+import uuid
+from datetime import datetime
 from enum import Enum
+from pathlib import Path
 from typing import List, Optional, Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel, Field
 
 from .auth import get_current_active_user, User
+
+try:
+    import psutil
+except Exception:  # pragma: no cover
+    psutil = None
 
 router = APIRouter(prefix="/monitoring", tags=["المراقبة | Monitoring"])
 
@@ -41,7 +57,6 @@ class AlertStatus(str, Enum):
     RESOLVED = "resolved"
 
 
-# نماذج Pydantic - Pydantic Models
 class ResourceMetrics(BaseModel):
     """نموذج مقاييس الموارد | Resource metrics model"""
     worker_id: str
@@ -93,17 +108,17 @@ class Alert(BaseModel):
     status: AlertStatus
     title: str
     message: str
-    source: str  # worker_id or system
+    source: str
     created_at: datetime
     acknowledged_at: Optional[datetime] = None
-    acknowledged_by: Optional[int] = None
+    acknowledged_by: Optional[str] = None
     resolved_at: Optional[datetime] = None
 
 
 class LogEntry(BaseModel):
     """نموذج سجل النظام | System log entry model"""
     timestamp: datetime
-    level: str  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+    level: str
     source: str
     message: str
     worker_id: Optional[str] = None
@@ -117,144 +132,175 @@ class SystemResourcesResponse(BaseModel):
     updated_at: datetime
 
 
-class AlertAcknowledgeRequest(BaseModel):
-    """نموذج طلب تأكيد التنبيه | Alert acknowledge request model"""
-    alert_id: str
-    comment: Optional[str] = None
+DATA_DIR = Path("data/monitoring")
+ALERTS_FILE = DATA_DIR / "alerts.json"
+LOGS_FILE = DATA_DIR / "logs.json"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# قواعد بيانات وهمية - Fake Databases
-fake_workers = {
-    "worker-01": {
-        "id": "worker-01",
-        "hostname": "gpu-node-01",
-        "status": WorkerStatus.ONLINE,
-        "ip_address": "192.168.1.101",
-        "platform": "Linux-5.15.0",
-        "python_version": "3.11.4",
-        "capabilities": ["gpu", "training", "inference"],
-        "current_task": "training-job-001",
-        "last_seen": datetime.utcnow(),
-        "uptime_seconds": 86400,
-        "resources": {
-            "worker_id": "worker-01",
-            "hostname": "gpu-node-01",
-            "cpu_percent": 45.2,
-            "cpu_cores": 16,
-            "memory_total_gb": 64.0,
-            "memory_used_gb": 32.5,
-            "memory_percent": 50.8,
-            "disk_total_gb": 1000.0,
-            "disk_used_gb": 450.0,
-            "disk_percent": 45.0,
-            "gpu_count": 2,
-            "gpu_metrics": [
-                {
-                    "index": 0,
-                    "name": "NVIDIA A100",
-                    "memory_total_mb": 40960,
-                    "memory_used_mb": 28672,
-                    "utilization_percent": 85.0,
-                    "temperature_celsius": 72,
-                    "power_draw_watts": 280
-                },
-                {
-                    "index": 1,
-                    "name": "NVIDIA A100",
-                    "memory_total_mb": 40960,
-                    "memory_used_mb": 20480,
-                    "utilization_percent": 65.0,
-                    "temperature_celsius": 68,
-                    "power_draw_watts": 250
-                }
-            ],
-            "network_io_mb": {"sent": 1250.5, "received": 980.3},
-            "timestamp": datetime.utcnow()
+def _now() -> datetime:
+    return datetime.utcnow()
+
+
+def _parse_dt(value: Optional[str]) -> Optional[datetime]:
+    if not value:
+        return None
+    try:
+        return datetime.fromisoformat(value)
+    except Exception:
+        return None
+
+
+def _load_json(file_path: Path, default):
+    if not file_path.exists():
+        return default
+    try:
+        return json.loads(file_path.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+
+def _save_json(file_path: Path, payload) -> None:
+    file_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _serialize_alert(alert: Alert) -> Dict[str, Any]:
+    return {
+        "id": alert.id,
+        "severity": alert.severity.value,
+        "status": alert.status.value,
+        "title": alert.title,
+        "message": alert.message,
+        "source": alert.source,
+        "created_at": alert.created_at.isoformat(),
+        "acknowledged_at": alert.acknowledged_at.isoformat() if alert.acknowledged_at else None,
+        "acknowledged_by": alert.acknowledged_by,
+        "resolved_at": alert.resolved_at.isoformat() if alert.resolved_at else None,
+    }
+
+
+def _deserialize_alert(data: Dict[str, Any]) -> Alert:
+    return Alert(
+        id=data["id"],
+        severity=AlertSeverity(data["severity"]),
+        status=AlertStatus(data["status"]),
+        title=data["title"],
+        message=data["message"],
+        source=data["source"],
+        created_at=_parse_dt(data.get("created_at")) or _now(),
+        acknowledged_at=_parse_dt(data.get("acknowledged_at")),
+        acknowledged_by=data.get("acknowledged_by"),
+        resolved_at=_parse_dt(data.get("resolved_at")),
+    )
+
+
+def _load_alerts() -> List[Alert]:
+    raw = _load_json(ALERTS_FILE, default=[])
+    return [_deserialize_alert(item) for item in raw]
+
+
+def _save_alerts(alerts: List[Alert]) -> None:
+    _save_json(ALERTS_FILE, [_serialize_alert(a) for a in alerts])
+
+
+def _load_logs() -> List[LogEntry]:
+    raw = _load_json(LOGS_FILE, default=[])
+    output: List[LogEntry] = []
+    for item in raw:
+        output.append(
+            LogEntry(
+                timestamp=_parse_dt(item.get("timestamp")) or _now(),
+                level=item.get("level", "INFO"),
+                source=item.get("source", "monitoring"),
+                message=item.get("message", ""),
+                worker_id=item.get("worker_id"),
+                metadata=item.get("metadata"),
+            )
+        )
+    return output
+
+
+def _append_log(level: str, source: str, message: str, worker_id: Optional[str] = None, metadata: Optional[Dict[str, Any]] = None) -> None:
+    logs = _load_json(LOGS_FILE, default=[])
+    logs.append(
+        {
+            "timestamp": _now().isoformat(),
+            "level": level,
+            "source": source,
+            "message": message,
+            "worker_id": worker_id,
+            "metadata": metadata or {},
         }
-    },
-    "worker-02": {
-        "id": "worker-02",
-        "hostname": "cpu-node-01",
-        "status": WorkerStatus.IDLE,
-        "ip_address": "192.168.1.102",
-        "platform": "Linux-5.15.0",
-        "python_version": "3.11.4",
-        "capabilities": ["cpu", "inference", "data_processing"],
-        "current_task": None,
-        "last_seen": datetime.utcnow(),
-        "uptime_seconds": 172800,
-        "resources": {
-            "worker_id": "worker-02",
-            "hostname": "cpu-node-01",
-            "cpu_percent": 15.0,
-            "cpu_cores": 32,
-            "memory_total_gb": 128.0,
-            "memory_used_gb": 24.0,
-            "memory_percent": 18.8,
-            "disk_total_gb": 2000.0,
-            "disk_used_gb": 800.0,
-            "disk_percent": 40.0,
-            "gpu_count": 0,
-            "gpu_metrics": None,
-            "network_io_mb": {"sent": 450.2, "received": 380.1},
-            "timestamp": datetime.utcnow()
-        }
-    }
-}
+    )
+    logs = logs[-1000:]
+    _save_json(LOGS_FILE, logs)
 
-fake_alerts = {
-    "alert-001": {
-        "id": "alert-001",
-        "severity": AlertSeverity.WARNING,
-        "status": AlertStatus.ACTIVE,
-        "title": "استخدام GPU مرتفع | High GPU Usage",
-        "message": "استخدام GPU على worker-01 تجاوز 80%",
-        "source": "worker-01",
-        "created_at": datetime.utcnow() - timedelta(hours=2),
-        "acknowledged_at": None,
-        "acknowledged_by": None,
-        "resolved_at": None
-    },
-    "alert-002": {
-        "id": "alert-002",
-        "severity": AlertSeverity.INFO,
-        "status": AlertStatus.ACKNOWLEDGED,
-        "title": "تحديث النظام متاح | System update available",
-        "message": "يوجد تحديث أمني متاح للنظام",
-        "source": "system",
-        "created_at": datetime.utcnow() - timedelta(days=1),
-        "acknowledged_at": datetime.utcnow() - timedelta(hours=12),
-        "acknowledged_by": 1,
-        "resolved_at": None
-    }
-}
 
-fake_logs = [
-    {
-        "timestamp": datetime.utcnow() - timedelta(minutes=5),
-        "level": "INFO",
-        "source": "worker-01",
-        "message": "بدأت مهمة التدريب training-job-001",
-        "worker_id": "worker-01",
-        "metadata": {"job_id": "training-job-001"}
-    },
-    {
-        "timestamp": datetime.utcnow() - timedelta(minutes=10),
-        "level": "WARNING",
-        "source": "monitoring",
-        "message": "استخدام GPU مرتفع على worker-01",
-        "worker_id": "worker-01",
-        "metadata": {"gpu_utilization": 85.0}
-    },
-    {
-        "timestamp": datetime.utcnow() - timedelta(minutes=30),
-        "level": "ERROR",
-        "source": "worker-02",
-        "message": "فشل في الاتصال بقاعدة البيانات",
-        "worker_id": "worker-02",
-        "metadata": {"error": "ConnectionTimeout"}
-    }
-]
+def _system_snapshot() -> WorkerInfo:
+    hostname = socket.gethostname()
+    ip_address = "127.0.0.1"
+    try:
+        ip_address = socket.gethostbyname(hostname)
+    except Exception:
+        pass
+
+    if psutil is None:
+        resources = ResourceMetrics(
+            worker_id=hostname,
+            hostname=hostname,
+            cpu_percent=0.0,
+            cpu_cores=1,
+            memory_total_gb=0.0,
+            memory_used_gb=0.0,
+            memory_percent=0.0,
+            disk_total_gb=0.0,
+            disk_used_gb=0.0,
+            disk_percent=0.0,
+            gpu_count=0,
+            gpu_metrics=None,
+            network_io_mb={"sent": 0.0, "received": 0.0},
+            timestamp=_now(),
+        )
+    else:
+        vm = psutil.virtual_memory()
+        du = psutil.disk_usage("/")
+        net = psutil.net_io_counters()
+        resources = ResourceMetrics(
+            worker_id=hostname,
+            hostname=hostname,
+            cpu_percent=float(psutil.cpu_percent(interval=0.1)),
+            cpu_cores=int(psutil.cpu_count(logical=True) or 1),
+            memory_total_gb=round(vm.total / (1024 ** 3), 2),
+            memory_used_gb=round(vm.used / (1024 ** 3), 2),
+            memory_percent=float(vm.percent),
+            disk_total_gb=round(du.total / (1024 ** 3), 2),
+            disk_used_gb=round(du.used / (1024 ** 3), 2),
+            disk_percent=float(du.percent),
+            gpu_count=0,
+            gpu_metrics=None,
+            network_io_mb={
+                "sent": round(net.bytes_sent / (1024 ** 2), 2),
+                "received": round(net.bytes_recv / (1024 ** 2), 2),
+            },
+            timestamp=_now(),
+        )
+
+    status = WorkerStatus.BUSY if resources.cpu_percent >= 70 else WorkerStatus.IDLE
+
+    return WorkerInfo(
+        id=hostname,
+        hostname=hostname,
+        status=status,
+        ip_address=ip_address,
+        platform=platform.platform(),
+        python_version=platform.python_version(),
+        capabilities=["monitoring", "local-system"],
+        current_task=None,
+        last_seen=_now(),
+        uptime_seconds=int(time.time() - psutil.boot_time()) if psutil else 0,
+        resources=resources,
+    )
+
 
 # WebSocket connections
 ws_connections: List[WebSocket] = []
@@ -269,28 +315,18 @@ ws_connections: List[WebSocket] = []
 async def get_system_resources(
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    الحصول على موارد CPU/GPU/RAM لجميع العمال.
-    Get CPU/GPU/RAM resources for all workers.
-    """
-    workers_resources = [w["resources"] for w in fake_workers.values()]
-    
-    # حساب الإحصائيات | Calculate summary
-    total_cpu = sum(r["cpu_percent"] for r in workers_resources) / len(workers_resources)
-    total_memory = sum(r["memory_percent"] for r in workers_resources) / len(workers_resources)
-    total_gpus = sum(r.get("gpu_count", 0) for r in workers_resources)
-    
+    worker = _system_snapshot()
     return SystemResourcesResponse(
         cluster_summary={
-            "workers_online": len([w for w in fake_workers.values() if w["status"] == WorkerStatus.ONLINE]),
-            "workers_total": len(fake_workers),
-            "avg_cpu_percent": round(total_cpu, 2),
-            "avg_memory_percent": round(total_memory, 2),
-            "total_gpus": total_gpus,
-            "active_training_jobs": len([w for w in fake_workers.values() if w["current_task"]])
+            "workers_online": 1,
+            "workers_total": 1,
+            "avg_cpu_percent": worker.resources.cpu_percent,
+            "avg_memory_percent": worker.resources.memory_percent,
+            "total_gpus": worker.resources.gpu_count,
+            "active_training_jobs": 1 if worker.status == WorkerStatus.BUSY else 0,
         },
-        workers=workers_resources,
-        updated_at=datetime.utcnow()
+        workers=[worker.resources],
+        updated_at=_now(),
     )
 
 
@@ -304,23 +340,11 @@ async def list_workers(
     status: Optional[WorkerStatus] = None,
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    الحصول على حالة جميع العمال.
-    Get status of all workers.
-    """
-    workers = list(fake_workers.values())
-    
+    worker = _system_snapshot()
+    workers = [worker]
     if status:
-        workers = [w for w in workers if w["status"] == status]
-    
-    # تحويل البيانات | Transform data
-    result = []
-    for w in workers:
-        worker_data = {**w}
-        worker_data["resources"] = ResourceMetrics(**w["resources"])
-        result.append(WorkerInfo(**worker_data))
-    
-    return result
+        workers = [w for w in workers if w.status == status]
+    return workers
 
 
 @router.get(
@@ -333,21 +357,10 @@ async def get_worker(
     worker_id: str,
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    الحصول على تفاصيل عامل محدد.
-    Get details of a specific worker.
-    """
-    if worker_id not in fake_workers:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="العامل غير موجود | Worker not found"
-        )
-    
-    worker = fake_workers[worker_id]
-    worker_data = {**worker}
-    worker_data["resources"] = ResourceMetrics(**worker["resources"])
-    
-    return WorkerInfo(**worker_data)
+    worker = _system_snapshot()
+    if worker.id != worker_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="العامل غير موجود | Worker not found")
+    return worker
 
 
 @router.get(
@@ -361,22 +374,14 @@ async def list_alerts(
     status: Optional[AlertStatus] = None,
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    الحصول على التنبيهات النشطة.
-    Get active alerts.
-    """
-    alerts = list(fake_alerts.values())
-    
+    alerts = _load_alerts()
+
     if severity:
-        alerts = [a for a in alerts if a["severity"] == severity]
+        alerts = [a for a in alerts if a.severity == severity]
     if status:
-        alerts = [a for a in alerts if a["status"] == status]
-    
-    return [Alert(**a) for a in sorted(
-        alerts,
-        key=lambda x: x["created_at"],
-        reverse=True
-    )]
+        alerts = [a for a in alerts if a.status == status]
+
+    return sorted(alerts, key=lambda x: x.created_at, reverse=True)
 
 
 @router.post(
@@ -390,29 +395,28 @@ async def acknowledge_alert(
     comment: Optional[str] = None,
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    تأكيد التنبيه.
-    Acknowledge an alert.
-    """
-    if alert_id not in fake_alerts:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="التنبيه غير موجود | Alert not found"
-        )
-    
-    alert = fake_alerts[alert_id]
-    
-    if alert["status"] != AlertStatus.ACTIVE:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="التنبيه ليس نشطاً | Alert is not active"
-        )
-    
-    alert["status"] = AlertStatus.ACKNOWLEDGED
-    alert["acknowledged_at"] = datetime.utcnow()
-    alert["acknowledged_by"] = current_user.id
-    
-    return Alert(**alert)
+    alerts = _load_alerts()
+    target = next((a for a in alerts if a.id == alert_id), None)
+
+    if target is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="التنبيه غير موجود | Alert not found")
+
+    if target.status != AlertStatus.ACTIVE:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="التنبيه ليس نشطاً | Alert is not active")
+
+    target.status = AlertStatus.ACKNOWLEDGED
+    target.acknowledged_at = _now()
+    target.acknowledged_by = str(current_user.id)
+
+    _save_alerts(alerts)
+    _append_log(
+        level="INFO",
+        source="monitoring",
+        message=f"Alert acknowledged: {alert_id}",
+        metadata={"comment": comment} if comment else {},
+    )
+
+    return target
 
 
 @router.get(
@@ -427,64 +431,82 @@ async def get_logs(
     limit: int = 100,
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    الحصول على سجلات النظام.
-    Get system logs.
-    """
-    logs = fake_logs
-    
+    logs = _load_logs()
+
     if level:
-        logs = [l for l in logs if l["level"] == level.upper()]
+        logs = [l for l in logs if l.level.upper() == level.upper()]
     if worker_id:
-        logs = [l for l in logs if l.get("worker_id") == worker_id]
-    
-    return [LogEntry(**l) for l in sorted(
-        logs[:limit],
-        key=lambda x: x["timestamp"],
-        reverse=True
-    )]
+        logs = [l for l in logs if l.worker_id == worker_id]
+
+    logs = sorted(logs, key=lambda x: x.timestamp, reverse=True)
+    return logs[:limit]
 
 
-# WebSocket للمراقبة الفورية
+@router.post(
+    "/alerts/create",
+    response_model=Alert,
+    status_code=status.HTTP_201_CREATED,
+    summary="إنشاء تنبيه | Create alert"
+)
+async def create_alert(
+    severity: AlertSeverity,
+    title: str,
+    message: str,
+    source: str = "system",
+    current_user: User = Depends(get_current_active_user),
+):
+    alerts = _load_alerts()
+    alert = Alert(
+        id=f"alert-{uuid.uuid4().hex[:8]}",
+        severity=severity,
+        status=AlertStatus.ACTIVE,
+        title=title,
+        message=message,
+        source=source,
+        created_at=_now(),
+    )
+    alerts.append(alert)
+    _save_alerts(alerts)
+    _append_log(level="WARNING" if severity != AlertSeverity.INFO else "INFO", source="monitoring", message=title)
+    return alert
+
+
 @router.websocket("/ws/realtime")
 async def realtime_monitoring_websocket(websocket: WebSocket):
-    """
-    WebSocket للمراقبة الفورية.
-    WebSocket for real-time monitoring.
-    """
+    """WebSocket for real-time monitoring updates."""
     await websocket.accept()
     ws_connections.append(websocket)
-    
+
     try:
-        await websocket.send_json({
-            "type": "connected",
-            "message": "متصل بالمراقبة الفورية | Connected to real-time monitoring",
-            "timestamp": datetime.utcnow().isoformat()
-        })
-        
-        # إرسال تحديثات دورية | Send periodic updates
+        await websocket.send_json(
+            {
+                "type": "connected",
+                "message": "متصل بالمراقبة الفورية | Connected to real-time monitoring",
+                "timestamp": _now().isoformat(),
+            }
+        )
+
         while True:
-            # محاكاة بيانات فورية | Simulate real-time data
+            worker = _system_snapshot()
             update = {
                 "type": "metrics_update",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": _now().isoformat(),
                 "workers": [
                     {
-                        "worker_id": w["id"],
-                        "status": w["status"],
-                        "cpu_percent": w["resources"]["cpu_percent"],
-                        "memory_percent": w["resources"]["memory_percent"],
-                        "current_task": w["current_task"]
+                        "worker_id": worker.id,
+                        "status": worker.status.value,
+                        "cpu_percent": worker.resources.cpu_percent,
+                        "memory_percent": worker.resources.memory_percent,
+                        "current_task": worker.current_task,
                     }
-                    for w in fake_workers.values()
-                ]
+                ],
             }
-            
             await websocket.send_json(update)
-            await asyncio.sleep(5)  # تحديث كل 5 ثواني
-            
+            await asyncio.sleep(5)
+
     except WebSocketDisconnect:
-        ws_connections.remove(websocket)
-    except Exception as e:
+        if websocket in ws_connections:
+            ws_connections.remove(websocket)
+    except Exception:
         if websocket in ws_connections:
             ws_connections.remove(websocket)

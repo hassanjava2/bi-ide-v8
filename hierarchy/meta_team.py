@@ -203,14 +203,64 @@ class QualityManager:
         return {'passed': True}
     
     def _check_style_compliance(self, code: str, lang: str) -> Dict:
-        """فحص الالتزام بالأسلوب"""
-        # ⚠️ WARNING: Placeholder implementation
-        # TODO: Integrate with real linter (pylint, flake8, eslint, etc.)
-        # Currently always returns True - not suitable for production code review
+        """فحص الالتزام بالأسلوب — Real implementation"""
+        issues = []
+        
+        if lang.lower() in ('python', 'py'):
+            # Real Python style checks
+            lines = code.split('\n')
+            
+            # 1. Check line length (PEP 8: max 79, relaxed to 120)
+            for i, line in enumerate(lines, 1):
+                if len(line) > 120:
+                    issues.append(f"Line {i}: exceeds 120 chars ({len(line)})")
+            
+            # 2. Check indentation consistency (spaces vs tabs)
+            uses_tabs = any('\t' in line for line in lines if line.strip())
+            uses_spaces = any(line.startswith('    ') for line in lines if line.strip())
+            if uses_tabs and uses_spaces:
+                issues.append("Mixed tabs and spaces indentation")
+            
+            # 3. Check naming conventions
+            import re
+            # CamelCase functions (should be snake_case in Python)
+            func_pattern = re.compile(r'def\s+([A-Z][a-zA-Z]+)\s*\(')
+            for match in func_pattern.finditer(code):
+                issues.append(f"Function '{match.group(1)}' uses CamelCase (use snake_case)")
+            
+            # 4. Check for bare except
+            if 'except:' in code:
+                issues.append("Bare 'except:' found (specify exception type)")
+            
+            # 5. Syntax validation via ast
+            try:
+                import ast
+                ast.parse(code)
+            except SyntaxError as e:
+                issues.append(f"Syntax error: {e.msg} (line {e.lineno})")
+            
+            # 6. Check for print statements in production code
+            print_count = code.count('print(')
+            if print_count > 5:
+                issues.append(f"Excessive print() calls ({print_count}) — use logging")
+        
+        elif lang.lower() in ('javascript', 'js', 'typescript', 'ts', 'tsx'):
+            lines = code.split('\n')
+            # Basic JS/TS checks
+            if 'var ' in code:
+                issues.append("'var' used — prefer 'const' or 'let'")
+            if '==' in code and '===' not in code:
+                issues.append("Loose equality '==' — use '===' for strict comparison")
+            for i, line in enumerate(lines, 1):
+                if len(line) > 120:
+                    issues.append(f"Line {i}: exceeds 120 chars ({len(line)})")
+        
+        passed = len(issues) == 0
         return {
-            'passed': True,
-            '_warning': 'MOCK: Real linter not implemented',
-            '_note': 'Always returns True - no actual style checking'
+            'passed': passed,
+            'issues': issues[:10],  # Cap at 10 issues
+            'issue': '; '.join(issues[:3]) if issues else None,
+            'checks_performed': ['line_length', 'indentation', 'naming', 'syntax', 'bare_except', 'print_usage']
         }
     
     async def evaluate_decision_quality(self, decision: Dict, 

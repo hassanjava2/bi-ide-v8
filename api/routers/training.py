@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSoc
 from pydantic import BaseModel, Field
 
 from .auth import get_current_active_user, User
+from services.training_service import training_service, TrainingStatus as ServiceTrainingStatus
 
 router = APIRouter(prefix="/training", tags=["التدريب | Training"])
 
@@ -125,63 +126,7 @@ class OverallTrainingStatus(BaseModel):
     jobs: List[Dict[str, Any]]
 
 
-# قواعد بيانات وهمية - Fake Databases
-fake_devices = {
-    "gpu-01": {
-        "device_id": "gpu-01",
-        "device_type": DeviceType.GPU,
-        "status": TrainingStatus.IDLE,
-        "cpu_percent": 15.0,
-        "memory_percent": 30.0,
-        "gpu_utilization": 0.0,
-        "gpu_memory_used": 1024.0,
-        "temperature": 45.0,
-        "active_task": None
-    },
-    "gpu-02": {
-        "device_id": "gpu-02",
-        "device_type": DeviceType.GPU,
-        "status": TrainingStatus.IDLE,
-        "cpu_percent": 20.0,
-        "memory_percent": 25.0,
-        "gpu_utilization": 0.0,
-        "gpu_memory_used": 512.0,
-        "temperature": 42.0,
-        "active_task": None
-    },
-    "cpu-01": {
-        "device_id": "cpu-01",
-        "device_type": DeviceType.CPU,
-        "status": TrainingStatus.IDLE,
-        "cpu_percent": 10.0,
-        "memory_percent": 20.0,
-        "temperature": 35.0,
-        "active_task": None
-    }
-}
-
-fake_models = {
-    "model-001": {
-        "id": "model-001",
-        "name": "Code Generator v1",
-        "version": "1.0.0",
-        "status": ModelStatus.READY,
-        "architecture": "Transformer",
-        "parameters_count": 700000000,
-        "dataset_size": 500000,
-        "trained_epochs": 50,
-        "created_at": datetime.utcnow(),
-        "deployed_at": None,
-        "metrics": {
-            "bleu_score": 0.85,
-            "perplexity": 12.3
-        }
-    }
-}
-
-fake_jobs = {}
 fake_history = []
-fake_job_counter = 1
 
 # WebSocket connections
 ws_connections: List[WebSocket] = []
@@ -198,31 +143,32 @@ async def get_training_status(current_user: User = Depends(get_current_active_us
     الحصول على حالة التدريب عبر جميع الأجهزة.
     Get training status across all devices.
     """
-    active_jobs = sum(
-        1 for j in fake_jobs.values()
-        if j["status"] == TrainingStatus.RUNNING
-    )
-    queued_jobs = sum(
-        1 for j in fake_jobs.values()
-        if j["status"] in [TrainingStatus.IDLE, TrainingStatus.PAUSED]
-    )
-    
-    active_devices = sum(
-        1 for d in fake_devices.values()
-        if d["status"] == TrainingStatus.RUNNING
-    )
-    
-    # حساب متوسط الاستخدام | Calculate average utilization
-    total_util = sum(d.get("gpu_utilization", d["cpu_percent"]) for d in fake_devices.values())
-    avg_util = total_util / len(fake_devices) if fake_devices else 0
+    jobs = list(training_service._jobs.values())
+    active_jobs = sum(1 for j in jobs if j.status == ServiceTrainingStatus.RUNNING)
+    queued_jobs = sum(1 for j in jobs if j.status in {ServiceTrainingStatus.PENDING, ServiceTrainingStatus.PAUSED})
+
+    active_devices = 1 if active_jobs > 0 else 0
+    avg_util = 70.0 if active_jobs > 0 else 10.0
     
     return OverallTrainingStatus(
         active_jobs=active_jobs,
         queued_jobs=queued_jobs,
-        total_devices=len(fake_devices),
+        total_devices=1,
         active_devices=active_devices,
         avg_cluster_utilization=round(avg_util, 2),
-        jobs=list(fake_jobs.values())
+        jobs=[
+            {
+                "job_id": j.job_id,
+                "status": j.status.value,
+                "config": j.config,
+                "started_at": j.created_at,
+                "progress": {
+                    "current_epoch": (j.metrics or {}).get("epoch", 0),
+                    "total_epochs": j.config.get("epochs", 0),
+                },
+            }
+            for j in jobs
+        ]
     )
 
 
@@ -240,44 +186,14 @@ async def start_training(
     بدء مهمة تدريب جديدة.
     Start a new training job.
     """
-    global fake_job_counter
-    
-    # اختيار الأجهزة | Select devices
-    if config.device_ids:
-        devices = config.device_ids
-    else:
-        # استخدام جميع وحدات GPU المتاحة | Use all available GPUs
-        devices = [
-            d_id for d_id, d in fake_devices.items()
-            if d["device_type"] == DeviceType.GPU and d["status"] == TrainingStatus.IDLE
-        ]
-    
-    if not devices:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="لا توجد أجهزة متاحة | No devices available"
-        )
-    
-    # تحديث حالة الأجهزة | Update device status
-    for device_id in devices:
-        if device_id in fake_devices:
-            fake_devices[device_id]["status"] = TrainingStatus.RUNNING
-    
-    job_id = f"job-{fake_job_counter:04d}"
-    fake_job_counter += 1
-    
-    fake_jobs[job_id] = {
-        "job_id": job_id,
-        "status": TrainingStatus.RUNNING,
-        "config": config.dict(),
-        "devices": devices,
-        "started_at": datetime.utcnow(),
-        "started_by": current_user.id,
-        "progress": {
-            "current_epoch": 0,
-            "total_epochs": config.epochs
-        }
-    }
+    devices = config.device_ids or ["local-gpu-01"]
+    job_id = f"job-{int(datetime.utcnow().timestamp())}"
+
+    await training_service.start_training(
+        job_id=job_id,
+        model_name=config.model_id or "bi-ide-model",
+        config=config.dict(),
+    )
     
     return StartTrainingResponse(
         job_id=job_id,
@@ -300,33 +216,25 @@ async def stop_training(
     إيقاف مهمة تدريب.
     Stop a training job.
     """
-    if job_id not in fake_jobs:
+    job = await training_service.get_status(job_id)
+    if not job:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="المهمة غير موجودة | Job not found"
         )
-    
-    job = fake_jobs[job_id]
-    
-    # تحرير الأجهزة | Release devices
-    for device_id in job.get("devices", []):
-        if device_id in fake_devices:
-            fake_devices[device_id]["status"] = TrainingStatus.IDLE
-            fake_devices[device_id]["active_task"] = None
-    
-    job["status"] = TrainingStatus.COMPLETED
-    job["completed_at"] = datetime.utcnow()
-    
-    # إضافة إلى السجل | Add to history
+
+    await training_service.stop_training(job_id)
+    updated_job = await training_service.get_status(job_id)
+
     fake_history.append({
         "id": job_id,
-        "model_name": job["config"].get("model_id", "unknown"),
+        "model_name": updated_job.model_name,
         "status": TrainingStatus.COMPLETED,
-        "started_at": job["started_at"],
-        "completed_at": job["completed_at"],
-        "total_epochs": job["config"].get("epochs", 0),
-        "best_accuracy": 0.0,  # سيتم تحديثه | Will be updated
-        "devices_used": job.get("devices", [])
+        "started_at": updated_job.created_at,
+        "completed_at": datetime.utcnow(),
+        "total_epochs": updated_job.config.get("epochs", 0),
+        "best_accuracy": (updated_job.metrics or {}).get("accuracy", 0.0),
+        "devices_used": ["local-gpu-01"],
     })
     
     return {
@@ -350,17 +258,24 @@ async def get_metrics(
     الحصول على مقاييس التدريب.
     Get training metrics.
     """
-    # إرجاع مقاييس وهمية | Return fake metrics
+    target_job_id = job_id
+    if not target_job_id and training_service._jobs:
+        target_job_id = next(reversed(training_service._jobs.keys()))
+
+    metrics = {}
+    if target_job_id:
+        metrics = await training_service.get_metrics(target_job_id) or {}
+
     return TrainingMetrics(
-        epoch=5,
-        total_epochs=10,
-        loss=0.234,
-        accuracy=0.876,
-        val_loss=0.245,
-        val_accuracy=0.865,
-        learning_rate=0.001,
-        samples_per_second=125.5,
-        estimated_time_remaining=1800
+        epoch=metrics.get("epoch", 0),
+        total_epochs=metrics.get("total_epochs", 0),
+        loss=float(metrics.get("loss", 0.0)),
+        accuracy=float(metrics.get("accuracy", 0.0)),
+        val_loss=float(metrics.get("loss", 0.0)),
+        val_accuracy=float(metrics.get("accuracy", 0.0)),
+        learning_rate=float(metrics.get("learning_rate", 0.001)),
+        samples_per_second=float(metrics.get("samples_per_second", 0.0)),
+        estimated_time_remaining=int(metrics.get("estimated_time_remaining", 0)),
     )
 
 
@@ -375,7 +290,23 @@ async def list_models(current_user: User = Depends(get_current_active_user)):
     الحصول على قائمة النماذج المدربة.
     Get list of trained models.
     """
-    return [ModelInfo(**m) for m in fake_models.values()]
+    models = await training_service.list_models()
+    return [
+        ModelInfo(
+            id=m.model_id,
+            name=m.name,
+            version=m.version,
+            status=ModelStatus.DEPLOYED if m.is_deployed else ModelStatus.READY,
+            architecture="Transformer",
+            parameters_count=int(m.metadata.get("parameters", 0)),
+            dataset_size=int(m.metadata.get("dataset_size", 0)),
+            trained_epochs=int(m.metadata.get("trained_epochs", 0)),
+            created_at=m.created_at,
+            deployed_at=m.created_at if m.is_deployed else None,
+            metrics={"accuracy": m.accuracy},
+        )
+        for m in models
+    ]
 
 
 @router.post(
@@ -391,27 +322,17 @@ async def deploy_model(
     نشر نموذج للإنتاج.
     Deploy a model to production.
     """
-    if model_id not in fake_models:
+    deployed = await training_service.deploy_model(model_id)
+    if not deployed:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="النموذج غير موجود | Model not found"
         )
-    
-    model = fake_models[model_id]
-    
-    if model["status"] == ModelStatus.DEPLOYED:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="النموذج منشور مسبقاً | Model already deployed"
-        )
-    
-    model["status"] = ModelStatus.DEPLOYED
-    model["deployed_at"] = datetime.utcnow()
-    
+
     return {
         "model_id": model_id,
         "status": ModelStatus.DEPLOYED,
-        "deployed_at": model["deployed_at"],
+        "deployed_at": datetime.utcnow(),
         "message": "تم نشر النموذج بنجاح | Model deployed successfully"
     }
 

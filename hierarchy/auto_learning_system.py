@@ -1,7 +1,13 @@
 """
-🤖 Auto-Learning System - نظام التعلم الذكي المتكامل
+🤖 Auto-Learning System - نظام التعلم الذكي المتكامل V2
+
 كل طبقة تتعلم شغلها من الإنترنت بشكل أوتوماتيكي
+
+V2 Changes:
+- SSL verification enabled (secure by default)
+- Data pipeline integration
 """
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -18,28 +24,64 @@ import urllib.request
 import urllib.parse
 import ssl
 
+from data.pipeline import DataCleaner, DataValidator
+
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# SSL Context - SECURE by default
+# Use system default certificates
+ssl._create_default_https_context = ssl.create_default_context
+
+
+class SecureSSLContext:
+    """سياق SSL آمن"""
+    
+    @staticmethod
+    def create_secure_context() -> ssl.SSLContext:
+        """إنشاء سياق SSL آمن"""
+        context = ssl.create_default_context()
+        # Enable certificate verification
+        context.check_hostname = True
+        context.verify_mode = ssl.CERT_REQUIRED
+        # Load default certificates
+        context.load_default_certs()
+        return context
+    
+    @staticmethod
+    def create_context_for_host(host: str) -> ssl.SSLContext:
+        """إنشاء سياق لموقع محدد (للمصادر الموثوقة)"""
+        context = ssl.create_default_context()
+        context.check_hostname = True
+        context.verify_mode = ssl.CERT_REQUIRED
+        return context
+
+
 class SmartDataCrawler:
-    """زاحف ذكي يجلب بيانات من الإنترنت"""
+    """زاحف ذكي يجلب بيانات من الإنترنت - V2 (Secure)"""
     
     def __init__(self):
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         }
         self.cache = {}
+        self.secure_context = SecureSSLContext.create_secure_context()
     
     def fetch_url(self, url, timeout=10):
-        """جلب محتوى URL"""
+        """جلب محتوى URL - SECURE"""
         try:
-            ctx = ssl.create_default_context()
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-            
+            # Use secure SSL context
             req = urllib.request.Request(url, headers=self.headers)
+
+            # Always enforce strict SSL verification
+            ctx = self.secure_context
+
             with urllib.request.urlopen(req, timeout=timeout, context=ctx) as response:
                 return response.read().decode('utf-8', errors='ignore')
+        except ssl.SSLError as e:
+            logger.warning(f"SSL Error fetching {url}: {e}")
+            return None
         except Exception as e:
+            logger.debug(f"Fetch error for {url}: {e}")
             return None
     
     def crawl_github_trends(self):
@@ -47,7 +89,6 @@ class SmartDataCrawler:
         try:
             html = self.fetch_url("https://github.com/trending")
             if html:
-                # استخراج أسماء المستودعات
                 repos = re.findall(r'h2[^>]*><a[^>]*href="(/[^/]+/[^"]+)"', html)
                 return [f"github.com{repo}" for repo in repos[:10]]
         except:
@@ -157,6 +198,7 @@ class SmartDataCrawler:
                 "content": self.crawl_tech_news()
             }
 
+
 class SmartDataset(Dataset):
     """Dataset ذكي يتعلم من الإنترنت"""
     
@@ -168,11 +210,14 @@ class SmartDataset(Dataset):
         self.data_buffer = []
         self.vocab = {}
         self.vocab_size = 10000
+        
+        # Initialize data cleaner
+        self.data_cleaner = DataCleaner()
+        
         self.refresh_data()
     
     def text_to_tokens(self, text):
         """تحويل نص لـ tokens"""
-        # Tokenization بسيط
         tokens = []
         for word in text.lower().split():
             if word not in self.vocab:
@@ -181,74 +226,71 @@ class SmartDataset(Dataset):
         return tokens
     
     def refresh_data(self):
-        """تحديث البيانات من الإنترنت"""
+        """تحديث البيانات من الإنترنت مع التنظيف"""
         print(f"🌐 [{self.layer_name}] Fetching fresh data from Internet...")
         
         data = self.crawler.get_data_for_layer(self.layer_name)
+        
+        # Clean data before processing
+        raw_samples = self._extract_samples(data)
+        
+        # Apply data cleaning
+        cleaned_samples = self._clean_samples(raw_samples)
+        
+        # Process into tokens
         new_samples = []
-        
-        # معالجة البيانات حسب النوع
-        if data["type"] == "code":
-            # تعلم البرمجة
-            for repo in data.get("repos", [])[:5]:
-                text = f"Repository {repo} contains code for machine learning"
-                tokens = self.text_to_tokens(text)
-                tokens += [0] * (self.seq_length - len(tokens))
-                new_samples.append(tokens[:self.seq_length])
-            
-            question = data.get("question", "")
-            tokens = self.text_to_tokens(question)
-            tokens += [0] * (self.seq_length - len(tokens))
-            new_samples.append(tokens[:self.seq_length])
-            
-            news = data.get("tech_news", "")
-            tokens = self.text_to_tokens(news)
+        for sample in cleaned_samples:
+            tokens = self.text_to_tokens(sample)
             tokens += [0] * (self.seq_length - len(tokens))
             new_samples.append(tokens[:self.seq_length])
         
-        elif data["type"] == "business":
-            # تعلم الأعمال
-            markets = data.get("markets", {})
-            for asset, price in markets.items():
-                text = f"Asset {asset} price is {price:.2f} USD trending {'up' if random.random() > 0.5 else 'down'}"
-                tokens = self.text_to_tokens(text)
-                tokens += [0] * (self.seq_length - len(tokens))
-                new_samples.append(tokens[:self.seq_length])
-            
-            strategy = data.get("strategy", "")
-            tokens = self.text_to_tokens(strategy)
-            tokens += [0] * (self.seq_length - len(tokens))
-            new_samples.append(tokens[:self.seq_length])
-        
-        elif data["type"] == "security":
-            # تعلم الأمان
-            alert = data.get("alert", "")
-            text = f"Security Alert: {alert}. Mitigation required immediately."
-            tokens = self.text_to_tokens(text)
-            tokens += [0] * (self.seq_length - len(tokens))
-            new_samples.append(tokens[:self.seq_length])
-        
-        elif data["type"] == "research":
-            # تعلم البحث
-            paper = data.get("paper", "")
-            text = f"Research Paper: {paper}. This paper presents new methods for AI."
-            tokens = self.text_to_tokens(text)
-            tokens += [0] * (self.seq_length - len(tokens))
-            new_samples.append(tokens[:self.seq_length])
-        
-        else:
-            # بيانات عامة
-            content = str(data.get("content", data))
-            tokens = self.text_to_tokens(content)
-            tokens += [0] * (self.seq_length - len(tokens))
-            new_samples.append(tokens[:self.seq_length])
-        
-        # تكرار البيانات للوصول للحجم المطلوب
+        # Ensure minimum samples
         while len(new_samples) < 100:
-            new_samples.extend(new_samples[:10])
+            new_samples.extend(new_samples[:10] if new_samples else [[0] * self.seq_length])
         
         self.data_buffer = new_samples[:100]
-        print(f"✅ [{self.layer_name}] Loaded {len(self.data_buffer)} fresh samples")
+        print(f"✅ [{self.layer_name}] Loaded {len(self.data_buffer)} clean samples")
+    
+    def _extract_samples(self, data: dict) -> list:
+        """استخراج عينات من البيانات"""
+        samples = []
+        
+        if data["type"] == "code":
+            for repo in data.get("repos", [])[:5]:
+                samples.append(f"Repository {repo} contains code for machine learning")
+            
+            question = data.get("question", "")
+            if question:
+                samples.append(question)
+            
+            news = data.get("tech_news", "")
+            if news:
+                samples.append(news)
+        
+        elif data["type"] == "business":
+            markets = data.get("markets", {})
+            for asset, price in markets.items():
+                samples.append(f"Asset {asset} price is {price:.2f} USD")
+            
+            strategy = data.get("strategy", "")
+            if strategy:
+                samples.append(strategy)
+        
+        else:
+            content = str(data.get("content", data))
+            if content:
+                samples.append(content)
+        
+        return samples
+    
+    def _clean_samples(self, samples: list) -> list:
+        """تنظيف العينات"""
+        # Simple cleaning - remove very short or very long samples
+        cleaned = []
+        for sample in samples:
+            if 10 < len(sample) < 10000:
+                cleaned.append(sample)
+        return cleaned
     
     def __len__(self):
         return len(self.data_buffer)
@@ -257,6 +299,7 @@ class SmartDataset(Dataset):
         x = torch.LongTensor(self.data_buffer[idx][:-1])
         y = torch.LongTensor(self.data_buffer[idx][1:])
         return x, y
+
 
 class SmartTransformer(nn.Module):
     """نموذج ذكي يتعلم من الإنترنت"""
@@ -286,6 +329,7 @@ class SmartTransformer(nn.Module):
         x = self.transformer(x)
         x = self.fc(x)
         return x
+
 
 class SmartTrainer:
     """مدرب ذكي يتعلم من الإنترنت"""
@@ -385,8 +429,9 @@ class SmartTrainer:
     def stop(self):
         self.training = False
 
+
 class AutoLearningSystem:
-    """نظام التعلم الذكي المتكامل"""
+    """نظام التعلم الذكي المتكامل V2"""
     
     def __init__(self):
         self.layers = {}
@@ -412,7 +457,7 @@ class AutoLearningSystem:
         ]
         
         print("=" * 80)
-        print("🤖 AUTO-LEARNING SYSTEM - 15 INTELLIGENT LAYERS")
+        print("🤖 AUTO-LEARNING SYSTEM V2 - 15 INTELLIGENT LAYERS (SECURE)")
         print("=" * 80)
         print("🌐 Data Sources:")
         print("   • GitHub Trends - Programming & Code")
@@ -421,6 +466,7 @@ class AutoLearningSystem:
         print("   • Security Feeds - Threat Intelligence")
         print("   • Research Papers - Scientific Knowledge")
         print("   • Tech News - Industry Trends")
+        print("🔒 SSL Verification: ENABLED")
         print("=" * 80)
         
         for i, (name, spec) in enumerate(self.layer_configs, 1):
@@ -474,6 +520,7 @@ class AutoLearningSystem:
             "device": str(DEVICE),
             "mode": "AUTO_LEARNING_FROM_INTERNET",
             "data_sources": ["GitHub", "StackOverflow", "Markets", "Security", "Research"],
+            "ssl_verification": "ENABLED",
             "gpu": gpu_info,
             "layers": {
                 name: {
@@ -488,6 +535,7 @@ class AutoLearningSystem:
                 for name, t in self.layers.items()
             }
         }
+
 
 # Singleton
 auto_learning_system = AutoLearningSystem()

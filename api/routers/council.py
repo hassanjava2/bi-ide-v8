@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSoc
 from pydantic import BaseModel
 
 from .auth import get_current_active_user, User
+from services.council_service import council_service, DecisionStatus as ServiceDecisionStatus
 
 router = APIRouter(prefix="/council", tags=["المجلس | Council"])
 
@@ -42,7 +43,7 @@ class MemberRole(str, Enum):
 # نماذج Pydantic - Pydantic Models
 class CouncilMember(BaseModel):
     """نموذج عضو المجلس | Council member model"""
-    id: int
+    id: str
     name: str
     role: MemberRole
     expertise: List[str]
@@ -52,11 +53,11 @@ class CouncilMember(BaseModel):
 
 class CouncilDecision(BaseModel):
     """نموذج قرار المجلس | Council decision model"""
-    id: int
+    id: str
     title: str
     description: str
     status: DecisionStatus
-    proposed_by: int
+    proposed_by: str
     votes: dict
     created_at: datetime
     decided_at: Optional[datetime] = None
@@ -64,7 +65,7 @@ class CouncilDecision(BaseModel):
 
 class VoteRequest(BaseModel):
     """نموذج طلب التصويت | Vote request model"""
-    decision_id: int
+    decision_id: str
     vote: VoteType
     comment: Optional[str] = None
 
@@ -77,11 +78,11 @@ class QueryRequest(BaseModel):
 
 class QueryResponse(BaseModel):
     """نموذج استجابة الاستعلام | Query response model"""
-    decision_id: int
+    decision_id: str
     recommendation: str
     confidence: float
     reasoning: List[str]
-    members_consulted: List[int]
+    members_consulted: List[str]
 
 
 class CouncilStatus(BaseModel):
@@ -92,37 +93,6 @@ class CouncilStatus(BaseModel):
     pending_decisions: int
     total_decisions: int
 
-
-# قاعدة بيانات وهمية - Fake Database
-fake_members = {
-    1: {
-        "id": 1,
-        "name": "AI Architect",
-        "role": MemberRole.CHAIR,
-        "expertise": ["architecture", "design_patterns"],
-        "is_active": True,
-        "joined_at": datetime.utcnow()
-    },
-    2: {
-        "id": 2,
-        "name": "Code Reviewer",
-        "role": MemberRole.MEMBER,
-        "expertise": ["code_quality", "best_practices"],
-        "is_active": True,
-        "joined_at": datetime.utcnow()
-    },
-    3: {
-        "id": 3,
-        "name": "Security Expert",
-        "role": MemberRole.MEMBER,
-        "expertise": ["security", "compliance"],
-        "is_active": True,
-        "joined_at": datetime.utcnow()
-    }
-}
-
-fake_decisions = {}
-fake_decision_counter = 1
 
 # WebSocket connections
 websocket_connections: List[WebSocket] = []
@@ -142,39 +112,20 @@ async def query_council(
     إرسال استعلام إلى المجلس للحصول على توصية.
     Send a query to the council for recommendation.
     """
-    global fake_decision_counter
-    
-    # إنشاء قرار جديد | Create new decision
-    decision_id = fake_decision_counter
-    fake_decision_counter += 1
-    
-    decision = {
-        "id": decision_id,
-        "title": f"Query: {request.query[:50]}...",
-        "description": request.query,
-        "status": DecisionStatus.DELIBERATING,
-        "proposed_by": current_user.id,
-        "votes": {},
-        "context": request.context or {},
-        "created_at": datetime.utcnow(),
-        "decided_at": None
-    }
-    
-    fake_decisions[decision_id] = decision
-    
-    # محاكاة التوصية | Simulate recommendation
-    members_consulted = [m["id"] for m in fake_members.values() if m["is_active"]]
-    
+    decision = await council_service.query_council(
+        query=request.query,
+        context=request.context or {},
+        use_cache=True,
+    )
+
+    active_members = await council_service.list_members(active_only=True)
+
     return QueryResponse(
-        decision_id=decision_id,
-        recommendation="يوصي المجلس بالموافقة على الطلب مع مراعاة أفضل الممارسات",
-        confidence=0.85,
-        reasoning=[
-            "الطلب يتبع أنماط التصميم المعتمدة",
-            "لا توجد مخاطر أمنية واضحة",
-            "الأداء متوقع أن يكون ممتاز"
-        ],
-        members_consulted=members_consulted
+        decision_id=decision.decision_id,
+        recommendation=decision.response,
+        confidence=decision.confidence,
+        reasoning=decision.evidence or [],
+        members_consulted=[m.member_id for m in active_members],
     )
 
 
@@ -189,22 +140,19 @@ async def get_council_status(current_user: User = Depends(get_current_active_use
     الحصول على حالة المجلس الحالية.
     Get current council status.
     """
-    members_online = sum(1 for m in fake_members.values() if m["is_active"])
-    pending = sum(
-        1 for d in fake_decisions.values()
-        if d["status"] == DecisionStatus.PENDING
-    )
-    deliberating = sum(
-        1 for d in fake_decisions.values()
-        if d["status"] == DecisionStatus.DELIBERATING
-    )
+    members = await council_service.list_members(active_only=False)
+    decisions = await council_service.get_decisions(limit=1000)
+
+    members_online = sum(1 for m in members if m.is_active)
+    pending = sum(1 for d in decisions if d.status == ServiceDecisionStatus.PENDING)
+    deliberating = sum(1 for d in decisions if d.status == ServiceDecisionStatus.NEEDS_REVIEW)
     
     return CouncilStatus(
         is_active=members_online > 0,
         members_online=members_online,
         active_deliberations=deliberating,
         pending_decisions=pending,
-        total_decisions=len(fake_decisions)
+        total_decisions=len(decisions)
     )
 
 
@@ -222,16 +170,38 @@ async def list_decisions(
     الحصول على قائمة قرارات المجلس.
     Get list of council decisions.
     """
-    decisions = list(fake_decisions.values())
-    
+    service_status = None
     if status:
-        decisions = [d for d in decisions if d["status"] == status]
-    
-    return [CouncilDecision(**d) for d in sorted(
-        decisions,
-        key=lambda x: x["created_at"],
-        reverse=True
-    )]
+        status_map = {
+            DecisionStatus.PENDING: ServiceDecisionStatus.PENDING,
+            DecisionStatus.APPROVED: ServiceDecisionStatus.APPROVED,
+            DecisionStatus.REJECTED: ServiceDecisionStatus.REJECTED,
+            DecisionStatus.DELIBERATING: ServiceDecisionStatus.NEEDS_REVIEW,
+        }
+        service_status = status_map.get(status)
+
+    decisions = await council_service.get_decisions(status=service_status, limit=200)
+
+    status_reverse_map = {
+        ServiceDecisionStatus.PENDING: DecisionStatus.PENDING,
+        ServiceDecisionStatus.APPROVED: DecisionStatus.APPROVED,
+        ServiceDecisionStatus.REJECTED: DecisionStatus.REJECTED,
+        ServiceDecisionStatus.NEEDS_REVIEW: DecisionStatus.DELIBERATING,
+    }
+
+    return [
+        CouncilDecision(
+            id=d.decision_id,
+            title=f"Query: {d.query[:50]}...",
+            description=d.query,
+            status=status_reverse_map.get(d.status, DecisionStatus.DELIBERATING),
+            proposed_by="system",
+            votes=d.votes,
+            created_at=d.created_at,
+            decided_at=d.created_at if d.status in {ServiceDecisionStatus.APPROVED, ServiceDecisionStatus.REJECTED} else None,
+        )
+        for d in decisions
+    ]
 
 
 @router.get(
@@ -245,7 +215,26 @@ async def list_members(current_user: User = Depends(get_current_active_user)):
     الحصول على قائمة أعضاء المجلس.
     Get list of council members.
     """
-    return [CouncilMember(**m) for m in fake_members.values()]
+    members = await council_service.list_members(active_only=False)
+
+    role_map = {
+        "system_architect": MemberRole.CHAIR,
+        "security_expert": MemberRole.MEMBER,
+        "performance_expert": MemberRole.MEMBER,
+        "ux_expert": MemberRole.ADVISOR,
+    }
+
+    return [
+        CouncilMember(
+            id=m.member_id,
+            name=m.name,
+            role=role_map.get(m.role, MemberRole.ADVISOR),
+            expertise=m.expertise,
+            is_active=m.is_active,
+            joined_at=m.joined_at,
+        )
+        for m in members
+    ]
 
 
 @router.post(
@@ -262,48 +251,52 @@ async def submit_vote(
     تقديم تصويت على قرار.
     Submit a vote on a decision.
     """
-    if vote.decision_id not in fake_decisions:
+    # map vote to service vote format
+    vote_map = {
+        VoteType.APPROVE: "approve",
+        VoteType.REJECT: "reject",
+        VoteType.ABSTAIN: "abstain",
+    }
+
+    members = await council_service.list_members(active_only=True)
+    member_id = members[0].member_id if members else "architect_1"
+
+    success = await council_service.submit_vote(
+        decision_id=vote.decision_id,
+        member_id=member_id,
+        vote=vote_map[vote.vote],
+    )
+
+    if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="القرار غير موجود | Decision not found"
+            detail="القرار غير موجود أو التصويت فشل | Decision not found or vote failed",
         )
-    
-    decision = fake_decisions[vote.decision_id]
-    
-    if decision["status"] not in [DecisionStatus.PENDING, DecisionStatus.DELIBERATING]:
+
+    decision = await council_service.get_status(vote.decision_id)
+    if decision is None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="لا يمكن التصويت على هذا القرار | Cannot vote on this decision"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="القرار غير موجود | Decision not found",
         )
-    
-    # تسجيل التصويت | Record vote
-    decision["votes"][current_user.id] = {
-        "vote": vote.vote,
-        "comment": vote.comment,
-        "voted_at": datetime.utcnow()
+
+    status_map = {
+        ServiceDecisionStatus.PENDING: DecisionStatus.PENDING,
+        ServiceDecisionStatus.APPROVED: DecisionStatus.APPROVED,
+        ServiceDecisionStatus.REJECTED: DecisionStatus.REJECTED,
+        ServiceDecisionStatus.NEEDS_REVIEW: DecisionStatus.DELIBERATING,
     }
-    
-    # التحقق من اكتمال التصويت | Check if voting complete
-    active_members = len([m for m in fake_members.values() if m["is_active"]])
-    if len(decision["votes"]) >= active_members:
-        # احتساب النتيجة | Calculate result
-        approve_count = sum(
-            1 for v in decision["votes"].values()
-            if v["vote"] == VoteType.APPROVE
-        )
-        reject_count = sum(
-            1 for v in decision["votes"].values()
-            if v["vote"] == VoteType.REJECT
-        )
-        
-        if approve_count > reject_count:
-            decision["status"] = DecisionStatus.APPROVED
-        else:
-            decision["status"] = DecisionStatus.REJECTED
-        
-        decision["decided_at"] = datetime.utcnow()
-    
-    return CouncilDecision(**decision)
+
+    return CouncilDecision(
+        id=decision.decision_id,
+        title=f"Query: {decision.query[:50]}...",
+        description=decision.query,
+        status=status_map.get(decision.status, DecisionStatus.DELIBERATING),
+        proposed_by="system",
+        votes=decision.votes,
+        created_at=decision.created_at,
+        decided_at=decision.created_at if decision.status in {ServiceDecisionStatus.APPROVED, ServiceDecisionStatus.REJECTED} else None,
+    )
 
 
 # WebSocket endpoint للمناقشة الفورية

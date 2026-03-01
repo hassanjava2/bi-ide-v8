@@ -11,8 +11,11 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+from sqlalchemy.ext.asyncio import AsyncSession
 from pydantic import BaseModel, EmailStr
+
+from core.database import get_db
+from core.user_service import UserService
 
 # إعدادات JWT - JWT Configuration
 SECRET_KEY = "your-secret-key-change-in-production"
@@ -20,8 +23,6 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-# إعدادات bcrypt - Password Hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 router = APIRouter(prefix="/auth", tags=["المصادقة | Authentication"])
@@ -42,7 +43,7 @@ class UserCreate(UserBase):
 
 class User(UserBase):
     """نموذج المستخدم | User model"""
-    id: int
+    id: str
     is_active: bool
     created_at: datetime
 
@@ -64,7 +65,7 @@ class TokenRefresh(BaseModel):
 
 class TokenPayload(BaseModel):
     """نموذج حمولة الرمز | Token payload model"""
-    sub: Optional[int] = None
+    sub: Optional[str] = None
     exp: Optional[datetime] = None
     type: Optional[str] = None
 
@@ -77,57 +78,19 @@ class LoginResponse(BaseModel):
     user: User
 
 
-# قاعدة بيانات وهمية - Fake Database (استبدل بقاعدة بيانات حقيقية)
-fake_users_db = {}
-fake_user_id_counter = 1
+def _to_user_model(user_obj) -> User:
+    """تحويل UserDB إلى نموذج API"""
+    return User(
+        id=user_obj.id,
+        email=user_obj.email,
+        username=user_obj.username,
+        full_name=getattr(user_obj, "full_name", None),
+        is_active=user_obj.is_active,
+        created_at=user_obj.created_at,
+    )
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """التحقق من كلمة المرور | Verify password"""
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def get_password_hash(password: str) -> str:
-    """تجزئة كلمة المرور | Hash password"""
-    return pwd_context.hash(password)
-
-
-def get_user(user_id: int) -> Optional[User]:
-    """الحصول على مستخدم | Get user by ID"""
-    user_data = fake_users_db.get(user_id)
-    if user_data:
-        return User(**user_data)
-    return None
-
-
-def get_user_by_email(email: str) -> Optional[User]:
-    """الحصول على مستخدم بالبريد | Get user by email"""
-    for user_data in fake_users_db.values():
-        if user_data["email"] == email:
-            return User(**user_data)
-    return None
-
-
-def get_user_by_username(username: str) -> Optional[User]:
-    """الحصول على مستخدم باسم المستخدم | Get user by username"""
-    for user_data in fake_users_db.values():
-        if user_data["username"] == username:
-            return User(**user_data)
-    return None
-
-
-def authenticate_user(username: str, password: str) -> Optional[User]:
-    """مصادقة المستخدم | Authenticate user"""
-    user = get_user_by_username(username)
-    if not user:
-        return None
-    user_data = fake_users_db.get(user.id)
-    if not verify_password(password, user_data["hashed_password"]):
-        return None
-    return user
-
-
-def create_token(subject: int, token_type: str = "access", expires_delta: Optional[timedelta] = None) -> str:
+def create_token(subject: str, token_type: str = "access", expires_delta: Optional[timedelta] = None) -> str:
     """إنشاء رمز JWT | Create JWT token"""
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -145,7 +108,10 @@ def create_token(subject: int, token_type: str = "access", expires_delta: Option
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> User:
     """الحصول على المستخدم الحالي | Get current user"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -155,20 +121,21 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
+        user_id: Optional[str] = payload.get("sub")
         token_type: str = payload.get("type")
         
         if user_id is None or token_type != "access":
             raise credentials_exception
         
-        token_data = TokenPayload(sub=int(user_id), type=token_type)
+        token_data = TokenPayload(sub=user_id, type=token_type)
     except JWTError:
         raise credentials_exception
-    
-    user = get_user(token_data.sub)
-    if user is None:
+
+    user_service = UserService(db)
+    user_obj = await user_service.get_user_by_id(token_data.sub)
+    if user_obj is None:
         raise credentials_exception
-    return user
+    return _to_user_model(user_obj)
 
 
 async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
@@ -187,18 +154,24 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     status_code=status.HTTP_200_OK,
     summary="تسجيل الدخول | User login"
 )
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
+):
     """
     تسجيل الدخول والحصول على رمز JWT.
     Login and obtain JWT token.
     """
-    user = authenticate_user(form_data.username, form_data.password)
-    if not user:
+    user_service = UserService(db)
+    user_obj = await user_service.authenticate(form_data.username, form_data.password)
+    if not user_obj:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="اسم المستخدم أو كلمة المرور غير صحيحة | Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    user = _to_user_model(user_obj)
     
     access_token = create_token(user.id, token_type="access")
     refresh_token = create_token(user.id, token_type="refresh")
@@ -217,46 +190,47 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     status_code=status.HTTP_201_CREATED,
     summary="تسجيل مستخدم جديد | User registration"
 )
-async def register(user_data: UserCreate):
+async def register(
+    user_data: UserCreate,
+    db: AsyncSession = Depends(get_db),
+):
     """
     تسجيل مستخدم جديد.
     Register a new user.
     """
-    global fake_user_id_counter
-    
+    user_service = UserService(db)
+
     # التحقق من وجود البريد الإلكتروني | Check if email exists
-    if get_user_by_email(user_data.email):
+    if await user_service.get_user_by_email(user_data.email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="البريد الإلكتروني مسجل مسبقاً | Email already registered"
         )
     
     # التحقق من وجود اسم المستخدم | Check if username exists
-    if get_user_by_username(user_data.username):
+    if await user_service.get_user_by_username(user_data.username):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="اسم المستخدم موجود مسبقاً | Username already taken"
         )
-    
-    # إنشاء المستخدم | Create user
-    user_id = fake_user_id_counter
-    fake_user_id_counter += 1
-    
-    hashed_password = get_password_hash(user_data.password)
-    
-    user_dict = {
-        "id": user_id,
-        "email": user_data.email,
-        "username": user_data.username,
-        "full_name": user_data.full_name,
-        "hashed_password": hashed_password,
-        "is_active": True,
-        "created_at": datetime.utcnow()
-    }
-    
-    fake_users_db[user_id] = user_dict
-    
-    return User(**user_dict)
+
+    first_name = None
+    last_name = None
+    if user_data.full_name:
+        parts = user_data.full_name.strip().split(maxsplit=1)
+        first_name = parts[0]
+        last_name = parts[1] if len(parts) > 1 else None
+
+    user_obj = await user_service.create_user(
+        username=user_data.username,
+        email=user_data.email,
+        password=user_data.password,
+        first_name=first_name,
+        last_name=last_name,
+        is_active=True,
+    )
+
+    return _to_user_model(user_obj)
 
 
 @router.post(
@@ -278,17 +252,21 @@ async def refresh(token_data: TokenRefresh):
     
     try:
         payload = jwt.decode(token_data.refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
+        user_id: Optional[str] = payload.get("sub")
         token_type: str = payload.get("type")
         
         if user_id is None or token_type != "refresh":
             raise credentials_exception
-        
-        user_id = int(user_id)
     except JWTError:
         raise credentials_exception
-    
-    user = get_user(user_id)
+
+    # lightweight fetch via dependency-less db manager for refresh path compatibility
+    async for db in get_db():
+        user_service = UserService(db)
+        user_obj = await user_service.get_user_by_id(user_id)
+        break
+
+    user = _to_user_model(user_obj) if user_obj else None
     if user is None:
         raise credentials_exception
     

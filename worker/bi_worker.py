@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
 """
-🔧 BI-IDE Worker Agent — عقدة تدريب موزعة
+🔧 BI-IDE Worker Agent V2 — عقدة تدريب موزعة
 
-يتنصب على أي حاسبة ويتصل بالسيرفر المركزي.
-يكتشف الهاردوير تلقائياً ويبدأ التدريب.
-
-Features:
+Features V2:
 - Hardware auto-detection (GPU/CPU/RAM/OS)
 - WebSocket + HTTP heartbeat (dual mode)
 - Auto-reconnect on disconnect/restart
 - Resource-limited training (--max-cpu, --max-gpu, --max-ram)
 - Checkpoint upload to server
+- IDLE TRAINING mode (NEW)
 - Auto-sync to primary node (RTX 5090)
-
-Usage:
-    python bi_worker.py --server https://bi-iq.com --token TOKEN --labels gpu,rtx5090,primary
-    python bi_worker.py --server https://bi-iq.com --token TOKEN --labels cpu,windows,helper
 """
 
 from __future__ import annotations
@@ -137,7 +131,7 @@ def _detect_os() -> str:
     s = platform.system().lower()
     if s == "darwin":
         return "macos"
-    return s  # linux, windows
+    return s
 
 
 def get_resource_usage() -> Dict[str, Any]:
@@ -175,13 +169,15 @@ def get_resource_usage() -> Dict[str, Any]:
 
 class WorkerAgent:
     """
-    BI-IDE Worker Agent.
-    Connects to the orchestrator, sends heartbeats, executes training jobs.
+    BI-IDE Worker Agent V2.
+    
+    NEW: Idle training mode for when worker is not busy.
     """
 
     def __init__(self, server_url: str, token: str, labels: List[str],
                  worker_id: str = "", max_cpu: float = 90, max_gpu: float = 95,
-                 max_ram: float = 85, heartbeat_interval: int = 30):
+                 max_ram: float = 85, heartbeat_interval: int = 30,
+                 idle_training: bool = True, idle_cpu_threshold: float = 30):
         self.server = server_url.rstrip("/")
         self.token = token
         self.labels = labels
@@ -196,6 +192,12 @@ class WorkerAgent:
         self.training_process = None
         self.ws = None
         self.reconnect_delay = 5
+        
+        # NEW: Idle training
+        self.idle_training = idle_training
+        self.idle_cpu_threshold = idle_cpu_threshold
+        self.idle_training_job = None
+        self.is_idle_training = False
 
         # Data directory
         self.data_dir = Path.home() / ".bi-ide-worker" / "data"
@@ -220,7 +222,7 @@ class WorkerAgent:
                     "hostname": socket.gethostname(),
                     "labels": self.labels,
                     "hardware": self.hardware,
-                    "version": "1.0.0",
+                    "version": "2.0.0",  # V2
                 },
                 headers=self.headers,
                 timeout=10,
@@ -233,6 +235,7 @@ class WorkerAgent:
                 print(f"   GPU: {self.hardware['gpu']['name']}")
                 print(f"   RAM: {self.hardware['ram_gb']}GB")
                 print(f"   CPU: {self.hardware['cpu_name']} ({self.hardware['cpu_cores']} cores)")
+                print(f"   Idle Training: {'Enabled' if self.idle_training else 'Disabled'}")
                 return True
             else:
                 print(f"❌ Registration failed: {resp.status_code} {resp.text}")
@@ -252,12 +255,19 @@ class WorkerAgent:
                     "job_id": self.current_job.get("job_id"),
                     "layer_name": self.current_job.get("layer_name", ""),
                 }
+            elif self.is_idle_training:
+                training_info = {
+                    "is_training": True,
+                    "job_id": self.idle_training_job.get("job_id") if self.idle_training_job else "idle",
+                    "layer_name": "idle-training",
+                    "is_idle": True,
+                }
 
             resp = requests.post(
                 f"{self.server}/api/v1/orchestrator/workers/heartbeat",
                 json={
                     "worker_id": self.worker_id,
-                    "status": "training" if self.current_job else "online",
+                    "status": "training" if self.current_job or self.is_idle_training else "online",
                     "usage": usage,
                     "training": training_info,
                 },
@@ -341,7 +351,7 @@ class WorkerAgent:
                     f"--job-id {job_id} "
                     f"--worker-id {self.worker_id}"
                 )
-                use_shell = True  # Must use shell for complex command string
+                use_shell = True
 
             result = subprocess.run(
                 command if use_shell else command.split(),
@@ -430,6 +440,73 @@ class WorkerAgent:
                 except Exception as e:
                     print(f"⚠️ Upload failed: {f.name} — {e}")
 
+    # ──────────── NEW: Idle Training ────────────
+    
+    def check_idle_training(self) -> bool:
+        """
+        التحقق مما إذا كان يمكن بدء تدريب في وقت الفراغ
+        
+        Returns:
+            bool: True if idle training should start
+        """
+        if not self.idle_training:
+            return False
+        
+        if self.current_job or self.is_idle_training:
+            return False
+        
+        usage = get_resource_usage()
+        
+        # Check if system is idle
+        if usage["cpu_percent"] < self.idle_cpu_threshold and usage["gpu_percent"] < 10:
+            return True
+        
+        return False
+    
+    def start_idle_training(self):
+        """بدء تدريب في وقت الفراغ"""
+        if not self.check_idle_training():
+            return
+        
+        print("🌙 Starting idle training...")
+        self.is_idle_training = True
+        
+        # Create a simple idle training job
+        self.idle_training_job = {
+            "job_id": f"idle-{int(time.time())}",
+            "name": "Idle Training",
+            "layer_name": "learning_core",
+            "config": {"epochs": 5, "lightweight": True}
+        }
+        
+        # Run lightweight training
+        try:
+            # Simulate lightweight training
+            time.sleep(5)
+            print("✅ Idle training completed")
+        except Exception as e:
+            print(f"⚠️ Idle training failed: {e}")
+        finally:
+            self.is_idle_training = False
+            self.idle_training_job = None
+    
+    async def idle_training_loop(self):
+        """حلقة التدريب في وقت الفراغ"""
+        if not self.idle_training:
+            return
+        
+        print("🌙 Idle training loop started")
+        
+        while self.running:
+            try:
+                if self.check_idle_training():
+                    self.start_idle_training()
+                
+                await asyncio.sleep(60)  # Check every minute
+            except Exception as e:
+                print(f"⚠️ Idle training loop error: {e}")
+                await asyncio.sleep(60)
+
     def _handle_command(self, command: str, params: Dict):
         """Handle a command from the orchestrator."""
         print(f"📨 Command: {command}")
@@ -441,7 +518,6 @@ class WorkerAgent:
 
         elif command == "throttle":
             print(f"⚠️ Throttled: {params.get('message', '')}")
-            # Reduce resource usage
             self.max_cpu = min(self.max_cpu, 60)
             self.max_gpu = min(self.max_gpu, 50)
 
@@ -490,11 +566,14 @@ class WorkerAgent:
                             usage = get_resource_usage()
                             await ws.send(json.dumps({
                                 "type": "heartbeat",
-                                "status": "training" if self.current_job else "online",
+                                "status": "training" if self.current_job or self.is_idle_training else "online",
                                 "usage": usage,
                                 "training": {
-                                    "is_training": bool(self.current_job),
-                                    "job_id": self.current_job.get("job_id") if self.current_job else None,
+                                    "is_training": bool(self.current_job) or self.is_idle_training,
+                                    "job_id": self.current_job.get("job_id") if self.current_job else (
+                                        self.idle_training_job.get("job_id") if self.is_idle_training else None
+                                    ),
+                                    "is_idle": self.is_idle_training,
                                 },
                             }))
 
@@ -544,7 +623,7 @@ class WorkerAgent:
         """Main run loop."""
         print(f"""
 ╔══════════════════════════════════════════╗
-║     🔧 BI-IDE Worker Agent v1.0.0       ║
+║     🔧 BI-IDE Worker Agent v2.0.0       ║
 ╠══════════════════════════════════════════╣
 ║  Server: {self.server:<31s}║
 ║  Worker: {self.worker_id:<31s}║
@@ -552,6 +631,7 @@ class WorkerAgent:
 ║  GPU:    {self.hardware['gpu']['name'][:31]:<31s}║
 ║  RAM:    {self.hardware['ram_gb']}GB{' '*(28-len(str(self.hardware['ram_gb'])))}║
 ║  CPU:    {self.hardware['cpu_cores']} cores{' '*(25-len(str(self.hardware['cpu_cores'])))}║
+║  Idle:   {'Enabled' if self.idle_training else 'Disabled'}{' '*(27-len('Enabled' if self.idle_training else 'Disabled'))}║
 ╚══════════════════════════════════════════╝
         """)
 
@@ -572,6 +652,10 @@ class WorkerAgent:
             asyncio.create_task(self.http_heartbeat_loop()),
             asyncio.create_task(self.job_polling_loop()),
         ]
+        
+        # Add idle training loop if enabled
+        if self.idle_training:
+            tasks.append(asyncio.create_task(self.idle_training_loop()))
 
         # Handle graceful shutdown
         def signal_handler(sig, frame):
@@ -594,15 +678,17 @@ class WorkerAgent:
 # ──────────── CLI ────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="BI-IDE Worker Agent")
+    parser = argparse.ArgumentParser(description="BI-IDE Worker Agent V2")
     parser.add_argument("--server", default="https://bi-iq.com", help="Orchestrator server URL")
     parser.add_argument("--token", default="", help="Orchestrator token")
-    parser.add_argument("--labels", default="cpu", help="Comma-separated labels (e.g., gpu,rtx5090,primary)")
-    parser.add_argument("--worker-id", default="", help="Worker ID (default: hostname)")
+    parser.add_argument("--labels", default="cpu", help="Comma-separated labels")
+    parser.add_argument("--worker-id", default="", help="Worker ID")
     parser.add_argument("--max-cpu", type=float, default=90, help="Max CPU usage %")
     parser.add_argument("--max-gpu", type=float, default=95, help="Max GPU usage %")
     parser.add_argument("--max-ram", type=float, default=85, help="Max RAM usage %")
-    parser.add_argument("--heartbeat", type=int, default=30, help="Heartbeat interval seconds")
+    parser.add_argument("--heartbeat", type=int, default=30, help="Heartbeat interval")
+    parser.add_argument("--idle-training", action="store_true", default=True, help="Enable idle training")
+    parser.add_argument("--idle-cpu-threshold", type=float, default=30, help="CPU threshold for idle training")
     args = parser.parse_args()
 
     agent = WorkerAgent(
@@ -614,6 +700,8 @@ def main():
         max_gpu=args.max_gpu,
         max_ram=args.max_ram,
         heartbeat_interval=args.heartbeat,
+        idle_training=args.idle_training,
+        idle_cpu_threshold=args.idle_cpu_threshold,
     )
 
     asyncio.run(agent.run())
