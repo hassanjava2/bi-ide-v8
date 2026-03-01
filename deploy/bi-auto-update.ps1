@@ -1,13 +1,11 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# BI-IDE v8 — سكربت التحديث الذاتي (Windows)
-# يشتغل كل 2 دقيقة عبر Windows Scheduled Task
-# يفحص GitHub ولو فيه تحديث → يسحب ويعيد تشغيل الخدمات
-# ═══════════════════════════════════════════════════════════════════════════════
-# التثبيت:
-#   .\deploy\bi-auto-update.ps1 -Install
-# الإلغاء:
-#   .\deploy\bi-auto-update.ps1 -Uninstall
-# ═══════════════════════════════════════════════════════════════════════════════
+# BI-IDE v8 - Auto-Update Script (Windows)
+# Runs every 2 minutes via Windows Scheduled Task
+# Checks GitHub and auto-updates if new commits are found
+#
+# Install:   .\deploy\bi-auto-update.ps1 -Install
+# Uninstall: .\deploy\bi-auto-update.ps1 -Uninstall
+# Status:    .\deploy\bi-auto-update.ps1 -Status
+# Dry Run:   .\deploy\bi-auto-update.ps1 -DryRun
 
 param(
     [switch]$Install,
@@ -22,7 +20,6 @@ param(
 $ErrorActionPreference = "Stop"
 $TaskName = "BI-IDE-AutoUpdate"
 
-# ─── Helper Functions ─────────────────────────────────────────────────────────
 function Write-Log {
     param([string]$Message)
     $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
@@ -41,56 +38,38 @@ function Rotate-Log {
     }
 }
 
-# ─── Install Scheduled Task ──────────────────────────────────────────────────
+# --- Install Scheduled Task ---
 if ($Install) {
-    Write-Host "═══ Installing BI-IDE Auto-Update ═══"
+    Write-Host "=== Installing BI-IDE Auto-Update ==="
 
-    # Remove old task if exists
     Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
 
     $scriptPath = $MyInvocation.MyCommand.Path
-    $action = New-ScheduledTaskAction `
-        -Execute "powershell.exe" `
-        -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath`" -RepoDir `"$RepoDir`""
+    $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$scriptPath`" -RepoDir `"$RepoDir`""
 
-    $trigger = New-ScheduledTaskTrigger `
-        -Once `
-        -At (Get-Date) `
-        -RepetitionInterval (New-TimeSpan -Minutes 2) `
-        -RepetitionDuration (New-TimeSpan -Days 9999)
+    $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 2) -RepetitionDuration (New-TimeSpan -Days 9999)
 
-    $settings = New-ScheduledTaskSettingsSet `
-        -AllowStartIfOnBatteries `
-        -DontStopIfGoingOnBatteries `
-        -StartWhenAvailable `
-        -RunOnlyIfNetworkAvailable `
-        -MultipleInstances IgnoreNew
+    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RunOnlyIfNetworkAvailable -MultipleInstances IgnoreNew
 
-    Register-ScheduledTask `
-        -TaskName $TaskName `
-        -Action $action `
-        -Trigger $trigger `
-        -Settings $settings `
-        -Description "BI-IDE Auto-Update: checks GitHub every 2 minutes" `
-        -RunLevel Highest
+    Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Settings $settings -Description "BI-IDE Auto-Update: checks GitHub every 2 minutes" -RunLevel Highest
 
-    Write-Host "✅ Scheduled Task '$TaskName' installed!"
+    Write-Host "[OK] Scheduled Task installed!"
     Write-Host "   Runs every 2 minutes"
     Write-Host "   Repo: $RepoDir"
     Write-Host "   Log:  $LogFile"
     exit 0
 }
 
-# ─── Uninstall ────────────────────────────────────────────────────────────────
+# --- Uninstall ---
 if ($Uninstall) {
     Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
-    Write-Host "✅ Scheduled Task '$TaskName' removed"
+    Write-Host "[OK] Scheduled Task removed"
     exit 0
 }
 
-# ─── Status ───────────────────────────────────────────────────────────────────
+# --- Status ---
 if ($Status) {
-    Write-Host "═══ BI-IDE Auto-Update Status ═══"
+    Write-Host "=== BI-IDE Auto-Update Status ==="
     Push-Location $RepoDir -ErrorAction SilentlyContinue
     if ($?) {
         $local = git rev-parse --short HEAD
@@ -118,27 +97,25 @@ if ($Status) {
     exit 0
 }
 
-# ─── Dry Run ──────────────────────────────────────────────────────────────────
+# --- Dry Run ---
 if ($DryRun) {
-    Write-Host "═══ Dry Run ═══"
+    Write-Host "=== Dry Run ==="
     Push-Location $RepoDir
     git fetch origin $Branch --quiet 2>$null
     $local = git rev-parse --short HEAD
     $remote = git rev-parse --short "origin/$Branch"
     if ($local -eq $remote) {
-        Write-Host "✅ Already up to date ($local)"
+        Write-Host "[OK] Already up to date ($local)"
     } else {
         $behind = (git rev-list "HEAD..origin/$Branch" --count)
-        Write-Host "🔄 Update available: $local → $remote ($behind commits behind)"
+        Write-Host "[UPDATE] Available: $local -> $remote ($behind commits behind)"
         git log --oneline "HEAD..origin/$Branch"
     }
     Pop-Location
     exit 0
 }
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# Main Update Logic
-# ═══════════════════════════════════════════════════════════════════════════════
+# === Main Update Logic ===
 try {
     Rotate-Log
 
@@ -147,7 +124,7 @@ try {
     if (Test-Path $lockFile) {
         $lockAge = (Get-Date) - (Get-Item $lockFile).LastWriteTime
         if ($lockAge.TotalMinutes -lt 5) {
-            exit 0  # Another run in progress
+            exit 0
         }
         Remove-Item $lockFile -Force
     }
@@ -164,7 +141,7 @@ try {
     # Fetch
     git fetch origin $Branch --quiet 2>$null
     if ($LASTEXITCODE -ne 0) {
-        Write-Log "❌ git fetch failed"
+        Write-Log "[ERROR] git fetch failed"
         exit 1
     }
 
@@ -173,7 +150,6 @@ try {
     $remoteSha = git rev-parse "origin/$Branch"
 
     if ($localSha -eq $remoteSha) {
-        # No update — silent
         Remove-Item $lockFile -Force -ErrorAction SilentlyContinue
         Pop-Location
         exit 0
@@ -181,22 +157,22 @@ try {
 
     # Update!
     $behind = (git rev-list "HEAD..origin/$Branch" --count)
-    Write-Log "🔄 Update found! $behind commit(s) behind. Updating..."
+    Write-Log "[UPDATE] $behind commit(s) behind. Updating..."
 
     $rollbackSha = $localSha
 
     # Pull
     git pull origin $Branch --ff-only 2>&1 | Out-Null
     if ($LASTEXITCODE -ne 0) {
-        Write-Log "⚠ git pull failed, trying hard reset..."
+        Write-Log "[WARN] git pull failed, trying hard reset..."
         git reset --hard "origin/$Branch"
     }
 
-    Write-Log "✅ Code updated to $($remoteSha.Substring(0,8))"
+    Write-Log "[OK] Code updated to $($remoteSha.Substring(0,8))"
 
     # Install Python deps
     if (Test-Path "$RepoDir\requirements.txt") {
-        Write-Log "📦 Installing dependencies..."
+        Write-Log "[DEPS] Installing dependencies..."
         pip install -r "$RepoDir\requirements.txt" --quiet 2>&1 | Select-Object -Last 2
     }
 
@@ -204,25 +180,29 @@ try {
     foreach ($svc in @("bi-server", "bi-worker")) {
         $service = Get-Service -Name $svc -ErrorAction SilentlyContinue
         if ($service) {
-            Write-Log "🔄 Restarting $svc..."
+            Write-Log "[RESTART] $svc..."
             Restart-Service -Name $svc -Force
             Start-Sleep -Seconds 3
             $service = Get-Service -Name $svc
             if ($service.Status -eq "Running") {
-                Write-Log "✅ $svc is running"
+                Write-Log "[OK] $svc is running"
             } else {
-                Write-Log "❌ $svc failed to start! Rolling back..."
+                Write-Log "[ERROR] $svc failed! Rolling back..."
                 git reset --hard $rollbackSha
                 Restart-Service -Name $svc -Force -ErrorAction SilentlyContinue
             }
         }
     }
 
-    Write-Log "🎉 Update complete! $(git log -1 --pretty='%s')"
+    $commitMsg = git log -1 --pretty="%s"
+    Write-Log "[DONE] Update complete! $commitMsg"
     Pop-Location
 
-} catch {
-    Write-Log "❌ Error: $_"
-} finally {
+}
+catch {
+    $errMsg = $_.ToString()
+    Write-Log "[ERROR] $errMsg"
+}
+finally {
     Remove-Item $lockFile -Force -ErrorAction SilentlyContinue
 }
