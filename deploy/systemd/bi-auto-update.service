@@ -1,0 +1,26 @@
+[Unit]
+Description=BI-IDE Auto-Update Service
+Documentation=https://github.com/hassanjava2/bi-ide-v8
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=bi
+Group=bi
+ExecStart=/home/bi/bi-ide-v8/deploy/bi-auto-update.sh update
+WorkingDirectory=/home/bi/bi-ide-v8
+StandardOutput=journal
+StandardError=journal
+
+# Environment
+Environment=BI_REPO_DIR=/home/bi/bi-ide-v8
+Environment=BI_WORKER_DIR=/home/bi/.bi-ide-worker
+Environment=BI_BRANCH=main
+Environment=BI_SERVICES=bi-ide-worker
+Environment=BI_UPDATE_LOG=/var/log/bi-auto-update.log
+
+# Safety
+TimeoutStartSec=120
+Nice=10
+IOSchedulingClass=idle

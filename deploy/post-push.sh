@@ -1,27 +1,25 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════════════════════════════════════
-# Git post-push hook → Auto Deploy
-# ينشر تلقائياً بعد كل git push
+# Git post-push hook → Auto-Update Notification
+# الأجهزة ستتحدث تلقائياً خلال 2 دقيقة عبر self-update timers
 # ═══════════════════════════════════════════════════════════════════════════════
 # التثبيت:
 #   cp deploy/post-push.sh .git/hooks/post-push && chmod +x .git/hooks/post-push
+#   أو:
+#   ln -sf ../../deploy/post-push.sh .git/hooks/post-push
 # ═══════════════════════════════════════════════════════════════════════════════
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# If running from .git/hooks, go up to repo root
-if [[ "$SCRIPT_DIR" == *".git/hooks" ]]; then
-    PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
-else
-    PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-fi
+GREEN='\033[0;32m'; CYAN='\033[0;36m'; NC='\033[0m'; BOLD='\033[1m'
 
-echo "🚀 Auto-deploying after push..."
-
-# Deploy to 5090 (background)
-"$PROJECT_ROOT/deploy/auto_deploy.sh" --5090 &
-
-# Deploy to VPS (background)
-"$PROJECT_ROOT/deploy/auto_deploy.sh" --vps &
-
-wait
-echo "✅ Auto-deploy complete"
+echo ""
+echo -e "${CYAN}${BOLD}╔══════════════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}${BOLD}║  🚀 Push successful! Auto-update in progress... ║${NC}"
+echo -e "${CYAN}${BOLD}╚══════════════════════════════════════════════════╝${NC}"
+echo ""
+echo -e "${GREEN}All machines will auto-update within 2 minutes:${NC}"
+echo -e "  📡 VPS (bi-iq.com)     — systemd timer"
+echo -e "  🖥️  RTX 5090            — systemd timer"
+echo -e "  💻 Windows (RTX 4050)  — scheduled task"
+echo ""
+echo -e "Check status: ${BOLD}ssh bi@192.168.1.164 'bash /home/bi/bi-ide-v8/deploy/bi-auto-update.sh status'${NC}"
+echo ""

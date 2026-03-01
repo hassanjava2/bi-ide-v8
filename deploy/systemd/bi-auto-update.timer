@@ -1,0 +1,12 @@
+[Unit]
+Description=BI-IDE Auto-Update Timer (every 2 minutes)
+Documentation=https://github.com/hassanjava2/bi-ide-v8
+
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=2min
+AccuracySec=30s
+Persistent=true
+
+[Install]
+WantedBy=timers.target

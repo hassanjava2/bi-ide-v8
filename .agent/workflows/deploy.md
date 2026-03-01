@@ -23,7 +23,8 @@ description: Deploy BI-IDE v8 to all machines (VPS, RTX 5090, Windows, Domain)
 - **ملاحظة:** PAT ما عنده `workflow` scope — لا تعدل `.github/workflows/*.yml` بالـ commit
 
 ### 3. RTX 5090 (Ubuntu — 192.168.1.164)
-- **Host:** `bi@192.168.1.164`
+- **Host (LAN):** `bi@192.168.1.164`
+- **Host (Tailscale):** `bi@100.104.35.44`
 - **SSH:** ✅ key-based (يشتغل بدون كلمة مرور)
 - **الريبو:** `/home/bi/bi-ide-v8`
 - **مجلد العامل:** `/home/bi/.bi-ide-worker`
@@ -52,7 +53,10 @@ cd /Users/bi/Documents/bi-ide-v8 && git add -A && git status --short | wc -l && 
 
 ### الخطوة 2: Deploy to RTX 5090
 ```bash
-ssh bi@192.168.1.164 "cd /home/bi/bi-ide-v8 && git pull origin main && cp -r worker/* /home/bi/.bi-ide-worker/ 2>/dev/null; cp -r hierarchy/ core/ api/ monitoring/ ai/ requirements.txt /home/bi/.bi-ide-worker/ 2>/dev/null; cd /home/bi/.bi-ide-worker && source venv/bin/activate && pip install -r requirements.txt --quiet 2>&1 | tail -3 && echo '✅ 5090 updated'"
+# استخدم Tailscale IP خارج الشبكة المحلية
+# RTX_HOST="bi@100.104.35.44"
+RTX_HOST="bi@192.168.1.164"
+ssh $RTX_HOST "cd /home/bi/bi-ide-v8 && git pull origin main && cp -r worker/* /home/bi/.bi-ide-worker/ 2>/dev/null; cp -r hierarchy/ core/ api/ monitoring/ ai/ requirements.txt /home/bi/.bi-ide-worker/ 2>/dev/null; cd /home/bi/.bi-ide-worker && source venv/bin/activate && pip install -r requirements.txt --quiet 2>&1 | tail -3 && echo '✅ 5090 updated'"
 ```
 - بعدها العامل يحتاج restart: المستخدم يسوي `sudo systemctl restart bi-ide-worker` على الـ 5090
 
@@ -64,7 +68,7 @@ ssh root@bi-iq.com "cd /root/bi-ide-v8 && git pull origin main && pip3 install -
 
 ### الخطوة 4: Health Check
 ```bash
-echo "5090:" && ssh bi@192.168.1.164 "uptime" && echo "VPS:" && curl -s https://bi-iq.com/health 2>/dev/null || echo "VPS unreachable"
+echo "5090:" && ssh bi@100.104.35.44 "uptime" 2>/dev/null || ssh bi@192.168.1.164 "uptime" && echo "VPS:" && curl -s https://bi-iq.com/health 2>/dev/null || echo "VPS unreachable"
 ```
 
 ## سكربت النشر السريع
@@ -75,7 +79,37 @@ echo "5090:" && ssh bi@192.168.1.164 "uptime" && echo "VPS:" && curl -s https://
 ./deploy/auto_deploy.sh --push-only  # git push فقط
 ```
 
-## إعداد النشر التلقائي (مرة وحدة)
+## إعداد التحديث الذاتي (Self-Update) — مرة وحدة لكل جهاز
+
+### RTX 5090 (Ubuntu)
+```bash
+ssh bi@192.168.1.164 "cd /home/bi/bi-ide-v8 && bash deploy/setup-auto-update.sh"
+```
+
+### VPS (bi-iq.com)
+```bash
+ssh root@bi-iq.com "cd /root/bi-ide-v8 && bash deploy/setup-auto-update.sh --vps"
+```
+
+### Windows (RTX 4050)
+```powershell
+cd C:\Users\BI\bi-ide-v8
+.\deploy\bi-auto-update.ps1 -Install
+```
+
+### فحص حالة التحديث الذاتي
+```bash
+# RTX 5090
+ssh bi@192.168.1.164 "bash /home/bi/bi-ide-v8/deploy/bi-auto-update.sh status"
+
+# VPS
+ssh root@bi-iq.com "bash /root/bi-ide-v8/deploy/bi-auto-update.sh status"
+
+# Log
+ssh bi@192.168.1.164 "tail -20 /var/log/bi-auto-update.log"
+```
+
+## إعداد SSH keys (مرة وحدة)
 ```bash
 bash deploy/setup_ssh_keys.sh
 ```
