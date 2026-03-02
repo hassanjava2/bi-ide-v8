@@ -40,9 +40,13 @@ app.add_middleware(
 )
 
 # ─── Training Data Storage ───────────────────────────────────────
-TRAINING_DIR = Path(os.getenv("TRAINING_DATA_DIR", "/home/bi/.bi-ide-worker/training_data"))
+# Points to the real 45GB training data directory
+TRAINING_DIR = Path(os.getenv("TRAINING_DATA_DIR", "/home/bi/training_data"))
 TRAINING_DIR.mkdir(parents=True, exist_ok=True)
-AUTO_TRAIN_THRESHOLD = 50  # start training after N samples
+# Ingest dir for new samples (separate from existing 45GB corpus)
+INGEST_DIR = TRAINING_DIR / "ingest"
+INGEST_DIR.mkdir(parents=True, exist_ok=True)
+AUTO_TRAIN_THRESHOLD = 5  # start training quickly after 5 new samples
 
 # ─── Models ──────────────────────────────────────────────────────
 class MessageRequest(BaseModel):
@@ -99,11 +103,30 @@ _training_stats = {
 }
 
 def _count_samples() -> int:
-    f = TRAINING_DIR / "samples.jsonl"
+    f = INGEST_DIR / "samples.jsonl"
     if not f.exists():
         return 0
     with f.open() as fh:
         return sum(1 for _ in fh)
+
+
+def _auto_record_conversation(question: str, answer: str, source: str = "council"):
+    """Auto-record every conversation as training data for Arabic learning."""
+    if not question.strip() or not answer.strip():
+        return
+    sample = {
+        "input_text": question,
+        "output_text": answer,
+        "source": source,
+        "kind": "chat_pair",
+        "language": "ar",
+        "timestamp": datetime.now().isoformat(),
+    }
+    f = INGEST_DIR / "samples.jsonl"
+    with f.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(sample, ensure_ascii=False) + "\n")
+    _training_stats["total_samples"] = _count_samples()
+    _auto_train_check()
 
 def _auto_train_check():
     """Start training if enough samples accumulated."""
@@ -194,9 +217,13 @@ async def council_message(request: MessageRequest):
     try:
         result = hierarchy.ask(request.message)
         processing_time = int((time.time() - start) * 1000)
+        response_text = result.get("response", "")
+
+        # 🧠 Auto-record conversation for Arabic training
+        _auto_record_conversation(request.message, response_text, "council-rtx5090")
 
         return MessageResponse(
-            response=result.get("response", ""),
+            response=response_text,
             source="rtx5090",
             confidence=result.get("confidence", 0.85),
             evidence=result.get("evidence", []),
@@ -223,7 +250,7 @@ async def ingest_training_data(request: TrainingIngestRequest):
     if not request.samples:
         raise HTTPException(status_code=400, detail="No samples provided")
 
-    samples_file = TRAINING_DIR / "samples.jsonl"
+    samples_file = INGEST_DIR / "samples.jsonl"
     count = 0
     with samples_file.open("a", encoding="utf-8") as f:
         for sample in request.samples:
