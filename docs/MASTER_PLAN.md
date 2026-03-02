@@ -155,6 +155,24 @@
 
 ---
 
+### 11. العتاد الموزّع — تدريب على 100+ حاسبة
+**الموجود:** `orchestrator_api.py` (15KB) — يوزع مهام، workers يسجلون أنفسهم
+**المشكلة:**
+- Workers لا يتدربون — يأخذون مهام فقط
+- لا يوجد **deduplication** للبيانات (أخطر نقطة!)
+- لا يوجد **batch assignment** (كل worker يأخذ batch جديد)
+- لا يوجد **أمر واحد** يشغّل 100% GPU فوراً
+
+**المطلوب:**
+- [ ] **Worker auto-enrollment:** أي حاسبة تنصّب BI-IDE → تسجل نفسها → تبدي 100%
+- [ ] **Batch deduplication مركزي:** RTX يتتبع كل عينة تم التدريب عليها (hash/ID)
+- [ ] **Central data store:** كل الداتا على RTX 5090، workers يسحبون batches جديدة فقط
+- [ ] **Checkpoint merge:** كل worker يرسل gradient updates → RTX يدمجهم
+- [ ] **أمر واحد:** `bi-ide --train --gpu-all` → 100% استهلاك فوري
+- [ ] **Scale:** دعم 100+ worker متزامن بدون تكرار
+
+---
+
 ## 🔗 أنظمة موجودة تحتاج ربط
 
 | النظام | المسار | الحالة |
@@ -177,6 +195,9 @@
 2. تحميل الـ checkpoints والـ vocab عند البدء
 3. ربط `InternetDataFetcher` ← تدريب أوتوماتيكي لا نهائي
 4. VPS→RTX relay
+5. **Batch deduplication** — كل عينة تُعلّم ولا تتكرر
+6. **Worker auto-enrollment** — أي جهاز يبدي 100% فوراً
+7. **أمر واحد يشغّل كل الموارد** (`bi-ide --train --gpu-all`)
 
 ### المرحلة B — المجلس والأوامر
 5. أوامر الرئيس → تنفيذ فوري عبر كل الطبقات
