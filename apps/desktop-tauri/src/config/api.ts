@@ -16,7 +16,7 @@ import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 const API_CONFIG = {
   vps: {
     baseUrl: 'https://bi-iq.com/api/v1',
-    timeout: 15000,
+    timeout: 60000, // VPS AI takes ~30s to process
   },
   rtx: {
     host: '192.168.1.164',
@@ -24,7 +24,7 @@ const API_CONFIG = {
     get baseUrl() {
       return `http://${this.host}:${this.port}`;
     },
-    timeout: 8000,
+    timeout: 5000,
   },
   retryAttempts: 2,
   retryDelay: 1000,
@@ -43,12 +43,11 @@ async function probeRtx(): Promise<boolean> {
   }
 
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
-    const res = await tauriFetch(`${API_CONFIG.rtx.baseUrl}/health`, {
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
+    const timeoutPromise = new Promise<Response>((_, reject) =>
+      setTimeout(() => reject(new Error('RTX probe timeout')), 3000)
+    );
+    const fetchPromise = tauriFetch(`${API_CONFIG.rtx.baseUrl}/health`);
+    const res = await Promise.race([fetchPromise, timeoutPromise]);
     _rtxAvailable = res.ok;
   } catch {
     _rtxAvailable = false;
@@ -138,18 +137,14 @@ export interface ApiResponse<T = unknown> {
 async function fetchWithTimeout(
   url: string,
   options: RequestInit = {},
-  timeoutMs: number = 15000
+  timeoutMs: number = 60000
 ): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await tauriFetch(url, { ...options, signal: controller.signal });
-    clearTimeout(timeoutId);
-    return response;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
-  }
+  // tauriFetch may not fully support AbortController, use race pattern
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error(`Request timeout after ${timeoutMs}ms`)), timeoutMs)
+  );
+  const fetchPromise = tauriFetch(url, options);
+  return Promise.race([fetchPromise, timeoutPromise]);
 }
 
 // ─── Smart Council Message (Dual-Path) ───────────────────────────
