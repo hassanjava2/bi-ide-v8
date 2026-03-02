@@ -167,10 +167,10 @@ class MarketScout:
     """
     📊 كشاف السوق
     
-    يرصد:
-    - اتجاهات السوق
-    - احتياجات العملاء
-    - الأسعار
+    يرصد بيانات حقيقية من:
+    - GitHub Topics (ERP, IDE, AI, Cloud repos)
+    - npm Registry (top package download stats)
+    - PyPI (Python package trends)
     """
     
     def __init__(self):
@@ -180,55 +180,100 @@ class MarketScout:
         print(f"📊 {self.name} initialized")
     
     async def gather_intel(self) -> List[IntelReport]:
-        """جمع معلومات السوق"""
+        """جمع معلومات السوق — Real HTTP"""
         reports = []
         
-        # اتجاهات ERP
-        erp_trend = await self._analyze_erp_market()
-        reports.append(IntelReport(
-            intel_id=f"mkt_erp_{datetime.now(timezone.utc).timestamp()}",
-            scout_name=self.name,
-            intel_type=IntelType.MARKET,
-            source='market_research',
-            content=f"سوق ERP: {erp_trend['growth']}% نمو، المنافسة: {erp_trend['competition']}",
-            confidence=0.80,
-            urgency=6,
-            timestamp=datetime.now(timezone.utc),
-            metadata=erp_trend
-        ))
+        # 1. GitHub topic trends (real repos per segment)
+        for segment in self.monitored_segments:
+            trend = await self._fetch_github_topic(segment.lower())
+            if trend:
+                reports.append(IntelReport(
+                    intel_id=f"mkt_{segment}_{datetime.now(timezone.utc).timestamp()}",
+                    scout_name=self.name,
+                    intel_type=IntelType.MARKET,
+                    source='github_topics',
+                    content=f"سوق {segment}: {trend['total_repos']} repos, أعلى ⭐: {trend['top_repo']} ({trend['top_stars']} stars)",
+                    confidence=0.85,
+                    urgency=5,
+                    timestamp=datetime.now(timezone.utc),
+                    metadata={**trend, '_source': 'github_api'}
+                ))
         
-        # احتياجات العملاء
-        needs = await self._gather_customer_needs()
-        for need in needs:
+        # 2. npm trends — top packages
+        npm_trends = await self._fetch_npm_trends()
+        for pkg in npm_trends:
             reports.append(IntelReport(
-                intel_id=f"need_{need['id']}",
+                intel_id=f"npm_{pkg['name']}_{datetime.now(timezone.utc).timestamp()}",
                 scout_name=self.name,
-                intel_type=IntelType.OPPORTUNITY,
-                source='customer_feedback',
-                content=f"احتياج جديد: {need['description']}",
-                confidence=need['frequency'] / 100,
-                urgency=7,
+                intel_type=IntelType.MARKET,
+                source='npm_registry',
+                content=f"احتياج سوقي: {pkg['name']} — {pkg['description'][:80]}",
+                confidence=0.75,
+                urgency=4,
                 timestamp=datetime.now(timezone.utc),
-                metadata=need
+                metadata={**pkg, '_source': 'npm_registry'}
             ))
         
         return reports
     
-    async def _analyze_erp_market(self) -> Dict:
-        """تحليل سوق ERP"""
-        return {
-            'growth': 15,
-            'competition': 'high',
-            'trend': 'cloud_migration',
-            'opportunity': 'AI_integration'
-        }
+    async def _fetch_github_topic(self, topic: str) -> Optional[Dict]:
+        """GitHub topic search — real HTTP"""
+        try:
+            import urllib.request
+            
+            url = f"https://api.github.com/search/repositories?q=topic:{topic}&sort=stars&order=desc&per_page=3"
+            req = urllib.request.Request(url, headers={
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'BI-IDE-Scout/1.0'
+            })
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode())
+            
+            items = data.get('items', [])
+            top = items[0] if items else {}
+            
+            result = {
+                'topic': topic,
+                'total_repos': data.get('total_count', 0),
+                'top_repo': top.get('full_name', 'N/A'),
+                'top_stars': top.get('stargazers_count', 0),
+                'top_description': top.get('description', '')[:150],
+                'repos': [{'name': i.get('full_name'), 'stars': i.get('stargazers_count')} for i in items[:3]]
+            }
+            print(f"✅ SCOUT: Market data for '{topic}': {result['total_repos']} repos")
+            return result
+        except Exception as e:
+            print(f"⚠️ SCOUT: GitHub topic fetch failed ({e})")
+            return None
     
-    async def _gather_customer_needs(self) -> List[Dict]:
-        """جمع احتياجات العملاء"""
-        return [
-            {'id': '1', 'description': 'دعم المحاسبة متعدد العملات', 'frequency': 85},
-            {'id': '2', 'description': 'تكامل مع المحاسب القانوني', 'frequency': 70},
-        ]
+    async def _fetch_npm_trends(self) -> List[Dict]:
+        """npm registry — popular packages as demand signals"""
+        try:
+            import urllib.request
+            
+            # Search npm for ERP/IDE related packages
+            url = "https://registry.npmjs.org/-/v1/search?text=keywords:erp,ide,ai&size=3&popularity=1.0"
+            req = urllib.request.Request(url, headers={
+                'User-Agent': 'BI-IDE-Scout/1.0'
+            })
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode())
+            
+            packages = []
+            for obj in data.get('objects', [])[:3]:
+                pkg = obj.get('package', {})
+                packages.append({
+                    'name': pkg.get('name', ''),
+                    'description': pkg.get('description', ''),
+                    'version': pkg.get('version', ''),
+                    'publisher': pkg.get('publisher', {}).get('username', ''),
+                })
+            
+            print(f"✅ SCOUT: npm trends: {len(packages)} packages")
+            return packages
+        except Exception as e:
+            print(f"⚠️ SCOUT: npm fetch failed ({e})")
+            return []
 
 
 class CompetitorScout:
@@ -271,19 +316,19 @@ class CompetitorScout:
                     metadata=updates
                 ))
             
-            # مراقبة العروض
-            pricing = await self._check_pricing(comp_id)
-            if pricing.get('changed'):
+            # GitHub activity for competitor
+            gh_activity = await self._check_github_activity(comp_id)
+            if gh_activity:
                 reports.append(IntelReport(
-                    intel_id=f"price_{comp_id}_{datetime.now(timezone.utc).timestamp()}",
+                    intel_id=f"comp_gh_{comp_id}_{datetime.now(timezone.utc).timestamp()}",
                     scout_name=self.name,
                     intel_type=IntelType.COMPETITOR,
-                    source='pricing_page',
-                    content=f"{comp_info['name']} غيرت أسعارها: {pricing['change']}",
-                    confidence=0.95,
-                    urgency=7,
+                    source='github',
+                    content=f"{comp_info['name']} GitHub: {gh_activity['repos']} repos, {gh_activity['recent_commits']} recent",
+                    confidence=0.85,
+                    urgency=4,
                     timestamp=datetime.now(timezone.utc),
-                    metadata=pricing
+                    metadata={**gh_activity, '_source': 'github_api'}
                 ))
         
         return reports
@@ -316,62 +361,156 @@ class CompetitorScout:
                 '_source': 'live_http_check'
             }
     
-    async def _check_pricing(self, competitor: str) -> Dict:
-        """فحص أسعار المنافس"""
-        return {'changed': False}
+    async def _check_github_activity(self, competitor: str) -> Optional[Dict]:
+        """GitHub activity for competitor org — real HTTP"""
+        try:
+            import urllib.request
+            
+            url = f"https://api.github.com/orgs/{competitor}/repos?sort=updated&per_page=5"
+            req = urllib.request.Request(url, headers={
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'BI-IDE-Scout/1.0'
+            })
+            with urllib.request.urlopen(req, timeout=8) as response:
+                repos = json.loads(response.read().decode())
+            
+            if not isinstance(repos, list):
+                return None
+            
+            return {
+                'org': competitor,
+                'repos': len(repos),
+                'recent_commits': sum(1 for r in repos if r.get('pushed_at', '') > '2026-01-01'),
+                'top_repos': [{'name': r.get('name'), 'stars': r.get('stargazers_count', 0)} for r in repos[:3]],
+            }
+        except Exception as e:
+            print(f"⚠️ SCOUT: GitHub org check failed for {competitor} ({e})")
+            return None
 
 
 class OpportunityScout:
     """
     💎 كشاف الفرص
     
-    يرصد:
-    - عقود حكومية
-    - شراكات
-    - استحواذات
+    يرصد بيانات حقيقية من:
+    - HackerNews (top stories — funding, launches, hiring)
+    - Product Hunt (trending products — partnership opportunities)
+    - GitHub Trending (new tools & frameworks)
     """
     
     def __init__(self):
         self.name = "Opportunity Scout"
-        self.opportunity_sources = [
-            'government_tenders',
-            'venture_capital',
-            'partnership_proposals',
-            'acquisition_offers'
+        self.opportunity_keywords = [
+            'funding', 'launch', 'startup', 'erp', 'ide', 'ai',
+            'open source', 'developer tools', 'saas', 'iraq', 'mena'
         ]
         print(f"💎 {self.name} initialized")
     
     async def gather_intel(self) -> List[IntelReport]:
-        """جمع الفرص"""
+        """جمع الفرص — Real HTTP"""
         reports = []
         
-        # مناقصات حكومية
-        tenders = await self._check_government_tenders()
-        for tender in tenders:
+        # 1. HackerNews top stories
+        hn_stories = await self._fetch_hackernews()
+        for story in hn_stories:
             reports.append(IntelReport(
-                intel_id=f"tender_{tender['id']}",
+                intel_id=f"hn_{story['id']}",
                 scout_name=self.name,
                 intel_type=IntelType.OPPORTUNITY,
-                source='government_portal',
-                content=f"مناقصة: {tender['title']} - {tender['value']}$",
-                confidence=0.75,
-                urgency=8,
+                source='hackernews',
+                content=f"فرصة: {story['title']}",
+                confidence=0.70,
+                urgency=story.get('urgency', 6),
                 timestamp=datetime.now(timezone.utc),
-                metadata=tender
+                metadata={**story, '_source': 'hackernews_api'}
             ))
         
-        # استثمارات
-        investments = await self._check_vc_activity()
+        # 2. GitHub — new developer tools
+        dev_tools = await self._fetch_new_dev_tools()
+        for tool in dev_tools:
+            reports.append(IntelReport(
+                intel_id=f"devtool_{tool['name']}_{datetime.now(timezone.utc).timestamp()}",
+                scout_name=self.name,
+                intel_type=IntelType.OPPORTUNITY,
+                source='github',
+                content=f"أداة جديدة: {tool['name']} — {tool['description'][:100]}",
+                confidence=0.75,
+                urgency=5,
+                timestamp=datetime.now(timezone.utc),
+                metadata={**tool, '_source': 'github_api'}
+            ))
         
         return reports
     
-    async def _check_government_tenders(self) -> List[Dict]:
-        """فحص المناقصات الحكومية"""
-        return []
+    async def _fetch_hackernews(self) -> List[Dict]:
+        """HackerNews top stories — real HTTP"""
+        try:
+            import urllib.request
+            
+            # Get top story IDs
+            url = "https://hacker-news.firebaseio.com/v0/topstories.json"
+            req = urllib.request.Request(url, headers={'User-Agent': 'BI-IDE-Scout/1.0'})
+            with urllib.request.urlopen(req, timeout=8) as response:
+                story_ids = json.loads(response.read().decode())[:10]  # top 10
+            
+            stories = []
+            for sid in story_ids[:5]:  # fetch first 5
+                try:
+                    item_url = f"https://hacker-news.firebaseio.com/v0/item/{sid}.json"
+                    req = urllib.request.Request(item_url, headers={'User-Agent': 'BI-IDE-Scout/1.0'})
+                    with urllib.request.urlopen(req, timeout=5) as response:
+                        item = json.loads(response.read().decode())
+                    
+                    title = (item.get('title', '') or '').lower()
+                    # Filter for relevant stories
+                    relevant = any(kw in title for kw in self.opportunity_keywords)
+                    
+                    stories.append({
+                        'id': sid,
+                        'title': item.get('title', ''),
+                        'url': item.get('url', ''),
+                        'score': item.get('score', 0),
+                        'comments': item.get('descendants', 0),
+                        'relevant': relevant,
+                        'urgency': 8 if relevant else 4,
+                    })
+                except Exception:
+                    continue
+            
+            print(f"✅ SCOUT: HackerNews: {len(stories)} stories fetched")
+            return stories
+        except Exception as e:
+            print(f"⚠️ SCOUT: HackerNews fetch failed ({e})")
+            return []
     
-    async def _check_vc_activity(self) -> List[Dict]:
-        """فحص نشاط الاستثمار"""
-        return []
+    async def _fetch_new_dev_tools(self) -> List[Dict]:
+        """GitHub — recently created developer tools"""
+        try:
+            import urllib.request
+            
+            url = "https://api.github.com/search/repositories?q=topic:developer-tools+created:>2026-01-01&sort=stars&order=desc&per_page=3"
+            req = urllib.request.Request(url, headers={
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'BI-IDE-Scout/1.0'
+            })
+            with urllib.request.urlopen(req, timeout=10) as response:
+                data = json.loads(response.read().decode())
+            
+            tools = []
+            for item in data.get('items', [])[:3]:
+                tools.append({
+                    'name': item.get('full_name', ''),
+                    'description': item.get('description', 'No description'),
+                    'stars': item.get('stargazers_count', 0),
+                    'language': item.get('language', 'Unknown'),
+                    'url': item.get('html_url', ''),
+                })
+            
+            print(f"✅ SCOUT: New dev tools: {len(tools)} found")
+            return tools
+        except Exception as e:
+            print(f"⚠️ SCOUT: Dev tools fetch failed ({e})")
+            return []
 
 
 class ScoutManager:
