@@ -118,6 +118,7 @@ fn main() {
             commands::ai::explain_code,
             commands::ai::refactor_code,
             commands::ai::get_ai_completion,
+            commands::ai::send_council_message,
         ])
         .on_window_event(|window, event| {
             match event {

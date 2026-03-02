@@ -147,86 +147,50 @@ async function fetchWithTimeout(
   return Promise.race([fetchPromise, timeoutPromise]);
 }
 
-// ─── Smart Council Message (Dual-Path) ───────────────────────────
+// ─── Smart Council Message (via Rust backend) ───────────────────
 
 export async function sendCouncilMessage(
   message: string,
   context?: CouncilMessageRequest['context']
 ): Promise<CouncilMessageResponse> {
-  const request: CouncilMessageRequest = { message, context };
-  const body = JSON.stringify(request);
-  const headers = { 'Content-Type': 'application/json' };
+  console.log('[AI Routing] Using Rust invoke (bypasses WebKit)');
 
-  // ── Path 1: Try RTX Direct (fast, LAN only) ──
-  const rtxReachable = await probeRtx();
-  if (rtxReachable) {
-    try {
-      console.log('[AI Routing] Using RTX direct path');
-      const res = await fetchWithTimeout(
-        `${API_CONFIG.rtx.baseUrl}/council/message`,
-        { method: 'POST', headers, body },
-        API_CONFIG.rtx.timeout
-      );
-      if (res.ok) {
-        const data = await res.json();
-        return {
-          response: data.response || '',
-          source: 'rtx5090',
-          confidence: data.confidence || 0.85,
-          evidence: data.evidence || [],
-          response_source: 'rtx5090-direct',
-          wise_man: data.wise_man || 'المجلس',
-          processing_time_ms: data.processing_time_ms || 0,
-          timestamp: data.timestamp || new Date().toISOString(),
-        };
-      }
-    } catch (err) {
-      console.warn('[AI Routing] RTX direct failed, falling back to VPS:', err);
-      _rtxAvailable = false; // mark as down
-    }
-  }
-
-  // ── Path 2: Try VPS (reliable, always available) ──
   try {
-    console.log('[AI Routing] Using VPS path');
-    const res = await fetchWithTimeout(
-      `${API_CONFIG.vps.baseUrl}/council/message`,
-      { method: 'POST', headers, body },
-      API_CONFIG.vps.timeout
-    );
-    if (res.ok) {
-      const data = await res.json();
-      // VPS wraps in ApiResponse with status/data
-      const responseData = data.data || data;
-      return {
-        response: responseData.response || '',
-        source: responseData.source || 'hierarchy',
-        confidence: responseData.confidence || 0.7,
-        evidence: responseData.evidence || [],
-        response_source: responseData.response_source || 'vps',
-        wise_man: responseData.wise_man || 'المجلس',
-        processing_time_ms: responseData.processing_time_ms || 0,
-        timestamp: responseData.timestamp || new Date().toISOString(),
-      };
-    }
-    // Non-OK response
-    const errData = await res.json().catch(() => ({}));
-    throw new Error(errData.detail || errData.error || `HTTP ${res.status}`);
-  } catch (err) {
-    console.warn('[AI Routing] VPS path failed:', err);
-  }
+    // Call Rust command — HTTP done in Rust via reqwest, bypasses all frontend restrictions
+    const result = await invoke<{
+      response: string;
+      source: string;
+      confidence: number;
+      wise_man: string;
+      processing_time_ms: number;
+    }>('send_council_message', {
+      message,
+      sessionId: context?.session_id || 'desktop-app',
+    });
 
-  // ── Path 3: Offline fallback ──
-  return {
-    response: `⚡ لا يمكن الاتصال بنظام AI حالياً.\n\n🔍 تحقق من:\n• اتصال الإنترنت\n• حالة السيرفر (bi-iq.com)\n• حالة RTX 5090 (${API_CONFIG.rtx.host})\n\nرسالتك محفوظة: "${message}"`,
-    source: 'local-fallback',
-    confidence: 0,
-    evidence: ['offline-mode'],
-    response_source: 'local-fallback',
-    wise_man: 'النظام',
-    processing_time_ms: 0,
-    timestamp: new Date().toISOString(),
-  };
+    return {
+      response: result.response,
+      source: result.source as CouncilMessageResponse['source'],
+      confidence: result.confidence,
+      evidence: [],
+      response_source: result.source,
+      wise_man: result.wise_man,
+      processing_time_ms: result.processing_time_ms,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (err: any) {
+    console.error('[AI Routing] Rust invoke failed:', err);
+    return {
+      response: `⚡ خطأ في الاتصال: ${err.message || err}\n\nتحقق من اتصال الإنترنت وحالة السيرفر.`,
+      source: 'local-fallback',
+      confidence: 0,
+      evidence: ['invoke-error'],
+      response_source: 'local-fallback',
+      wise_man: 'النظام',
+      processing_time_ms: 0,
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
 
 // ─── General API Request (always to VPS) ─────────────────────────
