@@ -591,3 +591,110 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 | البرمجة الأوتوماتيكية | أمر → برنامج كامل | ❌ غير مربوط |
 | النموذج اللغوي الخاص | يشتغل offline | ❌ يعتمد APIs |
 | وضع Offline | كل شي بدون نت | ❌ يحتاج إنترنت |
+
+---
+
+# القسم ١٢ — كنوز الإصدارات السابقة (bi Management 3.4GB) ⭐
+
+> ⚠️ **هذا القسم يوثق كل شي موجود بالإصدار القديم ولازم ما يضيع!**
+> المسار: `bi-projects/_archive/bi Management/`
+
+## 12.1 📷 camera-ai — نظام كاميرات المراقبة!
+> **هذا اللي نحتاجه بعد الكارثة — مراقبة + تحليل + توجيه!**
+
+| ملف | الوظيفة | المطلوب |
+|-----|---------|---------|
+| `camera-ai/app/models/yolo_detector.py` | كشف أشياء بالكاميرا (YOLO) | **نقل + تطوير** |
+| `camera-ai/app/models/activity_analyzer.py` | تحليل النشاط | **نقل + تطوير** |
+| `camera-ai/app/services/camera_service.py` | إدارة الكاميرات | **نقل** |
+| `camera-ai/app/services/detection_service.py` | خدمة الكشف | **نقل** |
+| `camera-ai/app/services/task_creator.py` | إنشاء مهام من الكاميرا | **نقل** |
+| `camera-ai/app/routes/cameras.py` | API كاميرات | **نقل** |
+| `camera-ai/app/routes/analysis.py` | API تحليل | **نقل** |
+
+## 12.2 🤖 ai-engine — محرك AI كامل!
+| ملف | الوظيفة | المطلوب |
+|-----|---------|---------|
+| `ai-engine/app/services/chat_service.py` | دردشة AI | **دمج** مع المجلس |
+| `ai-engine/app/services/task_service.py` | مهام AI | **دمج** |
+| `ai-engine/app/services/analysis_service.py` | تحليل AI | **دمج** |
+| `ai-engine/app/models/llm.py` | نموذج لغوي | **دمج** مع النموذج الخاص |
+| `ai-engine/app/models/embeddings.py` | تمثيلات نصية | **دمج** |
+| `ai-engine/app/routes/chat.py` | API دردشة | **دمج** |
+| `ai-engine/app/routes/tasks.py` | API مهام | **دمج** |
+| `ai-engine/app/routes/analysis.py` | API تحليل | **دمج** |
+
+## 12.3 🖥️ frontend — 111 ملف JSX (45 صفحة!)
+### صفحات مهمة مو موجودة بـ v8:
+| الصفحة | الوظيفة |
+|--------|---------|
+| `SalesPage` | مبيعات |
+| `InvoiceWorkspace` + `NewInvoicePage` + `WaitingInvoicesPage` | فواتير |
+| `ReturnsPage` + `DamagedInvoicePage` + `ConsumedInvoicePage` | مرتجعات |
+| `DeliveryPage` | توصيل |
+| `CashboxPage` | صندوق |
+| `PayrollPage` | رواتب |
+| `GoalsPage` + (Leaderboard + Badges + RewardsShop) | أهداف ومكافآت |
+| `WarrantyPage` | ضمانات |
+| `QuotePage` | عروض أسعار |
+| `SuppliersPage` | موردين |
+| `FixedAssetsPage` | أصول ثابتة |
+| `CalculatorPage` | حاسبة |
+| `ApprovalsPage` | موافقات |
+| `BotDashboard` | لوحة البوت |
+| `ExecutiveDashboardPage` + `RepDashboardPage` | لوحات تنفيذية |
+| `CustomerStatementPage` | كشف حساب عميل |
+| `AIDistributionPage` + `AIChatsPage` | توزيع AI + محادثات AI |
+| `SharesPage` | حصص |
+| `DepartmentsPage` | أقسام |
+| `CurrencySettingsPage` | إعدادات عملة |
+
+### مكونات مهمة:
+- `ChatWidget + ChatWindow + ChatInput + ChatMessage` — AI chat
+- `CheckInOutWidget + AttendanceCalendar + AttendanceReport` — حضور
+- `InvoicePrintTemplate + SerialSticker + VoucherPrintTemplate` — طباعة
+- `BadgesGrid + Leaderboard + RewardsShop + PointsCard` — مكافآت
+- `NotificationBell + NotificationToast` — إشعارات real-time
+- `SocketContext` — WebSocket اتصال مباشر
+- `InventoryForms + InspectionForm` — مخزون
+
+## 12.4 ⚙️ backend — 45 route + 20+ service!
+### كل الـ Routes الموجودة:
+accounting, ai, ai-distribution, alerts, analytics, approval, attendance, audit, auth, backup, bot, calculator, cameras, cashbox, companies, currency, customers, dashboard, delivery, device, external, fixed-assets, goals, hr, inventory, invoice, media, notifications, permissions, print, products, reports, returns, sales, security, settings, shares, suppliers, task, training, unit, user, warranty
+
+### Services المهمة:
+warranty-claims, delivery, scheduler, pricing, customer, returns, print, accounting, goals, audit, onboarding, invoice, warranty, product, voucher, quote, damaged, alert, unit
+
+## 12.5 📱 mobile — تطبيق موبايل كامل (React Native/Expo)
+| ملف | الوظيفة |
+|-----|---------|
+| `ScanScreen.js` | ماسح باركود |
+| `TasksScreen.js` + `TaskDetailsScreen.js` | مهام |
+| `ChatScreen.js` | دردشة AI |
+| `AttendanceScreen.js` | حضور وانصراف |
+| `NotificationsScreen.js` | إشعارات |
+| `DeviceDetailsScreen.js` | تفاصيل جهاز |
+| `usePushNotifications.js` | إشعارات push |
+
+## 12.6 🐳 Docker — بنية جاهزة!
+- PostgreSQL 16 + Redis 7 + Backend + Frontend + AI-Engine + Camera-AI
+- `docker-compose.yml` + `docker-compose.prod.yml`
+
+## 12.7 📊 سكربتات مالية (18 ملف)
+- تحليل مبيعات + أرباح + مصروفات
+- **ربط Morabaa ERP** (import/export بيانات)
+- `migrate-morabaa.js` — استيراد بيانات من نظام مرابعة
+
+## 12.8 💡 أفكار مستقبلية (FUTURE-IDEAS.md)
+| الفكرة | الأولوية |
+|--------|----------|
+| **AI Sales Assistant** (مساعد مبيعات ذكي — يحلل احتياجات الزبون ويقترح) | عالية |
+| **3D Truck Loading** (تحميل شاحنات ثلاثي) | متوسطة |
+| **Customer Targeting Algorithm** | متوسطة |
+| **Voice Commands** | منخفضة |
+
+## 12.9 📑 وثائق (21 ملف!)
+API.md, AUDIT-COMMITTEE-REPORT.md, BACKUP-RESTORE.md, CEO-MANAGER-EVALUATION.md, DATABASE-POSTGRESQL.md, DEPLOYMENT-CHECKLIST.md, DEVELOPER-GUIDE.md, OPERATIONS-GUIDE.md, USER-GUIDE.md, + 12 وثيقة أخرى
+
+## 12.10 📐 تخطيط (15 ملف!)
+MASTER-PLAN.md, BI-ERP-COMPLETE-PLAN-V2.md, FEATURES-ANALYSIS.md, SECURITY-AND-AUDIT-SYSTEM.md, VERSION-COMPARISON-REPORT.md, + modules: BI-ERP.md, BI-STORE.md, CENTRAL-API.md, SAEED-ERP.md (نظام POS)
