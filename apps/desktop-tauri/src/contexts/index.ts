@@ -6,7 +6,6 @@
 
 // Language Context - سياق اللغة
 export {
-  LanguageContext,
   LanguageProvider,
   useLanguage,
   withLanguage,
@@ -17,10 +16,10 @@ export {
   type LanguageContextValue,
   type LanguageProviderProps,
 } from './LanguageContext';
+export { default as LanguageContext } from './LanguageContext';
 
 // Theme Context - سياق الثيم
 export {
-  ThemeContext,
   ThemeProvider,
   useTheme,
   withTheme,
@@ -35,3 +34,4 @@ export {
   type ThemeContextValue,
   type ThemeProviderProps,
 } from './ThemeContext';
+export { default as ThemeContext } from './ThemeContext';

@@ -11,6 +11,7 @@ pub struct CrdtEngine {
     vector_clocks: HashMap<String, VectorClock>,
 }
 
+#[allow(dead_code)]
 impl CrdtEngine {
     pub fn new() -> Self {
         Self {
@@ -138,7 +139,7 @@ impl CrdtEngine {
                     result.push(*r);
                 }
                 // Both changed differently - conflict
-                (Some(l), Some(r), Some(b)) => {
+                (Some(l), Some(r), Some(_b)) => {
                     conflicts += 1;
                     result.push("<<<<<<< local");
                     result.push(*l);
@@ -188,7 +189,6 @@ impl CrdtEngine {
 
     fn extract_version(&self, content: &str, version: &str) -> String {
         let marker_start = format!("<<<<<<< {}", version);
-        let marker_end = ">>>>>>> remote";
         let marker_sep = "=======";
 
         let mut result = Vec::new();
@@ -211,13 +211,46 @@ impl CrdtEngine {
 
         result.join("\n")
     }
+
+    /// Detect conflicts between two sets of operations
+    pub fn detect_conflicts(
+        &self,
+        stored: &[FileOperation],
+        new_ops: &[FileOperation],
+    ) -> Vec<bi_ide_protocol::sync::SyncConflict> {
+        use bi_ide_protocol::sync::{SyncConflict, ConflictResolution};
+        
+        let mut conflicts = Vec::new();
+        
+        // Check for conflicts - same file modified in both sets
+        for new_op in new_ops {
+            for stored_op in stored {
+                if new_op.file_path == stored_op.file_path 
+                    && new_op.op_id != stored_op.op_id {
+                    // Potential conflict detected
+                    conflicts.push(SyncConflict {
+                        file_path: new_op.file_path.clone(),
+                        local_op: stored_op.clone(),
+                        remote_op: new_op.clone(),
+                        resolution: ConflictResolution::MergeRequired { 
+                        algorithm: "three_way".to_string() 
+                    },
+                    });
+                }
+            }
+        }
+        
+        conflicts
+    }
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum MergeError {
     Conflicts(String),
 }
 
+#[allow(dead_code)]
 pub enum ConflictResolution {
     UseLocal,
     UseRemote,

@@ -4,8 +4,8 @@
  */
 
 import { useState, useEffect } from "react";
-import { 
-  Folder, 
+import {
+  Folder,
   FolderOpen,
   Plus,
   Clock,
@@ -23,7 +23,7 @@ import {
   History,
   Check,
   X,
-  Template,
+  FileCode,
   Code2,
   Layout,
   Box,
@@ -56,49 +56,49 @@ interface ProjectTemplate {
 
 // القوالب المتاحة
 const templates: ProjectTemplate[] = [
-  { 
-    id: "react-ts", 
-    name: "React + TypeScript", 
+  {
+    id: "react-ts",
+    name: "React + TypeScript",
     description: "تطبيق React حديث مع TypeScript و Tailwind",
     icon: Code2,
     color: "#61dafb",
     tags: ["React", "TypeScript", "Vite"]
   },
-  { 
-    id: "next-app", 
-    name: "Next.js App", 
+  {
+    id: "next-app",
+    name: "Next.js App",
     description: "تطبيق Next.js مع App Router",
     icon: Layout,
     color: "#000000",
     tags: ["Next.js", "React", "SSR"]
   },
-  { 
-    id: "node-api", 
-    name: "Node.js API", 
+  {
+    id: "node-api",
+    name: "Node.js API",
     description: "واجهة برمجة Node.js مع Express",
     icon: Box,
     color: "#339933",
     tags: ["Node.js", "Express", "API"]
   },
-  { 
-    id: "tauri-app", 
-    name: "Tauri Desktop", 
+  {
+    id: "tauri-app",
+    name: "Tauri Desktop",
     description: "تطبيق سطح مكتب باستخدام Tauri",
     icon: Box,
     color: "#24c8db",
     tags: ["Tauri", "Rust", "Desktop"]
   },
-  { 
-    id: "python-ml", 
-    name: "Python ML", 
+  {
+    id: "python-ml",
+    name: "Python ML",
     description: "مشروع تعلم آلي مع Python",
     icon: Sparkles,
     color: "#3776ab",
     tags: ["Python", "ML", "PyTorch"]
   },
-  { 
-    id: "rust-cli", 
-    name: "Rust CLI", 
+  {
+    id: "rust-cli",
+    name: "Rust CLI",
     description: "أداة سطر أوامر باستخدام Rust",
     icon: Code2,
     color: "#dea584",
@@ -172,13 +172,13 @@ const defaultProjects: Project[] = [
 ];
 
 // مكون بطاقة المشروع
-function ProjectCard({ 
-  project, 
+function ProjectCard({
+  project,
   viewMode,
   onOpen,
   onToggleStar,
   onDelete
-}: { 
+}: {
   project: Project;
   viewMode: "grid" | "list";
   onOpen: (project: Project) => void;
@@ -215,12 +215,12 @@ function ProjectCard({
 
   if (viewMode === "list") {
     return (
-      <div 
+      <div
         onClick={() => onOpen(project)}
         className="group flex items-center gap-4 p-3 bg-dark-800 hover:bg-dark-700 rounded-lg cursor-pointer transition-colors"
       >
         <div className="text-2xl">{typeIcons[project.type]}</div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-medium text-dark-100 truncate">{project.name}</span>
@@ -249,9 +249,8 @@ function ProjectCard({
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={(e) => { e.stopPropagation(); onToggleStar(project); }}
-            className={`p-1.5 rounded hover:bg-dark-600 transition-colors ${
-              project.isStarred ? "text-yellow-400" : "text-dark-400"
-            }`}
+            className={`p-1.5 rounded hover:bg-dark-600 transition-colors ${project.isStarred ? "text-yellow-400" : "text-dark-400"
+              }`}
           >
             <Star className={`w-4 h-4 ${project.isStarred ? "fill-current" : ""}`} />
           </button>
@@ -267,7 +266,7 @@ function ProjectCard({
   }
 
   return (
-    <div 
+    <div
       onClick={() => onOpen(project)}
       className="group bg-dark-800 hover:bg-dark-700 rounded-xl p-4 cursor-pointer transition-all hover:shadow-lg"
     >
@@ -276,9 +275,8 @@ function ProjectCard({
         <div className="flex items-center gap-1">
           <button
             onClick={(e) => { e.stopPropagation(); onToggleStar(project); }}
-            className={`p-1.5 rounded hover:bg-dark-600 transition-colors ${
-              project.isStarred ? "text-yellow-400" : "text-dark-400"
-            }`}
+            className={`p-1.5 rounded hover:bg-dark-600 transition-colors ${project.isStarred ? "text-yellow-400" : "text-dark-400"
+              }`}
           >
             <Star className={`w-4 h-4 ${project.isStarred ? "fill-current" : ""}`} />
           </button>
@@ -322,10 +320,10 @@ function ProjectCard({
 }
 
 // مكون بطاقة القالب
-function TemplateCard({ 
-  template, 
-  onSelect 
-}: { 
+function TemplateCard({
+  template,
+  onSelect
+}: {
   template: ProjectTemplate;
   onSelect: (template: ProjectTemplate) => void;
 }) {
@@ -334,7 +332,7 @@ function TemplateCard({
       onClick={() => onSelect(template)}
       className="group text-left bg-dark-800 hover:bg-dark-700 border border-dark-700 hover:border-primary-500/50 rounded-xl p-5 transition-all"
     >
-      <div 
+      <div
         className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110"
         style={{ backgroundColor: `${template.color}20` }}
       >
@@ -346,7 +344,7 @@ function TemplateCard({
 
       <div className="flex flex-wrap gap-1.5">
         {template.tags.map(tag => (
-          <span 
+          <span
             key={tag}
             className="text-xs px-2 py-0.5 bg-dark-900 text-dark-400 rounded"
           >
@@ -359,11 +357,11 @@ function TemplateCard({
 }
 
 // مكون إنشاء مشروع جديد
-function CreateProjectModal({ 
-  isOpen, 
+function CreateProjectModal({
+  isOpen,
   onClose,
   onCreate
-}: { 
+}: {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (name: string, template: ProjectTemplate | null) => void;
@@ -391,7 +389,7 @@ function CreateProjectModal({
           <h2 className="text-lg font-semibold text-dark-100">
             {step === "template" ? "اختر قالب" : "إنشاء مشروع جديد"}
           </h2>
-          <button 
+          <button
             onClick={onClose}
             className="p-2 text-dark-400 hover:text-dark-200 hover:bg-dark-700 rounded-lg transition-colors"
           >
@@ -410,7 +408,7 @@ function CreateProjectModal({
                 <Plus className="w-8 h-8 text-dark-400 mb-3 group-hover:text-primary-400 transition-colors" />
                 <span className="text-dark-300 group-hover:text-dark-100">بدون قالب</span>
               </button>
-              
+
               {templates.map(template => (
                 <TemplateCard
                   key={template.id}
@@ -423,7 +421,7 @@ function CreateProjectModal({
             <div className="space-y-4">
               {selectedTemplate && (
                 <div className="flex items-center gap-3 p-3 bg-dark-900 rounded-lg">
-                  <div 
+                  <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center"
                     style={{ backgroundColor: `${selectedTemplate.color}20` }}
                   >
@@ -473,21 +471,21 @@ function CreateProjectModal({
         {/* أزرار التنقل */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-dark-700 bg-dark-800/50">
           {step === "template" ? (
-            <button 
+            <button
               onClick={onClose}
               className="px-4 py-2 text-dark-300 hover:text-dark-100 transition-colors"
             >
               إلغاء
             </button>
           ) : (
-            <button 
+            <button
               onClick={() => setStep("template")}
               className="px-4 py-2 text-dark-300 hover:text-dark-100 transition-colors"
             >
               رجوع
             </button>
           )}
-          
+
           {step === "details" && (
             <button
               onClick={handleCreate}
@@ -517,7 +515,7 @@ export function ProjectManager() {
     if (searchQuery && !project.name.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
-    
+
     // الفلتر
     switch (filter) {
       case "starred":
@@ -541,7 +539,7 @@ export function ProjectManager() {
 
   // تبديل المفضلة
   const handleToggleStar = (project: Project) => {
-    setProjects(prev => prev.map(p => 
+    setProjects(prev => prev.map(p =>
       p.id === project.id ? { ...p, isStarred: !p.isStarred } : p
     ));
   };
@@ -561,9 +559,9 @@ export function ProjectManager() {
       path: `/Users/bi/projects/${name.toLowerCase().replace(/\s+/g, '-')}`,
       lastOpened: new Date(),
       isStarred: false,
-      type: template?.id.includes("react") ? "react" : 
-            template?.id.includes("node") ? "node" :
-            template?.id.includes("python") ? "python" :
+      type: template?.id.includes("react") ? "react" :
+        template?.id.includes("node") ? "node" :
+          template?.id.includes("python") ? "python" :
             template?.id.includes("rust") ? "rust" : "other",
       size: 0,
       filesCount: 0,
@@ -579,7 +577,7 @@ export function ProjectManager() {
           <h1 className="text-xl font-bold text-dark-100">مدير المشاريع</h1>
           <p className="text-sm text-dark-400">إدارة مشاريعك وقوالبك</p>
         </div>
-        
+
         <button
           onClick={() => setIsCreateModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 rounded-lg text-white font-medium transition-colors"
@@ -600,11 +598,10 @@ export function ProjectManager() {
             <button
               key={f.id}
               onClick={() => setFilter(f.id as typeof filter)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                filter === f.id
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${filter === f.id
                   ? "bg-primary-600 text-white"
                   : "text-dark-400 hover:text-dark-200 hover:bg-dark-800"
-              }`}
+                }`}
             >
               <f.icon className="w-4 h-4" />
               {f.label}
@@ -629,17 +626,15 @@ export function ProjectManager() {
           <div className="flex items-center bg-dark-800 rounded-lg p-1">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded transition-colors ${
-                viewMode === "grid" ? "bg-dark-700 text-dark-100" : "text-dark-400 hover:text-dark-200"
-              }`}
+              className={`p-1.5 rounded transition-colors ${viewMode === "grid" ? "bg-dark-700 text-dark-100" : "text-dark-400 hover:text-dark-200"
+                }`}
             >
               <Grid3X3 className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded transition-colors ${
-                viewMode === "list" ? "bg-dark-700 text-dark-100" : "text-dark-400 hover:text-dark-200"
-              }`}
+              className={`p-1.5 rounded transition-colors ${viewMode === "list" ? "bg-dark-700 text-dark-100" : "text-dark-400 hover:text-dark-200"
+                }`}
             >
               <List className="w-4 h-4" />
             </button>
@@ -650,7 +645,7 @@ export function ProjectManager() {
       {/* قائمة المشاريع */}
       <div className="flex-1 overflow-y-auto p-6">
         {filteredProjects.length > 0 ? (
-          <div className={viewMode === "grid" 
+          <div className={viewMode === "grid"
             ? "grid grid-cols-3 xl:grid-cols-4 gap-4"
             : "space-y-2"
           }>

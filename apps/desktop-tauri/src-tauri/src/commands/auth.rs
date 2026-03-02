@@ -6,6 +6,7 @@ use tracing::info;
 use crate::state::AppState;
 
 #[derive(Debug, Serialize)]
+#[allow(dead_code)]
 pub struct DeviceInfo {
     pub device_id: String,
     pub is_registered: bool,

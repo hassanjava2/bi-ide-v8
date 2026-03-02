@@ -85,6 +85,21 @@ fn main() {
             commands::sync::force_sync,
             commands::sync::get_pending_operations,
             
+            // Search operations
+            commands::search::search_workspace,
+            commands::search::replace_in_file,
+            commands::search::replace_all,
+            
+            // Worker operations
+            commands::workers::get_workers,
+            commands::workers::apply_worker_policy,
+            commands::workers::register_worker,
+            commands::workers::send_worker_heartbeat,
+
+            // Update operations
+            commands::updates::check_for_updates,
+            commands::updates::report_update_status,
+            
             // Workspace operations
             commands::workspace::open_workspace,
             commands::workspace::close_workspace,
@@ -158,7 +173,7 @@ fn setup_app(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn setup_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let tray_icon = TrayIconBuilder::new()
+    let _tray_icon = TrayIconBuilder::new()
         .icon(app.default_window_icon().unwrap().clone())
         .tooltip("BI-IDE Desktop")
         .on_tray_icon_event(|tray, event| {

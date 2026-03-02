@@ -2,6 +2,7 @@
 export { FileExplorer } from './FileExplorer'
 export { CodeEditor } from './CodeEditor'
 export { TerminalPanel } from './TerminalPanel'
+export { XTermTerminal, useTerminalOutput } from './XTermTerminal'
 export { GitPanel } from './GitPanel'
 export { DebugPanel } from './DebugPanel'
 export { DiagnosticsPanel, RefactorPanel, TestsPanel, DocsPanel } from './DiagnosticsPanel'

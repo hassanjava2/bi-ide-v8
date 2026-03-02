@@ -1,4 +1,6 @@
 //! Git operations wrapper
+#![allow(dead_code)]
+
 use anyhow::Result;
 use std::path::Path;
 use tokio::process::Command;

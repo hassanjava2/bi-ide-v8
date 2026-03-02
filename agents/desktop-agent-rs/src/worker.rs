@@ -3,7 +3,7 @@ use anyhow::Result;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
 use tokio::task::JoinHandle;
-use tracing::{info, error, debug};
+use tracing::{info, error};
 
 use crate::config::AgentConfig;
 use crate::fs::FileWatcher;
@@ -117,6 +117,7 @@ impl AgentWorker {
         info!("Shutdown complete");
     }
 
+    #[allow(dead_code)]
     pub async fn get_status(&self) -> AgentStatus {
         AgentStatus {
             config: self.config.clone(),
@@ -129,6 +130,7 @@ impl AgentWorker {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct AgentStatus {
     pub config: AgentConfig,
     pub file_watcher_active: bool,

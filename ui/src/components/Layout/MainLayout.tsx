@@ -16,7 +16,7 @@ import {
   Search,
   Home
 } from 'lucide-react';
-// Button component imported but not used in this file
+import { UpdateNotifier } from '../UpdateNotifier';
 
 interface MainLayoutProps {
   children?: React.ReactNode;
@@ -254,6 +254,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
             {children || <Outlet />}
           </div>
         </main>
+
+        {/* Update Notifications */}
+        <UpdateNotifier />
       </div>
     </div>
   );

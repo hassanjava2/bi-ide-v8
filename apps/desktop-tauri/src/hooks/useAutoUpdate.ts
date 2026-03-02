@@ -6,9 +6,73 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { checkUpdate, installUpdate, onUpdaterEvent } from '@tauri-apps/api/updater';
-import { relaunch } from '@tauri-apps/api/process';
+import { invoke } from '@tauri-apps/api/core';
+import { open } from '@tauri-apps/plugin-shell';
 
+type CheckUpdateResult = {
+  shouldUpdate: boolean;
+  manifest?: {
+    version: string;
+    date?: string;
+    body?: string;
+    release_notes?: string;
+    critical?: boolean;
+    size_mb?: number;
+    download_url?: string;
+  };
+};
+
+async function getCurrentVersion(): Promise<string> {
+  try {
+    const { getVersion } = await import('@tauri-apps/api/app');
+    return await getVersion();
+  } catch {
+    return '0.1.0';
+  }
+}
+
+async function checkUpdate(): Promise<CheckUpdateResult> {
+  try {
+    const currentVersion = await getCurrentVersion();
+    const result = await invoke<{ has_update: boolean; manifest?: any }>('check_for_updates', {
+      request: {
+        current_version: currentVersion,
+        channel: 'stable',
+      },
+    });
+
+    return {
+      shouldUpdate: result.has_update,
+      manifest: result.manifest
+        ? {
+            version: result.manifest.version,
+            body: result.manifest.release_notes,
+            release_notes: result.manifest.release_notes,
+            critical: result.manifest.critical,
+            size_mb: result.manifest.size_mb,
+            download_url: result.manifest.download_url,
+          }
+        : undefined,
+    };
+  } catch (error) {
+    console.error('checkUpdate failed:', error);
+    return { shouldUpdate: false };
+  }
+}
+
+async function installUpdate(downloadUrl?: string): Promise<void> {
+  if (!downloadUrl) {
+    throw new Error('No download URL available for update');
+  }
+  await open(downloadUrl);
+}
+
+async function relaunch(): Promise<void> {
+  try {
+    const { exit } = await import('@tauri-apps/plugin-process');
+    await exit(0);
+  } catch { }
+}
 /** حالة التحديث */
 export type UpdateStatus = 'idle' | 'checking' | 'available' | 'downloading' | 'ready' | 'error';
 
@@ -18,6 +82,7 @@ export interface UpdateInfo {
   date: string;
   body: string;
   notes?: string;
+  downloadUrl?: string;
 }
 
 /** تقدم التنزيل */
@@ -79,9 +144,9 @@ export function useAutoUpdate(options: AutoUpdateOptions = {}): UseAutoUpdateRes
   const [progress, setProgress] = useState<DownloadProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [skipped, setSkipped] = useState<string | null>(skippedVersion);
-  
+
   const abortControllerRef = useRef<AbortController | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   /**
    * فحص وجود تحديثات جديدة
@@ -105,6 +170,7 @@ export function useAutoUpdate(options: AutoUpdateOptions = {}): UseAutoUpdateRes
           date: manifest.date || new Date().toISOString(),
           body: manifest.body || '',
           notes: manifest.body,
+          downloadUrl: manifest.download_url,
         });
         setStatus('available');
 
@@ -135,31 +201,25 @@ export function useAutoUpdate(options: AutoUpdateOptions = {}): UseAutoUpdateRes
       abortControllerRef.current = new AbortController();
 
       // الاستماع لأحداث التقدم
-      const unlisten = await onUpdaterEvent((event) => {
-        if (event.error) {
-          setError(event.error);
-          setStatus('error');
-          return;
-        }
+      setProgress({ downloaded: 0, total: 100, percentage: 10 });
 
-        if (event.status === 'DONE') {
-          setStatus('ready');
-          setProgress(null);
-        } else if (event.status === 'PENDING' && event.data) {
-          const { downloaded, total } = event.data;
-          setProgress({
-            downloaded,
-            total,
-            percentage: total > 0 ? Math.round((downloaded / total) * 100) : 0,
-          });
-        }
-      });
+      // بدء تنزيل التحديث (فتح رابط التحميل الرسمي)
+      await installUpdate(updateInfo?.downloadUrl);
 
-      // بدء التنزيل
-      await installUpdate();
+      if (updateInfo?.version) {
+        await invoke('report_update_status', {
+          request: {
+            version_from: await getCurrentVersion(),
+            version_to: updateInfo.version,
+            status: 'downloaded',
+            error_message: null,
+          },
+        });
+      }
 
-      // تنظيف
-      unlisten();
+      setProgress({ downloaded: 100, total: 100, percentage: 100 });
+      setStatus('ready');
+      setProgress(null);
     } catch (err) {
       if (abortControllerRef.current?.signal.aborted) {
         setStatus('available');
@@ -169,19 +229,29 @@ export function useAutoUpdate(options: AutoUpdateOptions = {}): UseAutoUpdateRes
       }
       setProgress(null);
     }
-  }, [status]);
+  }, [status, updateInfo]);
 
   /**
    * تثبيت التحديث وإعادة التشغيل
    */
   const installAndRelaunch = useCallback(async () => {
     try {
+      if (updateInfo?.version) {
+        await invoke('report_update_status', {
+          request: {
+            version_from: await getCurrentVersion(),
+            version_to: updateInfo.version,
+            status: 'success',
+            error_message: null,
+          },
+        });
+      }
       await relaunch();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'فشل تثبيت التحديث');
       setStatus('error');
     }
-  }, []);
+  }, [updateInfo]);
 
   /**
    * تخطي هذا الإصدار

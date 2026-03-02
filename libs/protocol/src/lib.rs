@@ -2,6 +2,7 @@
 //! Shared contracts between desktop, sync service, and control plane
 
 pub mod auth;
+pub mod contracts;
 pub mod sync;
 pub mod telemetry;
 pub mod training;

@@ -8,6 +8,7 @@ use tracing::{info, debug};
 
 use crate::config::TelemetryConfig;
 
+#[allow(dead_code)]
 pub struct TelemetryCollector {
     config: TelemetryConfig,
     buffer: Arc<RwLock<VecDeque<TelemetryRecord>>>,
@@ -44,6 +45,7 @@ impl TelemetryCollector {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn record(&self, event: TelemetryEvent, workspace_id: String) {
         if !self.config.enabled {
             return;
@@ -75,6 +77,7 @@ impl TelemetryCollector {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn buffered_count(&self) -> usize {
         self.buffer.read().await.len()
     }
@@ -104,6 +107,7 @@ impl TelemetryCollector {
         Ok(())
     }
 
+    #[allow(dead_code)]
     fn determine_privacy_level(&self, event: &TelemetryEvent) -> PrivacyLevel {
         match event {
             TelemetryEvent::Performance { .. } => PrivacyLevel::Public,
@@ -115,6 +119,7 @@ impl TelemetryCollector {
         }
     }
 
+    #[allow(dead_code)]
     fn should_collect(&self, level: &PrivacyLevel) -> bool {
         let config_level = match self.config.privacy_level.as_str() {
             "public" => PrivacyLevel::Public,

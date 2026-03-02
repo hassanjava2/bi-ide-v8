@@ -125,6 +125,7 @@ impl IpcClient {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn claim_job(&self) -> Result<Option<serde_json::Value>> {
         let token = self.token.read().clone();
         let device_id = self.device_id.read().clone();
@@ -149,6 +150,7 @@ impl IpcClient {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn update_job_status(&self, job_id: &str, status: &str, logs: Option<&str>) -> Result<()> {
         let token = self.token.read().clone();
 
@@ -176,6 +178,7 @@ impl IpcClient {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn is_connected(&self) -> bool {
         self.connected.load(Ordering::SeqCst)
     }

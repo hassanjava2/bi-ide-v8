@@ -32,6 +32,8 @@ git2 = { version = "0.18", features = ["vendored-openssl"] }  # Git operations
 which = "6"  # Find executables
 dirs = "5"  # Standard directories
 sysinfo = "0.30"
+hostname = "0.4"
+num_cpus = "1"
 lazy_static = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
@@ -45,6 +47,10 @@ base64 = "0.22"
 
 # HTTP client for sync
 reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+
+# Regex for search/replace
+regex = "1"
+urlencoding = "2"
 
 [features]
 default = ["custom-protocol"]

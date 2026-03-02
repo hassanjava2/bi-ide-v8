@@ -118,10 +118,17 @@ async fn handle_sync(
     // Broadcast new operations to other connected clients
     broadcast_operations(&state, &request.workspace_id, &new_ops).await;
 
+    // Detect conflicts between stored and new operations
+    let conflicts = state
+        .crdt_engine
+        .read()
+        .await
+        .detect_conflicts(&stored_ops, &new_ops);
+
     Ok(Json(SyncResponse {
         server_vector_clock,
         operations: stored_ops,
-        conflicts: vec![], // TODO: Handle conflicts
+        conflicts,
     }))
 }
 
@@ -147,14 +154,24 @@ async fn get_snapshot(
     Ok(Json(serde_json::json!(snapshot)))
 }
 
-/// Broadcast operations to connected clients
+/// Broadcast operations to connected clients via WebSocket
 async fn broadcast_operations(state: &AppState, workspace_id: &str, ops: &[FileOperation]) {
+    use axum::extract::ws::Message;
+    
     let connections = state.connections.read().await;
     
     if let Some(conns) = connections.get(workspace_id) {
         for conn in conns {
-            // Send operation to client
-            // TODO: Implement actual send
+            for op in ops {
+                let msg = serde_json::json!({
+                    "type": "operation",
+                    "operation": op
+                });
+                
+                if let Ok(text) = serde_json::to_string(&msg) {
+                    let _ = conn.sender.send(Message::Text(text));
+                }
+            }
         }
     }
 }

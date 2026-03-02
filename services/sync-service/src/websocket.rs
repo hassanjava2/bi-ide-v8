@@ -10,6 +10,7 @@ use crate::AppState;
 use bi_ide_protocol::sync::{SyncRequest, FileOperation};
 
 /// Connection handle
+#[allow(dead_code)]
 pub struct Connection {
     pub id: String,
     pub device_id: String,
@@ -23,13 +24,15 @@ pub async fn handle_socket(socket: WebSocket, state: Arc<AppState>) {
     let (tx, mut rx) = mpsc::unbounded_channel::<Message>();
 
     let conn_id = Uuid::new_v4().to_string();
+    #[allow(unused_assignments)]
     let mut device_id = String::new();
+    #[allow(unused_assignments)]
     let mut workspace_id = String::new();
 
     info!("WebSocket connected: {}", conn_id);
 
     // Spawn task to forward messages from channel to WebSocket
-    let mut send_task = tokio::spawn(async move {
+    let send_task = tokio::spawn(async move {
         while let Some(msg) = rx.recv().await {
             if sender.send(msg).await.is_err() {
                 break;

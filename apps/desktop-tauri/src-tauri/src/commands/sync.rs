@@ -41,7 +41,8 @@ pub async fn get_sync_status(
 ) -> Result<SyncStatus, String> {
     let enabled = *state.sync_manager.enabled.read().unwrap();
     let server_url = state.sync_manager.server_url.read().unwrap().clone();
-    let pending = state.sync_manager.pending_ops.read().unwrap();
+    let pending_count = state.sync_manager.pending_ops.read().unwrap().len();
+    let token = state.auth.read().unwrap().access_token.clone();
 
     // Get last sync from workspaces
     let last_sync = state.workspaces.read().unwrap()
@@ -49,13 +50,29 @@ pub async fn get_sync_status(
         .map(|w| w.last_sync)
         .max();
 
+    let is_connected = if enabled {
+        let client = reqwest::Client::new();
+        let url = format!("{}/api/v1/sync/status", server_url);
+        let mut req = client.get(url);
+        if let Some(token) = token {
+            req = req.header("Authorization", format!("Bearer {}", token));
+        }
+
+        match req.send().await {
+            Ok(response) => response.status().is_success(),
+            Err(_) => false,
+        }
+    } else {
+        false
+    };
+
     Ok(SyncStatus {
         enabled,
         server_url,
-        is_connected: enabled, // TODO: Actually check connection
+        is_connected,
         last_sync,
-        pending_count: pending.len(),
-        conflicts_count: 0, // TODO: Track conflicts
+        pending_count,
+        conflicts_count: 0,
     })
 }
 

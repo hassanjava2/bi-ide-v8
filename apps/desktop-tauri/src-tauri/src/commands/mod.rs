@@ -1,8 +1,11 @@
+pub mod auth;
 pub mod fs;
 pub mod git;
-pub mod terminal;
-pub mod system;
-pub mod auth;
+pub mod search;
 pub mod sync;
-pub mod workspace;
+pub mod system;
+pub mod terminal;
 pub mod training;
+pub mod updates;
+pub mod workers;
+pub mod workspace;

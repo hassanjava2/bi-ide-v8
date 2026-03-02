@@ -7,14 +7,15 @@ use tracing::{info, error};
 use uuid::Uuid;
 
 use bi_ide_protocol::auth::{DeviceCapabilities, DeviceStatus};
-use bi_ide_protocol::sync::WorkspaceSnapshot;
 use bi_ide_protocol::VectorClock;
 
 /// Global application state
+#[allow(dead_code)]
 pub struct AppState {
     /// Unique device identifier
     pub device_id: String,
     /// Current device status
+    #[allow(dead_code)]
     pub device_status: RwLock<DeviceStatus>,
     /// Device capabilities
     pub capabilities: DeviceCapabilities,
@@ -27,10 +28,12 @@ pub struct AppState {
     /// Training manager
     pub training_manager: TrainingManager,
     /// File watcher handles
+    #[allow(dead_code)]
     pub file_watchers: RwLock<HashMap<String, FileWatcherState>>,
     /// Authentication state
     pub auth: RwLock<AuthState>,
     /// System resource usage
+    #[allow(dead_code)]
     pub resource_usage: RwLock<ResourceUsage>,
 }
 
@@ -60,8 +63,11 @@ pub struct TrainingMetrics {
     pub last_training_at: Option<u64>,
 }
 
+#[allow(dead_code)]
 pub struct FileWatcherState {
+    #[allow(dead_code)]
     pub path: PathBuf,
+    #[allow(dead_code)]
     pub workspace_id: String,
 }
 
@@ -71,9 +77,13 @@ pub struct AuthState {
     pub expires_at: Option<u64>,
 }
 
+#[allow(dead_code)]
 pub struct ResourceUsage {
+    #[allow(dead_code)]
     pub cpu_percent: f32,
+    #[allow(dead_code)]
     pub memory_percent: f32,
+    #[allow(dead_code)]
     pub disk_percent: f32,
 }
 
@@ -235,7 +245,7 @@ impl AppState {
     }
 
     fn spawn_background_tasks(&self, app_handle: AppHandle) {
-        let state_clone = self;
+        let _state_clone = self;
 
         // Resource monitoring task
         tauri::async_runtime::spawn({
@@ -288,7 +298,7 @@ impl AppState {
         Ok(())
     }
 
-    async fn send_heartbeat(app_handle: &AppHandle) -> anyhow::Result<()> {
+    async fn send_heartbeat(_app_handle: &AppHandle) -> anyhow::Result<()> {
         // Would send heartbeat to control plane
         // For now, just log it
         info!("Sending heartbeat");

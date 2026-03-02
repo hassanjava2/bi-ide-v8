@@ -180,6 +180,7 @@ impl SyncStore {
     }
 
     /// Store workspace snapshot
+    #[allow(dead_code)]
     pub async fn store_snapshot(
         &self,
         workspace_id: &str,
@@ -242,6 +243,7 @@ impl SyncStore {
     }
 
     /// Clean up old operations (keep last 30 days)
+    #[allow(dead_code)]
     pub async fn cleanup_old_operations(&self) -> anyhow::Result<u64> {
         let result = sqlx::query(
             r#"
@@ -257,9 +259,12 @@ impl SyncStore {
 }
 
 #[derive(sqlx::FromRow)]
+#[allow(dead_code)]
 struct OperationRow {
+    #[allow(dead_code)]
     id: i64,
     workspace_id: String,
+    #[allow(dead_code)]
     op_id: String,
     node_id: i64,
     vector_clock: String,
@@ -269,5 +274,6 @@ struct OperationRow {
     content_hash: Option<String>,
     content: Option<Vec<u8>>,
     metadata: Option<String>,
+    #[allow(dead_code)]
     created_at: chrono::NaiveDateTime,
 }

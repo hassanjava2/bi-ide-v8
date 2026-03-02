@@ -94,7 +94,7 @@ pub struct GitCloneRequest {
 
 #[tauri::command]
 pub async fn git_status(
-    state: State<'_, std::sync::Arc<AppState>>,
+    _state: State<'_, std::sync::Arc<AppState>>,
     request: GitStatusRequest,
 ) -> Result<GitStatus, String> {
     let path = PathBuf::from(&request.path);
@@ -169,7 +169,7 @@ pub async fn git_status(
 
 #[tauri::command]
 pub async fn git_add(
-    state: State<'_, std::sync::Arc<AppState>>,
+    _state: State<'_, std::sync::Arc<AppState>>,
     request: GitAddRequest,
 ) -> Result<(), String> {
     let path = PathBuf::from(&request.path);
@@ -205,7 +205,7 @@ pub async fn git_add(
 
 #[tauri::command]
 pub async fn git_commit(
-    state: State<'_, std::sync::Arc<AppState>>,
+    _state: State<'_, std::sync::Arc<AppState>>,
     request: GitCommitRequest,
 ) -> Result<String, String> {
     let path = PathBuf::from(&request.path);
@@ -253,7 +253,7 @@ pub async fn git_commit(
 
 #[tauri::command]
 pub async fn git_push(
-    state: State<'_, std::sync::Arc<AppState>>,
+    _state: State<'_, std::sync::Arc<AppState>>,
     request: GitPushRequest,
 ) -> Result<(), String> {
     // Note: git2 push requires callbacks for authentication
@@ -284,7 +284,7 @@ pub async fn git_push(
 
 #[tauri::command]
 pub async fn git_pull(
-    state: State<'_, std::sync::Arc<AppState>>,
+    _state: State<'_, std::sync::Arc<AppState>>,
     request: GitPullRequest,
 ) -> Result<String, String> {
     let path = request.path;
@@ -313,7 +313,7 @@ pub async fn git_pull(
 
 #[tauri::command]
 pub async fn git_log(
-    state: State<'_, std::sync::Arc<AppState>>,
+    _state: State<'_, std::sync::Arc<AppState>>,
     request: GitLogRequest,
 ) -> Result<Vec<GitCommit>, String> {
     let path = PathBuf::from(&request.path);
@@ -365,7 +365,7 @@ pub async fn git_log(
 
 #[tauri::command]
 pub async fn git_branches(
-    state: State<'_, std::sync::Arc<AppState>>,
+    _state: State<'_, std::sync::Arc<AppState>>,
     request: GitBranchesRequest,
 ) -> Result<Vec<GitBranch>, String> {
     let path = PathBuf::from(&request.path);
@@ -417,7 +417,7 @@ pub async fn git_branches(
 
 #[tauri::command]
 pub async fn git_checkout(
-    state: State<'_, std::sync::Arc<AppState>>,
+    _state: State<'_, std::sync::Arc<AppState>>,
     request: GitCheckoutRequest,
 ) -> Result<(), String> {
     let path = PathBuf::from(&request.path);
@@ -460,7 +460,7 @@ pub async fn git_checkout(
 
 #[tauri::command]
 pub async fn git_clone(
-    state: State<'_, std::sync::Arc<AppState>>,
+    _state: State<'_, std::sync::Arc<AppState>>,
     request: GitCloneRequest,
 ) -> Result<(), String> {
     let url = request.url;

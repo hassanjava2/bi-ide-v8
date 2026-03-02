@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 
 /** حالة Git */
@@ -154,10 +154,8 @@ export interface UseGitResult {
   push: (remote?: string, branch?: string, force?: boolean) => Promise<void>;
   /** سحب التغييرات */
   pull: (remote?: string, branch?: string, rebase?: boolean) => Promise<void>;
-  '''
-  /** إحضار التغييرات بدون دمج */
-  fetch: (remote?: string) => Promise<void>;
-  '''
+  // /** إحضار التغييرات بدون دمج */
+  // fetch: (remote?: string) => Promise<void>;
   /** تغيير الفرع */
   checkout: (branch: string, create?: boolean) => Promise<void>;
   /** إنشاء فرع جديد */
@@ -186,15 +184,13 @@ export interface UseGitResult {
   blame: (path: string) => Promise<BlameLine[]>;
   /** تخزين التغييرات */
   stash: (message?: string) => Promise<void>;
-  '''
-  /** استعادة التخزين */
-  stashPop: (index?: number) => Promise<void>;
-  /** إسقاط التخزين */
-  stashDrop: (index?: number) => Promise<void>;
-  /** قائمة التخزين */
-  stashList: () => Promise<StashInfo[]>;
-  '''
-  }
+  // /** استعادة التخزين */
+  // stashPop: (index?: number) => Promise<void>;
+  // /** إسقاط التخزين */
+  // stashDrop: (index?: number) => Promise<void>;
+  // /** قائمة التخزين */
+  // stashList: () => Promise<StashInfo[]>;
+}
 
 /** معلومات سطر اللوم */
 export interface BlameLine {
@@ -226,7 +222,7 @@ const DEFAULT_OPTIONS: Required<Omit<GitOptions, 'repoPath' | 'onStatusChange' |
  */
 export function useGit(options: GitOptions = {}): UseGitResult {
   const opts = { ...DEFAULT_OPTIONS, ...options };
-  
+
   const [isRepo, setIsRepo] = useState(false);
   const [repoStatus, setRepoStatus] = useState<GitRepoStatus>('uninitialized');
   const [currentBranch, setCurrentBranch] = useState('');
@@ -238,8 +234,8 @@ export function useGit(options: GitOptions = {}): UseGitResult {
   const [log, setLog] = useState<CommitInfo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
-  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const unlistenRef = useRef<(() => void) | null>(null);
 
   const repoPath = opts.repoPath || '.';
@@ -322,7 +318,7 @@ export function useGit(options: GitOptions = {}): UseGitResult {
 
       if (repo) {
         await updateStatus();
-        
+
         // تحديث الفروع
         const branchesList = await invoke<BranchInfo[]>('git_branches', { path: repoPath });
         setBranches(branchesList);
@@ -603,6 +599,63 @@ export function useGit(options: GitOptions = {}): UseGitResult {
     }
   }, [repoPath, status]);
 
+  /**
+   * إعادة قاعدة فرع
+   */
+  const rebase = useCallback(async (branch: string) => {
+    setIsLoading(true);
+    try {
+      await invoke('git_rebase', { path: repoPath, branch });
+      await status();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل إعادة القاعدة');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [repoPath, status]);
+
+  /**
+   * إضافة وسم
+   */
+  const tag = useCallback(async (name: string, message?: string, commitHash?: string) => {
+    setIsLoading(true);
+    try {
+      await invoke('git_tag', { path: repoPath, name, message, commitHash });
+      await status();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل إضافة الوسم');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [repoPath, status]);
+
+  /**
+   * إظهار اللوم
+   */
+  const blame = useCallback(async (path: string): Promise<BlameLine[]> => {
+    try {
+      return await invoke<BlameLine[]>('git_blame', { repoPath, filePath: path });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل إظهار اللوم');
+      return [];
+    }
+  }, [repoPath]);
+
+  /**
+   * تخزين التغييرات
+   */
+  const stash = useCallback(async (message?: string) => {
+    setIsLoading(true);
+    try {
+      await invoke('git_stash', { path: repoPath, message });
+      await updateStatus();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'فشل التخزين');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [repoPath, updateStatus]);
+
   // التحميل الأولي
   useEffect(() => {
     status();
@@ -667,10 +720,14 @@ export function useGit(options: GitOptions = {}): UseGitResult {
     createBranch,
     deleteBranch,
     merge,
+    rebase,
     discard,
     diff,
     diffBranches,
     getMergeConflicts,
+    tag,
+    blame,
+    stash,
     resolveConflict,
     abortMerge,
   };

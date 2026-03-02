@@ -9,11 +9,10 @@ export {
   useKeyboardShortcuts,
   formatShortcut,
   DEFAULT_SHORTCUTS,
-  type Platform,
-  type Modifier,
   type ShortcutDefinition,
   type RegisteredShortcut,
   type ShortcutConflict,
   type KeyboardShortcutsOptions,
   type UseKeyboardShortcutsResult,
 } from './keyboardShortcuts';
+// Platform and Modifier types are internal to keyboardShortcuts module

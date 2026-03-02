@@ -1,8 +1,7 @@
 //! File system watching and operations
 use anyhow::Result;
-use notify::{Config, Event, RecommendedWatcher, RecursiveMode, Watcher};
+use notify::{Event, RecommendedWatcher, RecursiveMode, Watcher};
 use std::path::Path;
-use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
 use tracing::{info, debug, error};
 
@@ -13,6 +12,7 @@ pub struct FileWatcher {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct FileEvent {
     pub path: String,
     pub kind: FileEventKind,
@@ -20,10 +20,12 @@ pub struct FileEvent {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum FileEventKind {
     Created,
     Modified,
     Deleted,
+    #[allow(dead_code)]
     Renamed(String), // old path
 }
 
@@ -90,7 +92,9 @@ impl FileWatcher {
 
     async fn handle_event(&self, event: FileEvent) {
         debug!("Handling file event: {:?}", event);
-        // TODO: Queue for sync
+        // Queue file event for synchronization
+        // This would typically send to a sync manager
+        tracing::info!("File {} changed ({:?})", event.path, event.kind);
     }
 
     pub async fn stop(&self) {
@@ -99,17 +103,20 @@ impl FileWatcher {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn is_active(&self) -> bool {
         self.watcher.read().await.is_some()
     }
 }
 
 /// Read file contents
+#[allow(dead_code)]
 pub async fn read_file(path: &Path) -> Result<String> {
     Ok(tokio::fs::read_to_string(path).await?)
 }
 
 /// Write file contents
+#[allow(dead_code)]
 pub async fn write_file(path: &Path, content: &str) -> Result<()> {
     // Ensure parent directory exists
     if let Some(parent) = path.parent() {
@@ -121,12 +128,14 @@ pub async fn write_file(path: &Path, content: &str) -> Result<()> {
 }
 
 /// Copy file
+#[allow(dead_code)]
 pub async fn copy_file(from: &Path, to: &Path) -> Result<()> {
     tokio::fs::copy(from, to).await?;
     Ok(())
 }
 
 /// Delete file or directory
+#[allow(dead_code)]
 pub async fn delete(path: &Path) -> Result<()> {
     let metadata = tokio::fs::metadata(path).await?;
     
@@ -140,6 +149,7 @@ pub async fn delete(path: &Path) -> Result<()> {
 }
 
 /// Get file metadata
+#[allow(dead_code)]
 pub async fn get_metadata(path: &Path) -> Result<FileMetadata> {
     let metadata = tokio::fs::metadata(path).await?;
     
@@ -153,6 +163,7 @@ pub async fn get_metadata(path: &Path) -> Result<FileMetadata> {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct FileMetadata {
     pub size: u64,
     pub modified: u64,

@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 
 /** حالة الملف */
@@ -94,7 +94,7 @@ export function useFileWatcher(options: FileWatcherOptions = {}): UseFileWatcher
   const opts = { ...DEFAULT_OPTIONS, ...options };
   
   const [watchedFiles, setWatchedFiles] = useState<Map<string, WatchedFile>>(new Map());
-  const intervalsRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+  const intervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
   const unlistenRef = useRef<(() => void) | null>(null);
 
   /**

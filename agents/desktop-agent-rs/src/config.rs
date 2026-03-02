@@ -127,6 +127,7 @@ impl AgentConfig {
         Ok(config)
     }
 
+    #[allow(dead_code)]
     pub async fn save(&self) -> Result<()> {
         let config_dir = dirs::config_dir()
             .unwrap_or_else(|| PathBuf::from("."))

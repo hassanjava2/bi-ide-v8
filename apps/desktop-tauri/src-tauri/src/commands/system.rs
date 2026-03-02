@@ -34,6 +34,7 @@ pub struct OpenPathRequest {
 pub struct ShowNotificationRequest {
     pub title: String,
     pub body: String,
+    #[allow(dead_code)]
     pub icon: Option<String>,
 }
 

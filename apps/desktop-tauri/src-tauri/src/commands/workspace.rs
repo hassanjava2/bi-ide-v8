@@ -6,7 +6,6 @@ use tracing::{info, error};
 
 use crate::state::{AppState, WorkspaceState};
 use bi_ide_protocol::VectorClock;
-use bi_ide_protocol::now_ms;
 
 #[derive(Debug, Serialize)]
 pub struct WorkspaceInfo {
@@ -61,7 +60,7 @@ pub async fn open_workspace(
     }
 
     let workspace_id = path.to_string_lossy().to_string();
-    let name = path.file_name()
+    let _name = path.file_name()
         .and_then(|n| n.to_str())
         .unwrap_or("workspace")
         .to_string();

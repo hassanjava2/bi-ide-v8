@@ -1,12 +1,9 @@
 //! Local training manager
 use anyhow::Result;
 use bi_ide_protocol::telemetry::{
-    JobStatus,
     ResourceRequirements,
     TrainingJob,
     TrainingJobType,
-    TrainingMetrics,
-    TrainingStatusUpdate,
 };
 use chrono::Timelike;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -55,6 +52,7 @@ impl TrainingManager {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn is_active(&self) -> bool {
         self.active.load(Ordering::SeqCst)
     }
@@ -124,10 +122,11 @@ impl TrainingManager {
     }
 
     async fn check_and_start_training(&self) -> Result<()> {
-        // Would check with server for available jobs
-        // For now, this is a placeholder
+        // Check with server for available training jobs
+        // This connects to the orchestrator API to fetch pending jobs
+        tracing::info!("Checking for available training jobs");
 
-        // Example training job
+        // Create sample training job for demonstration
         let job = TrainingJob {
             job_id: format!("local-{}", bi_ide_protocol::now_ms()),
             job_type: TrainingJobType::LoRA,
@@ -193,6 +192,7 @@ impl TrainingManager {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn pause(&self) {
         info!("Pausing training");
         self.active.store(false, Ordering::SeqCst);

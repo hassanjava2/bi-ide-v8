@@ -4,9 +4,9 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { 
-  Cpu, 
-  Thermometer, 
+import {
+  Cpu,
+  Thermometer,
   Fan,
   Activity,
   Clock,
@@ -38,14 +38,14 @@ interface GPUInfo {
 }
 
 // مكون الرسم البياني المباشر
-function RealTimeChart({ 
-  data, 
-  width = 600, 
+function RealTimeChart({
+  data,
+  width = 600,
   height = 150,
   color = "#0ea5e9",
   maxValue = 100,
   label
-}: { 
+}: {
   data: { value: number; timestamp: number }[];
   width?: number;
   height?: number;
@@ -205,7 +205,7 @@ function TemperatureGauge({ temperature }: { temperature: number }) {
 // شريط VRAM
 function VRAMBar({ used, total }: { used: number; total: number }) {
   const percentage = (used / total) * 100;
-  
+
   const getColor = (pct: number) => {
     if (pct < 50) return "bg-green-500";
     if (pct < 80) return "bg-yellow-500";
@@ -223,16 +223,16 @@ function VRAMBar({ used, total }: { used: number; total: number }) {
           {used.toFixed(1)} / {total} GB
         </span>
       </div>
-      
+
       <div className="relative h-8 bg-dark-900 rounded-lg overflow-hidden">
-        <div 
+        <div
           className={`h-full ${getColor(percentage)} transition-all duration-500 flex items-center justify-end pr-2`}
           style={{ width: `${percentage}%` }}
         >
           <span className="text-xs font-bold text-white">{percentage.toFixed(1)}%</span>
         </div>
       </div>
-      
+
       <div className="flex justify-between text-xs text-dark-500 mt-2">
         <span>0 GB</span>
         <span>{(total / 2).toFixed(0)} GB</span>
@@ -278,7 +278,7 @@ export function GPUMonitor() {
   // المقاييس الحية
   const [metrics, setMetrics] = useState<GPUMetric[]>([]);
   const maxDataPoints = 60;
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // إضافة قياس جديد
   const addMetric = useCallback(() => {
@@ -292,7 +292,7 @@ export function GPUMonitor() {
         powerDraw: 250 + Math.random() * 100,
         clockSpeed: 2000 + Math.random() * 500,
       };
-      
+
       const newMetrics = [...prev, newMetric];
       if (newMetrics.length > maxDataPoints) {
         return newMetrics.slice(newMetrics.length - maxDataPoints);
@@ -305,7 +305,7 @@ export function GPUMonitor() {
   useEffect(() => {
     intervalRef.current = setInterval(addMetric, 1000);
     addMetric(); // قياس أولي
-    
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -375,7 +375,7 @@ export function GPUMonitor() {
         {/* معلومات إضافية */}
         <div className="bg-dark-800 rounded-xl p-4 space-y-4">
           <h3 className="font-semibold text-dark-200 mb-3">معلومات GPU</h3>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-dark-400">
               <Zap className="w-4 h-4" />
@@ -385,7 +385,7 @@ export function GPUMonitor() {
               {currentMetric.powerDraw.toFixed(0)}W / 450W
             </span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-dark-400">
               <Clock className="w-4 h-4" />
@@ -395,7 +395,7 @@ export function GPUMonitor() {
               {currentMetric.clockSpeed.toFixed(0)} MHz
             </span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-dark-400">
               <Download className="w-4 h-4" />
@@ -405,7 +405,7 @@ export function GPUMonitor() {
               {(Math.random() * 50 + 20).toFixed(1)} GB/s
             </span>
           </div>
-          
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-dark-400">
               <Upload className="w-4 h-4" />
@@ -415,7 +415,7 @@ export function GPUMonitor() {
               {(Math.random() * 30 + 10).toFixed(1)} GB/s
             </span>
           </div>
-          
+
           <div className="pt-3 border-t border-dark-700">
             <div className="text-xs text-dark-500 mb-1">الهيكل المعماري</div>
             <div className="text-sm font-medium text-dark-300">{gpuInfo.architecture}</div>
@@ -432,7 +432,7 @@ export function GPUMonitor() {
             label="استخدام GPU"
           />
         </div>
-        
+
         <div className="bg-dark-800 rounded-lg p-4 flex flex-col">
           <RealTimeChart
             data={vramData}
@@ -441,7 +441,7 @@ export function GPUMonitor() {
             label="استخدام VRAM %"
           />
         </div>
-        
+
         <div className="bg-dark-800 rounded-lg p-4 flex flex-col">
           <RealTimeChart
             data={powerData}

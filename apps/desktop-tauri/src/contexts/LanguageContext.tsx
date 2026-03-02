@@ -345,8 +345,8 @@ export function LanguageProvider({
    * تبديل اللغة
    */
   const toggleLanguage = useCallback(() => {
-    setLanguage(prev => {
-      const newLang = prev === 'ar' ? 'en' : 'ar';
+    setLanguageState((prev: Language) => {
+      const newLang: Language = prev === 'ar' ? 'en' : 'ar';
       localStorage.setItem(storageKey, newLang);
       return newLang;
     });

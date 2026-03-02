@@ -5,7 +5,7 @@ use std::process::Stdio;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use tauri::State;
-use tokio::io::{AsyncWriteExt, BufReader};
+use tokio::io::{AsyncReadExt, AsyncWriteExt, BufReader};
 use tokio::process::{Child, Command};
 use tokio::sync::Mutex;
 use tracing::{info, error};
@@ -51,6 +51,7 @@ pub struct SpawnProcessRequest {
     pub command: String,
     pub args: Option<Vec<String>>,
     pub cwd: Option<String>,
+    #[allow(dead_code)]
     pub env: Option<HashMap<String, String>>,
 }
 
@@ -232,11 +233,49 @@ pub async fn read_process_output(
         let mut stdout_output = String::new();
         let mut stderr_output = String::new();
 
-        // Try to read available output (non-blocking)
+        // Try to read available output (non-blocking with short timeout)
         if let Some(ref mut reader) = handle.stdout_reader {
-            let mut line = String::new();
-            // This would need proper async handling in a real implementation
-            // For now, we'll return empty if not ready
+            let mut buffer = [0u8; 4096];
+            loop {
+                match tokio::time::timeout(
+                    tokio::time::Duration::from_millis(5),
+                    reader.read(&mut buffer),
+                )
+                .await
+                {
+                    Ok(Ok(0)) => break,
+                    Ok(Ok(n)) => {
+                        stdout_output.push_str(&String::from_utf8_lossy(&buffer[..n]));
+                        if n < buffer.len() {
+                            break;
+                        }
+                    }
+                    Ok(Err(_)) => break,
+                    Err(_) => break,
+                }
+            }
+        }
+
+        if let Some(ref mut reader) = handle.stderr_reader {
+            let mut buffer = [0u8; 4096];
+            loop {
+                match tokio::time::timeout(
+                    tokio::time::Duration::from_millis(5),
+                    reader.read(&mut buffer),
+                )
+                .await
+                {
+                    Ok(Ok(0)) => break,
+                    Ok(Ok(n)) => {
+                        stderr_output.push_str(&String::from_utf8_lossy(&buffer[..n]));
+                        if n < buffer.len() {
+                            break;
+                        }
+                    }
+                    Ok(Err(_)) => break,
+                    Err(_) => break,
+                }
+            }
         }
 
         Ok(ProcessOutput {

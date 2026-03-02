@@ -36,3 +36,13 @@ export {
   type CouncilMessage,
   type CouncilStatus,
 } from './useCouncil';
+
+// ═══════════════════════════════════════════════════════════════
+// Auto Update Hook
+// ═══════════════════════════════════════════════════════════════
+
+export {
+  useAutoUpdate,
+  useWebUpdateCheck,
+  type UpdateInfo,
+} from './useAutoUpdate';

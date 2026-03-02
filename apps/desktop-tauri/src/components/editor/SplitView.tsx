@@ -491,6 +491,8 @@ export interface DraggableTabProps {
   onDragStart?: (event: React.DragEvent) => void;
   /** رد الاتصال عند الإفلات */
   onDrop?: (event: React.DragEvent) => void;
+  /** أنماط CSS */
+  style?: React.CSSProperties;
 }
 
 export function DraggableTab({

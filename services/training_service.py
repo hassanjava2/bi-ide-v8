@@ -279,3 +279,7 @@ class TrainingService:
                 self._jobs[job_id].error_message = str(e)
                 self._jobs[job_id].updated_at = datetime.now()
             logger.error(f"خطأ في تشغيل التدريب: {e}")
+
+
+# Module-level singleton instance
+training_service = TrainingService()
