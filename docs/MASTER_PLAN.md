@@ -110,6 +110,29 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 - `training/v6-scripts/convert-to-gguf.py` (131 سطر) — تحويل GGUF
 - `ai/training/advanced_trainer.py` (755 سطر) — تدريب متقدم
 
+## 2.5 تحليل الصور والفيديو ⭐
+> **الـ AI يفهم الصور والفيديو مثل البشر — ويستمر بتطوير نفسه بهالمجال**
+
+**القدرات:**
+- كشف أشياء + أشخاص + أحداث (YOLO)
+- تحليل نشاط (ماذا يحدث بالمشهد)
+- مراقبة كاميرات ← تحليل ← تنبيه ← توجيه (بعد الكارثة!)
+- فهم الصور الطبية + الهندسية + العلمية
+- **تطوير ذاتي مستمر** — يتحسن بتحليل الصور أوتوماتيكياً
+
+**المطلوب:**
+- [ ] نقل `camera-ai/` من bi Management → تطوير وربط
+- [ ] تدريب YOLO على بيانات مخصصة
+- [ ] ربط الكاميرات بالمجلس (تنبيهات مباشرة)
+- [ ] تحليل فيديو مستمر (real-time)
+- [ ] النموذج الخاص يدعم multimodal (نص + صورة + فيديو)
+
+**الكود الموجود:**
+- `camera-ai/app/models/yolo_detector.py` — كشف YOLO
+- `camera-ai/app/models/activity_analyzer.py` — تحليل نشاط
+- `camera-ai/app/services/detection_service.py` — خدمة كشف
+- `camera-ai/app/services/camera_service.py` — إدارة كاميرات
+
 ---
 
 # القسم ٣ — المجلس والهرم
