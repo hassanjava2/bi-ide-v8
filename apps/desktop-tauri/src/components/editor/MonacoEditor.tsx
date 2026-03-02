@@ -9,6 +9,7 @@ import { fs } from "../../lib/tauri";
 import { debounce } from "../../lib/utils";
 import { FileInfo } from "./FileInfo";
 import { Breadcrumbs } from "./Breadcrumbs";
+import { listen } from "@tauri-apps/api/event";
 
 // Configure Monaco loader
 loader.config({ monaco });
@@ -275,6 +276,105 @@ export function MonacoEditor({ className }: MonacoEditorProps) {
 
     return () => disposable.dispose();
   }, [monaco]);
+
+  // Listen for CommandPalette editor events
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    const editor = editorRef.current;
+
+    const unlistenUndo = listen("editor-undo", () => {
+      editor.trigger("command-palette", "undo", null);
+    });
+
+    const unlistenRedo = listen("editor-redo", () => {
+      editor.trigger("command-palette", "redo", null);
+    });
+
+    const unlistenCut = listen("editor-cut", () => {
+      editor.trigger("command-palette", "editor.action.clipboardCutAction", null);
+    });
+
+    const unlistenCopy = listen("editor-copy", () => {
+      editor.trigger("command-palette", "editor.action.clipboardCopyAction", null);
+    });
+
+    const unlistenPaste = listen("editor-paste", () => {
+      editor.trigger("command-palette", "editor.action.clipboardPasteAction", null);
+    });
+
+    const unlistenFind = listen("editor-find", () => {
+      editor.trigger("command-palette", "actions.find", null);
+    });
+
+    const unlistenReplace = listen("editor-replace", () => {
+      editor.trigger("command-palette", "editor.action.startFindReplaceAction:select", null);
+    });
+
+    const unlistenSave = listen("save-active-file", async () => {
+      if (activeFile) {
+        const content = editor.getValue();
+        try {
+          await fs.writeFile(activeFile.path, content);
+          markFileSaved(activeFile.path);
+        } catch (err) {
+          console.error("Save failed:", err);
+        }
+      }
+    });
+
+    const unlistenSaveAll = listen("save-all-files", async () => {
+      // Save all open files
+      for (const file of openFiles) {
+        if (file.isModified) {
+          try {
+            await fs.writeFile(file.path, file.content);
+            markFileSaved(file.path);
+          } catch (err) {
+            console.error("Save failed for", file.path, err);
+          }
+        }
+      }
+    });
+
+    const unlistenExplain = listen("ai-explain-code", async () => {
+      const selection = editor.getSelection();
+      if (selection && !selection.isEmpty()) {
+        const model = editor.getModel();
+        if (model) {
+          const selectedText = model.getValueInRange(selection);
+          console.log("AI Explain requested for:", selectedText.slice(0, 100));
+          // In production, this would call ai.explain()
+        }
+      }
+    });
+
+    const unlistenRefactor = listen("ai-refactor-code", async () => {
+      const selection = editor.getSelection();
+      if (selection && !selection.isEmpty()) {
+        const model = editor.getModel();
+        if (model) {
+          const selectedText = model.getValueInRange(selection);
+          console.log("AI Refactor requested for:", selectedText.slice(0, 100));
+          // In production, this would call ai.refactor()
+        }
+      }
+    });
+
+    return () => {
+      unlistenUndo.then((fn) => fn());
+      unlistenRedo.then((fn) => fn());
+      unlistenCut.then((fn) => fn());
+      unlistenCopy.then((fn) => fn());
+      unlistenPaste.then((fn) => fn());
+      unlistenFind.then((fn) => fn());
+      unlistenReplace.then((fn) => fn());
+      unlistenSave.then((fn) => fn());
+      unlistenSaveAll.then((fn) => fn());
+      unlistenExplain.then((fn) => fn());
+      unlistenRefactor.then((fn) => fn());
+    };
+  }, [activeFile, openFiles, markFileSaved]);
 
   if (openFiles.length === 0) {
     return (

@@ -10,6 +10,9 @@ import {
   Cpu, Zap, Eye, EyeOff, Layout, Maximize, Minimize
 } from "lucide-react";
 import { useStore } from "../../lib/store";
+import { fs, workspace } from "../../lib/tauri";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
+import { emit } from "@tauri-apps/api/event";
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -81,30 +84,58 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <FolderOpen className="w-4 h-4" />,
       shortcut: "Ctrl+K Ctrl+O",
       category: "File",
-      action: () => {
-        // Implementation would open folder dialog
+      action: async () => {
+        try {
+          const selected = await openDialog({
+            directory: true,
+            multiple: false,
+            title: "Open Workspace Folder"
+          });
+          if (selected && typeof selected === "string") {
+            const ws = await workspace.open(selected);
+            // Emit event to notify App.tsx to update workspace
+            await emit("workspace-opened", ws);
+          }
+        } catch (err) {
+          console.error("Failed to open folder:", err);
+        }
         onClose();
       },
     },
     {
       id: "file.newFile",
       title: "File: New File",
-      description: "Create a new file",
+      description: "Create a new file in the current workspace",
       icon: <FilePlus className="w-4 h-4" />,
       shortcut: "Ctrl+N",
       category: "File",
-      action: () => {
+      disabled: !currentWorkspace,
+      action: async () => {
+        if (!currentWorkspace) return;
+        try {
+          // Emit event to show new file input in sidebar
+          await emit("new-file-requested", { workspaceId: currentWorkspace.id });
+        } catch (err) {
+          console.error("Failed to create new file:", err);
+        }
         onClose();
       },
     },
     {
       id: "file.newFolder",
       title: "File: New Folder",
-      description: "Create a new folder",
+      description: "Create a new folder in the current workspace",
       icon: <FolderPlus className="w-4 h-4" />,
       shortcut: "Ctrl+Shift+N",
       category: "File",
-      action: () => {
+      disabled: !currentWorkspace,
+      action: async () => {
+        if (!currentWorkspace) return;
+        try {
+          await emit("new-folder-requested", { workspaceId: currentWorkspace.id });
+        } catch (err) {
+          console.error("Failed to create new folder:", err);
+        }
         onClose();
       },
     },
@@ -115,7 +146,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <Save className="w-4 h-4" />,
       shortcut: "Ctrl+S",
       category: "File",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("save-active-file", {});
+        } catch (err) {
+          console.error("Failed to save file:", err);
+        }
         onClose();
       },
     },
@@ -126,19 +162,29 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <Save className="w-4 h-4" />,
       shortcut: "Ctrl+K S",
       category: "File",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("save-all-files", {});
+        } catch (err) {
+          console.error("Failed to save all files:", err);
+        }
         onClose();
       },
     },
     
-    // Edit Commands
+    // Edit Commands - These will be handled by Monaco Editor
     {
       id: "edit.undo",
       title: "Edit: Undo",
       icon: <RefreshCw className="w-4 h-4" />,
       shortcut: "Ctrl+Z",
       category: "Edit",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("editor-undo", {});
+        } catch (err) {
+          console.error("Failed to undo:", err);
+        }
         onClose();
       },
     },
@@ -148,7 +194,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <RefreshCw className="w-4 h-4" />,
       shortcut: "Ctrl+Shift+Z",
       category: "Edit",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("editor-redo", {});
+        } catch (err) {
+          console.error("Failed to redo:", err);
+        }
         onClose();
       },
     },
@@ -158,7 +209,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <Scissors className="w-4 h-4" />,
       shortcut: "Ctrl+X",
       category: "Edit",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("editor-cut", {});
+        } catch (err) {
+          console.error("Failed to cut:", err);
+        }
         onClose();
       },
     },
@@ -168,7 +224,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <Copy className="w-4 h-4" />,
       shortcut: "Ctrl+C",
       category: "Edit",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("editor-copy", {});
+        } catch (err) {
+          console.error("Failed to copy:", err);
+        }
         onClose();
       },
     },
@@ -178,7 +239,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <Clipboard className="w-4 h-4" />,
       shortcut: "Ctrl+V",
       category: "Edit",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("editor-paste", {});
+        } catch (err) {
+          console.error("Failed to paste:", err);
+        }
         onClose();
       },
     },
@@ -190,7 +256,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <SearchIcon className="w-4 h-4" />,
       shortcut: "Ctrl+F",
       category: "Search",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("editor-find", {});
+        } catch (err) {
+          console.error("Failed to open find:", err);
+        }
         onClose();
       },
     },
@@ -200,7 +271,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <Replace className="w-4 h-4" />,
       shortcut: "Ctrl+H",
       category: "Search",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("editor-replace", {});
+        } catch (err) {
+          console.error("Failed to open replace:", err);
+        }
         onClose();
       },
     },
@@ -211,7 +287,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <SearchIcon className="w-4 h-4" />,
       shortcut: "Ctrl+Shift+F",
       category: "Search",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("open-global-search", {});
+        } catch (err) {
+          console.error("Failed to open global search:", err);
+        }
         onClose();
       },
     },
@@ -222,7 +303,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <FolderOpen className="w-4 h-4" />,
       shortcut: "Ctrl+P",
       category: "Search",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("open-quick-open", {});
+        } catch (err) {
+          console.error("Failed to open quick open:", err);
+        }
         onClose();
       },
     },
@@ -341,7 +427,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       title: "Git: Refresh",
       icon: <RefreshCw className="w-4 h-4" />,
       category: "Git",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("git-refresh", {});
+        } catch (err) {
+          console.error("Failed to refresh git:", err);
+        }
         onClose();
       },
     },
@@ -354,7 +445,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       icon: <Sparkles className="w-4 h-4" />,
       shortcut: "Ctrl+Shift+A",
       category: "AI",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("open-council-panel", {});
+        } catch (err) {
+          console.error("Failed to open council:", err);
+        }
         onClose();
       },
     },
@@ -363,7 +459,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       title: "AI: Explain Selected Code",
       icon: <Sparkles className="w-4 h-4" />,
       category: "AI",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("ai-explain-code", {});
+        } catch (err) {
+          console.error("Failed to explain code:", err);
+        }
         onClose();
       },
     },
@@ -372,7 +473,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       title: "AI: Refactor Selected Code",
       icon: <Sparkles className="w-4 h-4" />,
       category: "AI",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("ai-refactor-code", {});
+        } catch (err) {
+          console.error("Failed to refactor code:", err);
+        }
         onClose();
       },
     },
@@ -383,7 +489,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       title: "Training: Start Training Job",
       icon: <Cpu className="w-4 h-4" />,
       category: "Training",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("training-start-job", { type: "lora" });
+        } catch (err) {
+          console.error("Failed to start training:", err);
+        }
         onClose();
       },
     },
@@ -392,7 +503,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       title: "Training: View Status",
       icon: <Zap className="w-4 h-4" />,
       category: "Training",
-      action: () => {
+      action: async () => {
+        try {
+          await emit("open-training-panel", {});
+        } catch (err) {
+          console.error("Failed to open training panel:", err);
+        }
         onClose();
       },
     },

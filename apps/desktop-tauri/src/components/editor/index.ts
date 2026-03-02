@@ -1,6 +1,9 @@
+//! Editor Components Index
+
 export { MonacoEditor } from "./MonacoEditor";
-export { FileInfo } from "./FileInfo";
-export { Breadcrumbs } from "./Breadcrumbs";
-export { QuickOpen } from "./QuickOpen";
 export { CommandPalette } from "./CommandPalette";
+export { QuickOpen } from "./QuickOpen";
 export { SearchPanel } from "./SearchPanel";
+export { SplitView } from "./SplitView";
+export { Breadcrumbs } from "./Breadcrumbs";
+export { FileInfo } from "./FileInfo";

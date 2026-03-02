@@ -17,6 +17,7 @@ from api.routers import (
     auth_router,
     council_router,
     training_router,
+    hierarchy_router,
     ai_router,
     erp_router,
     monitoring_router,
@@ -77,6 +78,7 @@ app.add_middleware(AuthMiddleware)
 app.include_router(auth_router, prefix="/api/v1", tags=["Authentication"])
 app.include_router(council_router, prefix="/api/v1", tags=["Council"])
 app.include_router(training_router, prefix="/api/v1", tags=["Training"])
+app.include_router(hierarchy_router, prefix="/api/v1", tags=["Hierarchy"])
 app.include_router(ai_router, prefix="/api/v1", tags=["AI"])
 app.include_router(erp_router, prefix="/api/v1", tags=["ERP"])
 app.include_router(monitoring_router, prefix="/api/v1", tags=["Monitoring"])

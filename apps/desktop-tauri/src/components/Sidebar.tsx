@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { lazy, Suspense, useState, useEffect, useCallback, useRef } from "react";
 import {
   ChevronRight,
   ChevronDown,
@@ -6,19 +6,41 @@ import {
   Folder,
   FolderOpen,
   RefreshCw,
-  Search,
-  GitBranch,
-  Cpu,
-  Cloud,
   Bot,
   Send,
-  Pause,
-  Play,
+  Plus,
+  FilePlus,
+  FolderPlus,
 } from "lucide-react";
 import { useStore, FileNode } from "../lib/store";
 import { fs, workspace, git, training, ai, trainingData, AiChatMessage } from "../lib/tauri";
 import { CouncilPanel } from "./CouncilPanel";
 import { HierarchyPanel } from "./HierarchyPanel";
+import { listen } from "@tauri-apps/api/event";
+
+const GitPanel = lazy(() =>
+  import("./git/GitPanel").then((module) => ({
+    default: module.GitPanel,
+  }))
+);
+
+const SearchPanel = lazy(() =>
+  import("./editor/SearchPanel").then((module) => ({
+    default: module.SearchPanel,
+  }))
+);
+
+const SyncPanel = lazy(() =>
+  import("./sync/SyncPanel").then((module) => ({
+    default: module.SyncPanel,
+  }))
+);
+
+const TrainingDashboard = lazy(() =>
+  import("./training/TrainingDashboard").then((module) => ({
+    default: module.TrainingDashboard,
+  }))
+);
 
 interface TreeNodeProps {
   node: FileNode;
@@ -97,7 +119,7 @@ function TreeNode({ node, depth, workspaceRoot, onToggle, onSelect }: TreeNodePr
 }
 
 export function Sidebar() {
-  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "ai" | "training" | "council" | "hierarchy">("explorer");
+  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "sync" | "ai" | "training" | "council" | "hierarchy">("explorer");
   const [isLoading, setIsLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [isSendingChat, setIsSendingChat] = useState(false);
@@ -109,6 +131,12 @@ export function Sidebar() {
     },
   ]);
   const [isTrainingAction, setIsTrainingAction] = useState(false);
+  
+  // New file/folder state
+  const [isCreatingNew, setIsCreatingNew] = useState<"file" | "folder" | null>(null);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemPath, setNewItemPath] = useState("");
+  const newItemInputRef = useRef<HTMLInputElement>(null);
 
   const {
     currentWorkspace,
@@ -192,6 +220,50 @@ export function Sidebar() {
     loadFileTree();
     loadGitStatus();
   }, [loadFileTree, loadGitStatus]);
+
+  // Listen for new file/folder events from CommandPalette
+  useEffect(() => {
+    const unlistenNewFile = listen("new-file-requested", (event: any) => {
+      setIsCreatingNew("file");
+      setNewItemName("");
+      setNewItemPath(currentWorkspace?.path || "");
+      setTimeout(() => newItemInputRef.current?.focus(), 100);
+    });
+
+    const unlistenNewFolder = listen("new-folder-requested", (event: any) => {
+      setIsCreatingNew("folder");
+      setNewItemName("");
+      setNewItemPath(currentWorkspace?.path || "");
+      setTimeout(() => newItemInputRef.current?.focus(), 100);
+    });
+
+    return () => {
+      unlistenNewFile.then((fn) => fn());
+      unlistenNewFolder.then((fn) => fn());
+    };
+  }, [currentWorkspace]);
+
+  // Handle creating new file/folder
+  const handleCreateNew = async () => {
+    if (!newItemName || !currentWorkspace) return;
+    
+    const fullPath = newItemPath 
+      ? `${newItemPath}/${newItemName}` 
+      : `${currentWorkspace.path}/${newItemName}`;
+    
+    try {
+      if (isCreatingNew === "file") {
+        await fs.writeFile(fullPath, "");
+      } else {
+        await fs.createDir(fullPath, true);
+      }
+      await loadFileTree();
+      setIsCreatingNew(null);
+      setNewItemName("");
+    } catch (err) {
+      console.error(`Failed to create ${isCreatingNew}:`, err);
+    }
+  };
 
   const handleToggle = async (path: string) => {
     toggleDir(path);
@@ -296,6 +368,53 @@ export function Sidebar() {
     }
   };
 
+  // Listen for tab/control events from CommandPalette
+  useEffect(() => {
+    const unlistenGlobalSearch = listen("open-global-search", () => {
+      setActiveTab("search");
+    });
+
+    const unlistenGitRefresh = listen("git-refresh", async () => {
+      setActiveTab("git");
+      await loadGitStatus();
+    });
+
+    const unlistenTrainingPanel = listen("open-training-panel", async () => {
+      setActiveTab("training");
+      await refreshTrainingStatus();
+    });
+
+    const unlistenCouncilPanel = listen("open-council-panel", () => {
+      setActiveTab("council");
+    });
+
+    const unlistenTrainingStart = listen("training-start-job", async (event: any) => {
+      const requestedType = event?.payload?.type;
+      const jobType = typeof requestedType === "string" && requestedType.length > 0 ? requestedType : "lora";
+
+      setActiveTab("training");
+      setIsTrainingAction(true);
+      try {
+        await training.startJob(jobType, 60);
+        await refreshTrainingStatus();
+      } catch (error) {
+        console.error("Failed to start training from palette:", error);
+      } finally {
+        setIsTrainingAction(false);
+      }
+    });
+
+    return () => {
+      unlistenGlobalSearch.then((fn) => fn());
+      unlistenGitRefresh.then((fn) => fn());
+      unlistenTrainingPanel.then((fn) => fn());
+      unlistenCouncilPanel.then((fn) => fn());
+      unlistenTrainingStart.then((fn) => fn());
+    };
+  }, [loadGitStatus, refreshTrainingStatus]);
+
+  const panelFallback = <div className="p-3 text-xs text-dark-500">Loading...</div>;
+
   return (
     <div className="h-full flex flex-col bg-dark-900">
       {/* Tab Bar */}
@@ -331,6 +450,26 @@ export function Sidebar() {
           )}
         </button>
         <button
+          onClick={() => setActiveTab("sync")}
+          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "sync"
+              ? "text-blue-400 border-b-2 border-blue-500"
+              : "text-dark-400 hover:text-dark-200"
+            }`}
+          title="المزامنة"
+        >
+          ☁️
+        </button>
+        <button
+          onClick={() => setActiveTab("training")}
+          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "training"
+              ? "text-green-400 border-b-2 border-green-500"
+              : "text-dark-400 hover:text-dark-200"
+            }`}
+          title="التدريب"
+        >
+          🎓
+        </button>
+        <button
           onClick={() => setActiveTab("ai")}
           className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "ai"
               ? "text-primary-400 border-b-2 border-primary-500"
@@ -364,23 +503,90 @@ export function Sidebar() {
       {/* Content */}
       <div className="flex-1 overflow-auto">
         {activeTab === "explorer" && (
-          <div>
+          <div className="h-full flex flex-col">
             {/* Workspace Header */}
             <div className="flex items-center justify-between px-3 py-2">
               <span className="text-xs font-semibold text-dark-400 uppercase">
                 {currentWorkspace?.name || "No Folder"}
               </span>
-              <button
-                onClick={loadFileTree}
-                className="p-1 hover:bg-dark-800 rounded transition-colors"
-                disabled={isLoading}
-              >
-                <RefreshCw className={`w-3 h-3 text-dark-400 ${isLoading ? "animate-spin" : ""}`} />
-              </button>
+              <div className="flex items-center gap-1">
+                {currentWorkspace && (
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsCreatingNew("file");
+                        setNewItemName("");
+                        setNewItemPath(currentWorkspace.path);
+                        setTimeout(() => newItemInputRef.current?.focus(), 100);
+                      }}
+                      className="p-1 hover:bg-dark-800 rounded transition-colors"
+                      title="New File"
+                    >
+                      <FilePlus className="w-3 h-3 text-dark-400" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsCreatingNew("folder");
+                        setNewItemName("");
+                        setNewItemPath(currentWorkspace.path);
+                        setTimeout(() => newItemInputRef.current?.focus(), 100);
+                      }}
+                      className="p-1 hover:bg-dark-800 rounded transition-colors"
+                      title="New Folder"
+                    >
+                      <FolderPlus className="w-3 h-3 text-dark-400" />
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={loadFileTree}
+                  className="p-1 hover:bg-dark-800 rounded transition-colors"
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={`w-3 h-3 text-dark-400 ${isLoading ? "animate-spin" : ""}`} />
+                </button>
+              </div>
             </div>
 
+            {/* New File/Folder Input */}
+            {isCreatingNew && (
+              <div className="px-3 py-2">
+                <div className="flex items-center gap-2 bg-dark-800 rounded px-2 py-1">
+                  {isCreatingNew === "file" ? (
+                    <FilePlus className="w-4 h-4 text-dark-400" />
+                  ) : (
+                    <FolderPlus className="w-4 h-4 text-dark-400" />
+                  )}
+                  <input
+                    ref={newItemInputRef}
+                    type="text"
+                    value={newItemName}
+                    onChange={(e) => setNewItemName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleCreateNew();
+                      } else if (e.key === "Escape") {
+                        setIsCreatingNew(null);
+                        setNewItemName("");
+                      }
+                    }}
+                    onBlur={() => {
+                      if (newItemName) {
+                        handleCreateNew();
+                      } else {
+                        setIsCreatingNew(null);
+                      }
+                    }}
+                    placeholder={isCreatingNew === "file" ? "filename.ts" : "foldername"}
+                    className="flex-1 bg-transparent text-xs text-dark-100 outline-none"
+                    autoFocus
+                  />
+                </div>
+              </div>
+            )}
+
             {/* File Tree */}
-            <div className="pb-4">
+            <div className="flex-1 overflow-auto pb-4">
               {currentWorkspace &&
                 fileTree.map((node) => (
                   <TreeNode
@@ -456,126 +662,27 @@ export function Sidebar() {
         )}
 
         {activeTab === "search" && (
-          <div className="p-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-500" />
-              <input
-                type="text"
-                placeholder="Search files..."
-                className="w-full pl-9 pr-3 py-2 bg-dark-800 border border-dark-700 rounded text-sm text-dark-200 placeholder-dark-500 focus:outline-none focus:border-primary-500"
-              />
-            </div>
-            <p className="text-xs text-dark-500 mt-4 text-center">
-              Search across workspace
-            </p>
-          </div>
+          <Suspense fallback={panelFallback}>
+            <SearchPanel isOpen={activeTab === "search"} onClose={() => setActiveTab("explorer")} />
+          </Suspense>
         )}
 
         {activeTab === "git" && (
-          <div className="p-3">
-            {!gitState ? (
-              <div className="text-center text-dark-500 text-sm">
-                <GitBranch className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p>Not a git repository</p>
-              </div>
-            ) : (
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-dark-200">
-                    {gitState.branch}
-                  </span>
-                  <button className="text-xs px-2 py-1 bg-primary-600 hover:bg-primary-700 rounded text-white">
-                    Sync
-                  </button>
-                </div>
+          <Suspense fallback={panelFallback}>
+            <GitPanel />
+          </Suspense>
+        )}
 
-                {gitState.modified.length > 0 && (
-                  <div className="mb-3">
-                    <div className="text-xs text-dark-500 mb-1">Modified</div>
-                    {gitState.modified.map((file) => (
-                      <div key={file} className="text-sm text-orange-400 py-1">
-                        M {file}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {gitState.added.length > 0 && (
-                  <div className="mb-3">
-                    <div className="text-xs text-dark-500 mb-1">Staged</div>
-                    {gitState.added.map((file) => (
-                      <div key={file} className="text-sm text-green-400 py-1">
-                        A {file}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {gitState.untracked.length > 0 && (
-                  <div className="mb-3">
-                    <div className="text-xs text-dark-500 mb-1">Untracked</div>
-                    {gitState.untracked.map((file) => (
-                      <div key={file} className="text-sm text-dark-400 py-1">
-                        U {file}
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {gitState.isClean && (
-                  <div className="text-center text-green-400 text-sm py-4">
-                    ✓ Working tree clean
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+        {activeTab === "sync" && (
+          <Suspense fallback={panelFallback}>
+            <SyncPanel />
+          </Suspense>
         )}
 
         {activeTab === "training" && (
-          <div className="p-3">
-            <div className="flex items-center gap-2 mb-3">
-              <Cloud className={`w-4 h-4 ${trainingStatus.isEnabled ? "text-green-400" : "text-dark-500"}`} />
-              <span className="text-sm">
-                {trainingStatus.isEnabled ? "Enabled" : "Disabled"}
-              </span>
-            </div>
-
-            {trainingStatus.currentJob && (
-              <div className="bg-dark-800 rounded-lg p-3 mb-3">
-                <div className="text-xs text-dark-400 mb-1">Current Job</div>
-                <div className="text-sm font-medium">{trainingStatus.currentJob.type}</div>
-                <div className="mt-2">
-                  <div className="h-2 bg-dark-700 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-primary-500 transition-all"
-                      style={{ width: `${trainingStatus.currentJob.progress}%` }}
-                    />
-                  </div>
-                  <div className="text-xs text-dark-400 mt-1">
-                    {trainingStatus.currentJob.progress.toFixed(1)}%
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={handleStartTraining}
-                disabled={isTrainingAction}
-                className="w-full py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 rounded text-sm text-white transition-colors flex items-center justify-center gap-1"
-              >
-                <Play className="w-3 h-3" /> Start
-              </button>
-              <button
-                onClick={handlePauseTraining}
-                disabled={isTrainingAction || !trainingStatus.currentJob}
-                className="w-full py-2 bg-dark-700 hover:bg-dark-600 disabled:opacity-50 rounded text-sm text-white transition-colors flex items-center justify-center gap-1"
-              >
-                <Pause className="w-3 h-3" /> Pause
-              </button>
-            </div>
-          </div>
+          <Suspense fallback={panelFallback}>
+            <TrainingDashboard />
+          </Suspense>
         )}
 
         {activeTab === "council" && <CouncilPanel />}

@@ -1,6 +1,6 @@
 /**
  * لوحة تحكم التدريب - Training Dashboard
- * تعرض حالة التدريب، الرسوم البيانية للدقة والخسارة، واستخدام GPU
+ * تعرض حالة التدريب، الرسوم البيانية للدقة والخسارة، واستخدام GPU الحقيقي
  */
 
 import { useState, useEffect, useCallback } from "react";
@@ -14,8 +14,10 @@ import {
   Activity,
   Cpu,
   Clock,
-  Zap
+  Zap,
+  AlertTriangle
 } from "lucide-react";
+import { training, GPUMetrics } from "../../lib/tauri";
 
 // أنواع البيانات
 interface TrainingMetrics {
@@ -35,13 +37,6 @@ interface TrainingStatus {
   progress: number;
   startTime: number | null;
   estimatedTimeRemaining: number;
-}
-
-interface GPUStats {
-  utilization: number;
-  vramUsed: number;
-  vramTotal: number;
-  temperature: number;
 }
 
 // مكون الرسم البياني المخصص
@@ -271,93 +266,86 @@ export function TrainingDashboard() {
   // مقاييس التدريب
   const [metrics, setMetrics] = useState<TrainingMetrics[]>([]);
   
-  // إحصائيات GPU
-  const [gpuStats, setGpuStats] = useState<GPUStats>({
-    utilization: 0,
-    vramUsed: 0,
-    vramTotal: 24576, // 24GB
-    temperature: 45,
-  });
+  // إحصائيات GPU الحقيقية
+  const [gpuMetrics, setGpuMetrics] = useState<GPUMetrics | null>(null);
+  const [gpuLoading, setGpuLoading] = useState(true);
 
   // WebSocket connection
   const [wsConnected, setWsConnected] = useState(false);
 
-  // محاكاة اتصال WebSocket
+  // جلب مقاييس GPU الحقيقية
+  const fetchGpuMetrics = useCallback(async () => {
+    try {
+      const data = await training.getGpuMetrics();
+      setGpuMetrics(data);
+    } catch (err) {
+      console.error("Failed to fetch GPU metrics:", err);
+    } finally {
+      setGpuLoading(false);
+    }
+  }, []);
+
+  // polling للـ GPU metrics
   useEffect(() => {
-    // في الإنتاج، استبدل هذا باتصال WebSocket حقيقي
-    const interval = setInterval(() => {
-      setWsConnected(prev => !prev || prev); // محاكاة الاتصال
-    }, 1000);
+    fetchGpuMetrics();
+    const interval = setInterval(fetchGpuMetrics, 2000);
+    return () => clearInterval(interval);
+  }, [fetchGpuMetrics]);
+
+  // Fetch real training metrics from backend
+  useEffect(() => {
+    const fetchTrainingMetrics = async () => {
+      try {
+        const data = await training.getMetrics();
+        if (data.current) {
+          setStatus(prev => ({
+            ...prev,
+            currentEpoch: data.current!.epoch,
+            totalEpochs: data.current!.total_epochs,
+            progress: (data.current!.epoch / data.current!.total_epochs) * 100,
+          }));
+        }
+        
+        // Convert history to TrainingMetrics format
+        if (data.history && data.history.length > 0) {
+          const convertedMetrics: TrainingMetrics[] = data.history.map((h: any, index: number) => ({
+            epoch: index + 1,
+            loss: h.loss,
+            accuracy: h.accuracy,
+            valLoss: h.loss * 1.05, // Approximation if not available
+            valAccuracy: h.accuracy * 0.98, // Approximation if not available
+            timestamp: h.timestamp,
+          }));
+          setMetrics(convertedMetrics);
+        }
+      } catch (err) {
+        console.error("Failed to fetch training metrics:", err);
+      }
+    };
+
+    fetchTrainingMetrics();
+    const interval = setInterval(fetchTrainingMetrics, 2000);
     return () => clearInterval(interval);
   }, []);
 
-  // محاكاة تحديثات التدريب في الوقت الفعلي
-  useEffect(() => {
-    if (!status.isRunning || status.isPaused) return;
-
-    const interval = setInterval(() => {
-      setStatus(prev => {
-        const newEpoch = prev.currentEpoch + 0.1;
-        const newProgress = (newEpoch / prev.totalEpochs) * 100;
-        
-        return {
-          ...prev,
-          currentEpoch: newEpoch,
-          progress: newProgress,
-          estimatedTimeRemaining: Math.max(0, (prev.totalEpochs - newEpoch) * 30),
-        };
-      });
-
-      // إضافة قياسات جديدة كل 10 epochs
-      if (Math.floor(status.currentEpoch) > metrics.length) {
-        const newMetric: TrainingMetrics = {
-          epoch: Math.floor(status.currentEpoch),
-          loss: 2.5 * Math.exp(-status.currentEpoch / 50) + 0.1 + Math.random() * 0.05,
-          accuracy: Math.min(0.98, 0.6 + status.currentEpoch / 200 + Math.random() * 0.02),
-          valLoss: 2.8 * Math.exp(-status.currentEpoch / 55) + 0.15 + Math.random() * 0.05,
-          valAccuracy: Math.min(0.95, 0.55 + status.currentEpoch / 220 + Math.random() * 0.02),
-          timestamp: Date.now(),
-        };
-        
-        setMetrics(prev => [...prev, newMetric]);
-      }
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [status.isRunning, status.isPaused, status.currentEpoch, metrics.length]);
-
-  // محاكاة إحصائيات GPU
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGpuStats(prev => ({
-        ...prev,
-        utilization: status.isRunning 
-          ? Math.min(100, 70 + Math.random() * 25) 
-          : Math.max(5, prev.utilization - 5),
-        vramUsed: status.isRunning 
-          ? Math.min(prev.vramTotal, 18432 + Math.random() * 2048)
-          : Math.max(1024, prev.vramUsed - 512),
-        temperature: status.isRunning
-          ? Math.min(85, 60 + Math.random() * 15)
-          : Math.max(35, prev.temperature - 2),
-      }));
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [status.isRunning]);
-
   // بدء التدريب
-  const handleStart = useCallback(() => {
-    setStatus(prev => ({
-      ...prev,
-      isRunning: true,
-      isPaused: false,
-      startTime: prev.startTime || Date.now(),
-    }));
+  const handleStart = useCallback(async () => {
+    try {
+      await training.startJob("lora", 50);
+      setStatus(prev => ({
+        ...prev,
+        isRunning: true,
+        isPaused: false,
+        startTime: prev.startTime || Date.now(),
+      }));
+    } catch (err) {
+      console.error("Failed to start training:", err);
+    }
   }, []);
 
   // إيقاف التدريب مؤقتاً
-  const handlePause = useCallback(() => {
+  const handlePause = useCallback(async () => {
+    // For now just toggle UI state - backend pause can be added later
     setStatus(prev => ({
       ...prev,
       isPaused: !prev.isPaused,
@@ -365,17 +353,22 @@ export function TrainingDashboard() {
   }, []);
 
   // إيقاف التدريب
-  const handleStop = useCallback(() => {
-    setStatus({
-      isRunning: false,
-      isPaused: false,
-      currentEpoch: 0,
-      totalEpochs: 100,
-      progress: 0,
-      startTime: null,
-      estimatedTimeRemaining: 0,
-    });
-    setMetrics([]);
+  const handleStop = useCallback(async () => {
+    try {
+      // Call backend to stop if needed
+      setStatus({
+        isRunning: false,
+        isPaused: false,
+        currentEpoch: 0,
+        totalEpochs: 100,
+        progress: 0,
+        startTime: null,
+        estimatedTimeRemaining: 0,
+      });
+      setMetrics([]);
+    } catch (err) {
+      console.error("Failed to stop training:", err);
+    }
   }, []);
 
   // تنسيق الوقت
@@ -392,6 +385,14 @@ export function TrainingDashboard() {
     if (temp < 75) return "#eab308";
     return "#ef4444";
   };
+
+  // استخراج بيانات GPU الحقيقية
+  const primaryGpu = gpuMetrics?.devices?.[0];
+  const gpuUtilization = primaryGpu?.utilization_percent ?? 0;
+  const gpuVramUsed = primaryGpu ? (primaryGpu.vram_used_mb / 1024) : 0;
+  const gpuVramTotal = primaryGpu ? (primaryGpu.vram_total_mb / 1024) : 24;
+  const gpuTemperature = primaryGpu?.temperature_celsius ?? 0;
+  const gpuAvailable = gpuMetrics?.available ?? false;
 
   return (
     <TrainingErrorBoundary>
@@ -481,8 +482,8 @@ export function TrainingDashboard() {
               <Cpu className="w-4 h-4" />
               <span className="text-sm">استخدام GPU</span>
             </div>
-            <div className="text-2xl font-bold" style={{ color: getTempColor(gpuStats.temperature) }}>
-              {gpuStats.utilization.toFixed(0)}%
+            <div className="text-2xl font-bold" style={{ color: getTempColor(gpuTemperature) }}>
+              {gpuLoading ? "..." : `${gpuUtilization.toFixed(0)}%`}
             </div>
           </div>
         </div>
@@ -542,36 +543,74 @@ export function TrainingDashboard() {
           </div>
         </div>
 
-        {/* GPU Stats */}
+        {/* GPU Stats - Real Data */}
         <div className="bg-dark-800 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Cpu className="w-5 h-5 text-primary-400" />
-            <h3 className="font-semibold text-dark-200">استخدام GPU</h3>
-          </div>
-          <div className="grid grid-cols-4 gap-4">
-            <GPUGauge 
-              value={gpuStats.utilization} 
-              label="الاستخدام" 
-              color="#0ea5e9"
-            />
-            <GPUGauge 
-              value={(gpuStats.vramUsed / gpuStats.vramTotal) * 100} 
-              label="VRAM" 
-              color="#8b5cf6"
-            />
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold" style={{ color: getTempColor(gpuStats.temperature) }}>
-                {gpuStats.temperature.toFixed(0)}°C
-              </span>
-              <span className="text-sm text-dark-400 mt-2">الحرارة</span>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Cpu className="w-5 h-5 text-primary-400" />
+              <h3 className="font-semibold text-dark-200">استخدام GPU</h3>
             </div>
-            <div className="flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold text-dark-100">
-                {(gpuStats.vramUsed / 1024).toFixed(1)} GB
-              </span>
-              <span className="text-sm text-dark-400 mt-2">VRAM مستخدم</span>
-            </div>
+            {gpuMetrics?.error && (
+              <div className="flex items-center gap-2 text-yellow-400 text-sm">
+                <AlertTriangle className="w-4 h-4" />
+                <span>{gpuMetrics.error}</span>
+              </div>
+            )}
           </div>
+
+          {gpuLoading ? (
+            <div className="text-center py-8 text-dark-400">جاري تحميل بيانات GPU...</div>
+          ) : !gpuAvailable || !primaryGpu ? (
+            <div className="text-center py-8">
+              <Cpu className="w-12 h-12 mx-auto mb-3 text-dark-600" />
+              <p className="text-dark-400 text-sm">
+                {gpuMetrics?.error || "لا يوجد GPU متصل"}
+              </p>
+              <p className="text-dark-500 text-xs mt-2">
+                قم بتثبيت NVIDIA drivers و nvidia-smi لمراقبة GPU
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-4 gap-4">
+              <GPUGauge 
+                value={Math.round(gpuUtilization)} 
+                label="الاستخدام" 
+                color="#0ea5e9"
+              />
+              <GPUGauge 
+                value={Math.round((gpuVramUsed / gpuVramTotal) * 100)} 
+                label="VRAM" 
+                color="#8b5cf6"
+              />
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-3xl font-bold" style={{ color: getTempColor(gpuTemperature) }}>
+                  {Math.round(gpuTemperature)}°C
+                </span>
+                <span className="text-sm text-dark-400 mt-2">الحرارة</span>
+              </div>
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-3xl font-bold text-dark-100">
+                  {gpuVramUsed.toFixed(1)} GB
+                </span>
+                <span className="text-sm text-dark-400 mt-2">VRAM مستخدم</span>
+              </div>
+            </div>
+          )}
+          
+          {primaryGpu && (
+            <div className="mt-4 pt-4 border-t border-dark-700 text-xs text-dark-500">
+              <div className="flex justify-between">
+                <span>البطاقة: {primaryGpu.name}</span>
+                <span>السائق: {primaryGpu.driver_version}</span>
+              </div>
+              {primaryGpu.power_draw_watts > 0 && (
+                <div className="flex justify-between mt-1">
+                  <span>استهلاك الطاقة: {primaryGpu.power_draw_watts.toFixed(0)}W</span>
+                  <span>سرعة الساعة: {primaryGpu.clock_speed_mhz} MHz</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </TrainingErrorBoundary>

@@ -263,6 +263,138 @@ pub async fn get_training_metrics(
     Ok(TrainingMetricsResponse { current, history })
 }
 
+/// GPU Metrics Response
+#[derive(Debug, Serialize)]
+pub struct GPUMetricsResponse {
+    pub available: bool,
+    pub devices: Vec<GPUDevice>,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct GPUDevice {
+    pub id: u32,
+    pub name: String,
+    pub vram_total_mb: u64,
+    pub vram_used_mb: u64,
+    pub utilization_percent: f32,
+    pub temperature_celsius: f32,
+    pub fan_speed_percent: f32,
+    pub power_draw_watts: f32,
+    pub clock_speed_mhz: u32,
+    pub memory_clock_mhz: u32,
+    pub driver_version: String,
+}
+
+/// Get GPU metrics - attempts to read from real hardware, falls back to empty state
+#[tauri::command]
+pub async fn get_gpu_metrics(
+    _state: State<'_, std::sync::Arc<AppState>>,
+) -> Result<GPUMetricsResponse, String> {
+    use sysinfo::System;
+    
+    let sys = System::new_all();
+    
+    // Check if nvidia-smi is available
+    match which::which("nvidia-smi") {
+        Ok(_) => {
+            // Try to get real GPU metrics via nvidia-smi
+            match get_nvidia_gpu_metrics().await {
+                Ok(devices) => {
+                    Ok(GPUMetricsResponse {
+                        available: true,
+                        devices,
+                        error: None,
+                    })
+                }
+                Err(e) => {
+                    tracing::warn!("Failed to get NVIDIA GPU metrics: {}", e);
+                    // Return empty state with error info
+                    Ok(GPUMetricsResponse {
+                        available: false,
+                        devices: vec![],
+                        error: Some(format!("GPU monitoring unavailable: {}", e)),
+                    })
+                }
+            }
+        }
+        Err(_) => {
+            // nvidia-smi not available, check for other GPUs
+            let total_memory = sys.total_memory();
+            let used_memory = sys.used_memory();
+            
+            // Return a "CPU fallback" device for monitoring
+            let load_avg = System::load_average();
+            let cpu_device = GPUDevice {
+                id: 0,
+                name: "CPU (No GPU Detected)".to_string(),
+                vram_total_mb: total_memory / 1024,
+                vram_used_mb: used_memory / 1024,
+                utilization_percent: (load_avg.one * 10.0) as f32,
+                temperature_celsius: 0.0,
+                fan_speed_percent: 0.0,
+                power_draw_watts: 0.0,
+                clock_speed_mhz: 0,
+                memory_clock_mhz: 0,
+                driver_version: "N/A".to_string(),
+            };
+            
+            Ok(GPUMetricsResponse {
+                available: false,
+                devices: vec![cpu_device],
+                error: Some("No NVIDIA GPU detected. Install nvidia-smi for GPU monitoring.".to_string()),
+            })
+        }
+    }
+}
+
+/// Get NVIDIA GPU metrics via nvidia-smi
+async fn get_nvidia_gpu_metrics() -> Result<Vec<GPUDevice>, String> {
+    use std::process::Command;
+    
+    // Query all GPU info in one call
+    let output = Command::new("nvidia-smi")
+        .args(&[
+            "--query-gpu=index,name,memory.total,memory.used,utilization.gpu,temperature.gpu,fan.speed,power.draw,clocks.gr,clocks.mem,driver_version",
+            "--format=csv,noheader,nounits"
+        ])
+        .output()
+        .map_err(|e| format!("Failed to run nvidia-smi: {}", e))?;
+    
+    if !output.status.success() {
+        return Err("nvidia-smi returned error".to_string());
+    }
+    
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let mut devices = Vec::new();
+    
+    for line in stdout.lines() {
+        let parts: Vec<&str> = line.split(',').map(|s| s.trim()).collect();
+        if parts.len() >= 11 {
+            let device = GPUDevice {
+                id: parts[0].parse().unwrap_or(0),
+                name: parts[1].to_string(),
+                vram_total_mb: parts[2].parse::<f64>().unwrap_or(0.0) as u64,
+                vram_used_mb: parts[3].parse::<f64>().unwrap_or(0.0) as u64,
+                utilization_percent: parts[4].parse::<f64>().unwrap_or(0.0) as f32,
+                temperature_celsius: parts[5].parse::<f64>().unwrap_or(0.0) as f32,
+                fan_speed_percent: parts[6].parse::<f64>().unwrap_or(0.0) as f32,
+                power_draw_watts: parts[7].parse::<f64>().unwrap_or(0.0) as f32,
+                clock_speed_mhz: parts[8].parse::<u32>().unwrap_or(0),
+                memory_clock_mhz: parts[9].parse::<u32>().unwrap_or(0),
+                driver_version: parts[10].to_string(),
+            };
+            devices.push(device);
+        }
+    }
+    
+    if devices.is_empty() {
+        return Err("No GPUs found".to_string());
+    }
+    
+    Ok(devices)
+}
+
 async fn run_training_job(
     state: std::sync::Arc<AppState>,
     job: bi_ide_protocol::telemetry::TrainingJob,

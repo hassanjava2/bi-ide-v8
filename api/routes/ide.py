@@ -20,6 +20,7 @@ from api.schemas import (
     DebugBreakpointRequest,
     DebugCommandRequest,
     DebugStopRequest,
+    CodeCompletionRequest,
 )
 
 router = APIRouter(prefix="/api/v1/ide", tags=["ide"])
@@ -196,3 +197,35 @@ async def execute_terminal(request: TerminalCommandRequest):
 @router.post("/terminal/session/start")
 async def start_terminal_session(request: TerminalSessionStartRequest):
     return await _svc().terminal.start_session(request.cwd)
+
+
+@router.post("/terminal/session/stop")
+async def stop_terminal_session(session_id: str):
+    return await _svc().terminal.stop_session(session_id)
+
+
+@router.get("/terminal/session/{session_id}")
+async def get_terminal_session(session_id: str):
+    return await _svc().terminal.get_session(session_id)
+
+
+# ──────────── Search ────────────
+
+
+@router.post("/search")
+async def search_workspace(query: str, path: Optional[str] = None):
+    """بحث في مساحة العمل باستخدام ripgrep"""
+    return await _svc().search.search(query, path)
+
+
+# ──────────── AI Copilot Extended ────────────
+
+
+@router.post("/copilot/inline")
+async def get_inline_completion(request: CodeCompletionRequest):
+    """إكمال الكود المضمن (Inline Completion)"""
+    return await _svc().copilot.get_inline_completion(
+        code_prefix=request.code_prefix,
+        code_suffix=request.code_suffix,
+        language=request.language
+    )

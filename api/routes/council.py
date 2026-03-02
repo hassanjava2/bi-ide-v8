@@ -4,6 +4,7 @@ Council Routes - مسارات المجلس
 Council API endpoints with standardized RTX configuration.
 """
 
+
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any

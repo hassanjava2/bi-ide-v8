@@ -1,12 +1,22 @@
 //! Main Layout Component
 
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useStore } from "../lib/store";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
 import { Header } from "./Header";
-import { Editor } from "./Editor";
-import { Terminal } from "./Terminal";
+
+const MonacoEditor = lazy(() =>
+  import("./editor/MonacoEditor").then((module) => ({
+    default: module.MonacoEditor,
+  }))
+);
+
+const RealTerminal = lazy(() =>
+  import("./terminal/RealTerminal").then((module) => ({
+    default: module.RealTerminal,
+  }))
+);
 
 interface LayoutProps {
   deviceId: string;
@@ -81,7 +91,9 @@ export function Layout({ deviceId }: LayoutProps) {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Editor Area */}
           <div className="flex-1 overflow-hidden">
-            <Editor />
+            <Suspense fallback={<div className="h-full bg-dark-900" />}>
+              <MonacoEditor />
+            </Suspense>
           </div>
 
           {/* Terminal Panel */}
@@ -93,7 +105,9 @@ export function Layout({ deviceId }: LayoutProps) {
                 onMouseDown={handleTerminalResize}
               />
               <div className="flex-shrink-0 overflow-hidden" style={{ height: terminalHeight }}>
-                <Terminal />
+                <Suspense fallback={<div className="h-full bg-dark-900" />}>
+                  <RealTerminal />
+                </Suspense>
               </div>
             </>
           )}

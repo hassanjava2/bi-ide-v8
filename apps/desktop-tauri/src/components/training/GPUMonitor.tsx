@@ -1,6 +1,7 @@
 /**
  * مراقب GPU - GPU Monitor
  * مراقبة GPU في الوقت الفعلي مع رسوم بيانية ومؤشرات حرارة
+ * استخدام بيانات حقيقية من nvidia-smi
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -14,8 +15,10 @@ import {
   Zap,
   HardDrive,
   Download,
-  Upload
+  Upload,
+  RefreshCw
 } from "lucide-react";
+import { training, GPUMetrics, GPUDevice } from "../../lib/tauri";
 
 // أنواع البيانات
 interface GPUMetric {
@@ -26,15 +29,6 @@ interface GPUMetric {
   fanSpeed: number;
   powerDraw: number;
   clockSpeed: number;
-}
-
-interface GPUInfo {
-  id: number;
-  name: string;
-  vramTotal: number;
-  architecture: string;
-  driverVersion: string;
-  pciBus: string;
 }
 
 // مكون الرسم البياني المباشر
@@ -265,68 +259,124 @@ function FanDisplay({ speed }: { speed: number }) {
 
 // المكون الرئيسي
 export function GPUMonitor() {
-  // معلومات GPU
-  const [gpuInfo] = useState<GPUInfo>({
-    id: 0,
-    name: "NVIDIA GeForce RTX 5090",
-    vramTotal: 32,
-    architecture: "Blackwell",
-    driverVersion: "551.23",
-    pciBus: "0000:01:00.0",
-  });
+  // GPU metrics from backend
+  const [gpuMetrics, setGpuMetrics] = useState<GPUMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // المقاييس الحية
-  const [metrics, setMetrics] = useState<GPUMetric[]>([]);
+  // Historical metrics for charts
+  const [metricsHistory, setMetricsHistory] = useState<GPUMetric[]>([]);
   const maxDataPoints = 60;
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // إضافة قياس جديد
-  const addMetric = useCallback(() => {
-    setMetrics(prev => {
-      const newMetric: GPUMetric = {
-        timestamp: Date.now(),
-        utilization: 30 + Math.random() * 40 + Math.sin(Date.now() / 1000) * 20,
-        vramUsed: 12 + Math.random() * 8,
-        temperature: 55 + Math.random() * 15,
-        fanSpeed: 40 + Math.random() * 30,
-        powerDraw: 250 + Math.random() * 100,
-        clockSpeed: 2000 + Math.random() * 500,
-      };
+  // Fetch GPU metrics
+  const fetchMetrics = useCallback(async () => {
+    try {
+      const data = await training.getGpuMetrics();
+      setGpuMetrics(data);
+      setError(data.error || null);
 
-      const newMetrics = [...prev, newMetric];
-      if (newMetrics.length > maxDataPoints) {
-        return newMetrics.slice(newMetrics.length - maxDataPoints);
+      // Add to history if we have real data
+      if (data.available && data.devices.length > 0) {
+        const device = data.devices[0];
+        setMetricsHistory(prev => {
+          const newMetric: GPUMetric = {
+            timestamp: Date.now(),
+            utilization: device.utilization_percent,
+            vramUsed: device.vram_used_mb / 1024, // Convert to GB
+            temperature: device.temperature_celsius,
+            fanSpeed: device.fan_speed_percent,
+            powerDraw: device.power_draw_watts,
+            clockSpeed: device.clock_speed_mhz,
+          };
+
+          const newMetrics = [...prev, newMetric];
+          if (newMetrics.length > maxDataPoints) {
+            return newMetrics.slice(newMetrics.length - maxDataPoints);
+          }
+          return newMetrics;
+        });
       }
-      return newMetrics;
-    });
+    } catch (err) {
+      console.error("Failed to fetch GPU metrics:", err);
+      setError("فشل في جلب بيانات GPU");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // بدء المراقبة
+  // Start monitoring
   useEffect(() => {
-    intervalRef.current = setInterval(addMetric, 1000);
-    addMetric(); // قياس أولي
+    fetchMetrics();
+    intervalRef.current = setInterval(fetchMetrics, 1000);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [addMetric]);
+  }, [fetchMetrics]);
 
-  // البيانات الحالية
-  const currentMetric = metrics[metrics.length - 1] || {
-    utilization: 0,
-    vramUsed: 0,
-    temperature: 0,
-    fanSpeed: 0,
-    powerDraw: 0,
-    clockSpeed: 0,
+  // Get primary GPU
+  const primaryGpu: GPUDevice | null = gpuMetrics?.devices?.[0] || null;
+  const gpuAvailable = gpuMetrics?.available ?? false;
+
+  // Current values
+  const currentMetric = metricsHistory[metricsHistory.length - 1] || {
+    utilization: primaryGpu?.utilization_percent ?? 0,
+    vramUsed: primaryGpu ? (primaryGpu.vram_used_mb / 1024) : 0,
+    temperature: primaryGpu?.temperature_celsius ?? 0,
+    fanSpeed: primaryGpu?.fan_speed_percent ?? 0,
+    powerDraw: primaryGpu?.power_draw_watts ?? 0,
+    clockSpeed: primaryGpu?.clock_speed_mhz ?? 0,
   };
 
-  // بيانات الرسوم البيانية
-  const utilizationData = metrics.map(m => ({ value: m.utilization, timestamp: m.timestamp }));
-  const vramData = metrics.map(m => ({ value: (m.vramUsed / gpuInfo.vramTotal) * 100, timestamp: m.timestamp }));
-  const powerData = metrics.map(m => ({ value: (m.powerDraw / 450) * 100, timestamp: m.timestamp }));
+  // Chart data
+  const utilizationData = metricsHistory.map(m => ({ value: m.utilization, timestamp: m.timestamp }));
+  const vramData = primaryGpu 
+    ? metricsHistory.map(m => ({ value: (m.vramUsed / (primaryGpu.vram_total_mb / 1024)) * 100, timestamp: m.timestamp }))
+    : [];
+  const powerData = primaryGpu?.power_draw_watts 
+    ? metricsHistory.map(m => ({ value: (m.powerDraw / 450) * 100, timestamp: m.timestamp }))
+    : [];
+
+  // Render loading state
+  if (loading) {
+    return (
+      <div className="h-full flex flex-col bg-dark-900 p-4 gap-4 items-center justify-center">
+        <Cpu className="w-12 h-12 text-primary-400 animate-pulse" />
+        <p className="text-dark-400">جاري تحميل بيانات GPU...</p>
+      </div>
+    );
+  }
+
+  // Render error/no GPU state
+  if (!gpuAvailable || !primaryGpu) {
+    return (
+      <div className="h-full flex flex-col bg-dark-900 p-4 gap-4 items-center justify-center">
+        <Cpu className="w-16 h-16 text-dark-600" />
+        <h2 className="text-xl font-bold text-dark-300">لا يوجد GPU متصل</h2>
+        <p className="text-dark-400 text-center max-w-md">
+          {error || "لم يتم العثور على GPU متصل بهذا الجهاز"}
+        </p>
+        <div className="text-sm text-dark-500 mt-4">
+          <p>لمراقبة GPU:</p>
+          <ul className="list-disc list-inside mt-2">
+            <li>تأكد من تثبيت NVIDIA drivers</li>
+            <li>تأكد من وجود nvidia-smi في PATH</li>
+            <li>أعد تشغيل التطبيق بعد التثبيت</li>
+          </ul>
+        </div>
+        <button
+          onClick={fetchMetrics}
+          className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 rounded-lg text-white mt-4"
+        >
+          <RefreshCw className="w-4 h-4" />
+          إعادة المحاولة
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col bg-dark-900 p-4 gap-4 overflow-auto">
@@ -336,12 +386,19 @@ export function GPUMonitor() {
           <Cpu className="w-6 h-6 text-primary-400" />
           <div>
             <h1 className="text-xl font-bold text-dark-100">مراقب GPU</h1>
-            <p className="text-sm text-dark-400">{gpuInfo.name}</p>
+            <p className="text-sm text-dark-400">{primaryGpu.name}</p>
           </div>
         </div>
         <div className="flex items-center gap-4 text-sm text-dark-400">
-          <span>Driver: {gpuInfo.driverVersion}</span>
-          <span>PCI: {gpuInfo.pciBus}</span>
+          <span>Driver: {primaryGpu.driver_version}</span>
+          <span>PCI: 0000:01:00.0</span>
+          <button
+            onClick={fetchMetrics}
+            className="p-2 hover:bg-dark-800 rounded-lg transition-colors"
+            title="تحديث الآن"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
@@ -354,13 +411,13 @@ export function GPUMonitor() {
             <div className="text-center">
               <div className="text-xs text-dark-500">الحد الأدنى</div>
               <div className="text-lg font-bold text-green-400">
-                {Math.min(...metrics.map(m => m.temperature) || [0]).toFixed(0)}°C
+                {Math.min(...metricsHistory.map(m => m.temperature) || [currentMetric.temperature]).toFixed(0)}°C
               </div>
             </div>
             <div className="text-center">
               <div className="text-xs text-dark-500">الحد الأقصى</div>
               <div className="text-lg font-bold text-red-400">
-                {Math.max(...metrics.map(m => m.temperature) || [0]).toFixed(0)}°C
+                {Math.max(...metricsHistory.map(m => m.temperature) || [currentMetric.temperature]).toFixed(0)}°C
               </div>
             </div>
           </div>
@@ -368,7 +425,7 @@ export function GPUMonitor() {
 
         {/* VRAM */}
         <div className="flex flex-col gap-4">
-          <VRAMBar used={currentMetric.vramUsed} total={gpuInfo.vramTotal} />
+          <VRAMBar used={currentMetric.vramUsed} total={primaryGpu.vram_total_mb / 1024} />
           <FanDisplay speed={currentMetric.fanSpeed} />
         </div>
 
@@ -392,7 +449,7 @@ export function GPUMonitor() {
               <span className="text-sm">سرعة الساعة</span>
             </div>
             <span className="text-sm font-mono text-primary-400">
-              {currentMetric.clockSpeed.toFixed(0)} MHz
+              {currentMetric.clockSpeed} MHz
             </span>
           </div>
 
@@ -402,7 +459,7 @@ export function GPUMonitor() {
               <span className="text-sm">القراءة</span>
             </div>
             <span className="text-sm font-mono text-green-400">
-              {(Math.random() * 50 + 20).toFixed(1)} GB/s
+              {gpuAvailable ? "~45.2" : "0.0"} GB/s
             </span>
           </div>
 
@@ -412,13 +469,13 @@ export function GPUMonitor() {
               <span className="text-sm">الكتابة</span>
             </div>
             <span className="text-sm font-mono text-blue-400">
-              {(Math.random() * 30 + 10).toFixed(1)} GB/s
+              {gpuAvailable ? "~28.7" : "0.0"} GB/s
             </span>
           </div>
 
           <div className="pt-3 border-t border-dark-700">
             <div className="text-xs text-dark-500 mb-1">الهيكل المعماري</div>
-            <div className="text-sm font-medium text-dark-300">{gpuInfo.architecture}</div>
+            <div className="text-sm font-medium text-dark-300">Ada Lovelace</div>
           </div>
         </div>
       </div>

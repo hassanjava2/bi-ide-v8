@@ -35,6 +35,20 @@ pub struct ForceSyncRequest {
     pub workspace_id: Option<String>,
 }
 
+/// Device info for sync
+#[derive(Debug, Serialize, Clone)]
+pub struct SyncDevice {
+    pub device_id: String,
+    pub device_name: String,
+    pub status: String, // "synced" | "syncing" | "conflict" | "offline"
+    pub last_seen: u64,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct GetSyncDevicesRequest {
+    pub workspace_id: String,
+}
+
 #[tauri::command]
 pub async fn get_sync_status(
     state: State<'_, std::sync::Arc<AppState>>,
@@ -119,6 +133,122 @@ pub async fn get_pending_operations(
         .collect();
 
     Ok(PendingOperations { operations })
+}
+
+/// Get sync devices for a workspace
+#[tauri::command]
+pub async fn get_sync_devices(
+    state: State<'_, std::sync::Arc<AppState>>,
+    request: GetSyncDevicesRequest,
+) -> Result<Vec<SyncDevice>, String> {
+    info!("Getting sync devices for workspace: {}", request.workspace_id);
+
+    let enabled = *state.sync_manager.enabled.read().unwrap();
+    let server_url = state.sync_manager.server_url.read().unwrap().clone();
+    let token = state.auth.read().unwrap().access_token.clone();
+    let device_id = state.device_id.clone();
+
+    // If sync is disabled, return just this device as offline
+    if !enabled {
+        return Ok(vec![SyncDevice {
+            device_id: device_id.clone(),
+            device_name: get_device_name(),
+            status: "offline".to_string(),
+            last_seen: bi_ide_protocol::now_ms(),
+        }]);
+    }
+
+    // Try to fetch devices from server
+    let client = reqwest::Client::new();
+    let url = format!("{}/api/v1/sync/devices?workspace_id={}", server_url, request.workspace_id);
+    
+    let mut req = client.get(&url);
+    if let Some(token) = token {
+        req = req.header("Authorization", format!("Bearer {}", token));
+    }
+
+    match req.send().await {
+        Ok(response) => {
+            if response.status().is_success() {
+                // Parse server response
+                match response.json::<Vec<ServerDevice>>().await {
+                    Ok(server_devices) => {
+                        let devices: Vec<SyncDevice> = server_devices
+                            .into_iter()
+                            .map(|d| SyncDevice {
+                                device_id: d.device_id,
+                                device_name: d.device_name,
+                                status: d.status,
+                                last_seen: d.last_seen,
+                            })
+                            .collect();
+                        
+                        // Ensure this device is in the list
+                        let has_this_device = devices.iter().any(|d| d.device_id == device_id);
+                        if !has_this_device {
+                            let mut devices = devices;
+                            devices.push(SyncDevice {
+                                device_id: device_id.clone(),
+                                device_name: get_device_name(),
+                                status: "synced".to_string(),
+                                last_seen: bi_ide_protocol::now_ms(),
+                            });
+                            return Ok(devices);
+                        }
+                        
+                        Ok(devices)
+                    }
+                    Err(e) => {
+                        tracing::warn!("Failed to parse devices response: {}", e);
+                        // Return local device as fallback
+                        Ok(vec![SyncDevice {
+                            device_id: device_id.clone(),
+                            device_name: get_device_name(),
+                            status: if enabled { "synced" } else { "offline" }.to_string(),
+                            last_seen: bi_ide_protocol::now_ms(),
+                        }])
+                    }
+                }
+            } else {
+                // Server returned error, return local device
+                tracing::warn!("Server returned error for devices: {}", response.status());
+                Ok(vec![SyncDevice {
+                    device_id: device_id.clone(),
+                    device_name: get_device_name(),
+                    status: "offline".to_string(),
+                    last_seen: bi_ide_protocol::now_ms(),
+                }])
+            }
+        }
+        Err(e) => {
+            tracing::warn!("Failed to fetch devices from server: {}", e);
+            // Return local device as fallback when offline
+            Ok(vec![SyncDevice {
+                device_id: device_id.clone(),
+                device_name: get_device_name(),
+                status: "offline".to_string(),
+                last_seen: bi_ide_protocol::now_ms(),
+            }])
+        }
+    }
+}
+
+/// Server device response structure
+#[derive(Debug, Deserialize)]
+struct ServerDevice {
+    device_id: String,
+    device_name: String,
+    status: String,
+    last_seen: u64,
+}
+
+/// Get the device name from system info
+fn get_device_name() -> String {
+    // Try to get hostname
+    hostname::get()
+        .ok()
+        .and_then(|h| h.into_string().ok())
+        .unwrap_or_else(|| "Unknown Device".to_string())
 }
 
 async fn perform_sync(
@@ -254,4 +384,3 @@ async fn apply_operation(
 
     Ok(())
 }
-

@@ -84,6 +84,7 @@ fn main() {
             commands::sync::get_sync_status,
             commands::sync::force_sync,
             commands::sync::get_pending_operations,
+            commands::sync::get_sync_devices,
             
             // Search operations
             commands::search::search_workspace,
@@ -111,6 +112,12 @@ fn main() {
             commands::training::start_training_job,
             commands::training::pause_training_job,
             commands::training::get_training_metrics,
+            commands::training::get_gpu_metrics,
+            
+            // AI operations
+            commands::ai::explain_code,
+            commands::ai::refactor_code,
+            commands::ai::get_ai_completion,
         ])
         .on_window_event(|window, event| {
             match event {

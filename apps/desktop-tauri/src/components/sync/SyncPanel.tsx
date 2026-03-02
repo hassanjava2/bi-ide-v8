@@ -14,15 +14,15 @@ interface SyncDevice {
 
 export function SyncPanel() {
   const [devices, setDevices] = useState<SyncDevice[]>([]);
-  const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { currentWorkspace, deviceId } = useStore();
+  const { currentWorkspace, deviceId, syncStatus } = useStore();
+  const isConnected = syncStatus.isConnected || devices.some((device) => device.status !== "offline");
 
   const loadDevices = useCallback(async () => {
     if (!currentWorkspace) return;
     try {
       const result = await invoke<SyncDevice[]>("get_sync_devices", {
-        workspace_id: currentWorkspace.id,
+        request: { workspace_id: currentWorkspace.id },
       });
       setDevices(result);
     } catch (err) {

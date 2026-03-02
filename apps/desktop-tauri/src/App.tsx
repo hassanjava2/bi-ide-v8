@@ -1,20 +1,34 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useStore } from "./lib/store";
 import { system, workspace, sync, training } from "./lib/tauri";
 import { Layout } from "./components/Layout";
 import { WelcomeScreen } from "./components/WelcomeScreen";
 import { listen } from "@tauri-apps/api/event";
 
+const CommandPalette = lazy(() =>
+  import("./components/editor/CommandPalette").then((module) => ({
+    default: module.CommandPalette,
+  }))
+);
+
+const QuickOpen = lazy(() =>
+  import("./components/editor/QuickOpen").then((module) => ({
+    default: module.QuickOpen,
+  }))
+);
+
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [deviceId, setDeviceId] = useState<string>("");
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [quickOpenOpen, setQuickOpenOpen] = useState(false);
   
   const {
     currentWorkspace,
     setCurrentWorkspace,
     setSyncStatus,
     setTrainingStatus,
-    updateSettings,
+    setDeviceId: setStoreDeviceId,
   } = useStore();
 
   // Initialize app
@@ -24,6 +38,7 @@ function App() {
         // Get device info
         const info = await system.getInfo();
         setDeviceId(info.device_id);
+        setStoreDeviceId(info.device_id);
         console.log("BI-IDE Desktop v" + info.app_version);
         console.log("Device ID:", info.device_id);
         console.log("Platform:", info.platform, info.arch);
@@ -73,12 +88,39 @@ function App() {
     };
 
     init();
-  }, [setCurrentWorkspace, setSyncStatus, setTrainingStatus]);
+  }, [setCurrentWorkspace, setSyncStatus, setTrainingStatus, setStoreDeviceId]);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd+Shift+P → Command Palette
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
+        setQuickOpenOpen(false);
+        return;
+      }
+      // Ctrl/Cmd+P → Quick Open (not in inputs)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p" && !e.shiftKey) {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+        e.preventDefault();
+        setQuickOpenOpen(prev => !prev);
+        setCommandPaletteOpen(false);
+        return;
+      }
+      // Escape closes modals
+      if (e.key === "Escape") {
+        setCommandPaletteOpen(false);
+        setQuickOpenOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Listen for Tauri events
   useEffect(() => {
     const unlistenResource = listen("resource-usage", (event) => {
-      // Could update a resource usage display
       console.log("Resource usage:", event.payload);
     });
 
@@ -96,7 +138,6 @@ function App() {
 
     const unlistenFileChange = listen("file-changed", (event) => {
       console.log("File changed:", event.payload);
-      // Could refresh file tree
     });
 
     return () => {
@@ -105,6 +146,32 @@ function App() {
       unlistenFileChange.then((fn) => fn());
     };
   }, [setSyncStatus]);
+
+  // Listen for CommandPalette events
+  useEffect(() => {
+    // Workspace operations
+    const unlistenWorkspaceOpen = listen("workspace-opened", (event: any) => {
+      const ws = event.payload;
+      if (ws) {
+        setCurrentWorkspace({
+          id: ws.id,
+          path: ws.path,
+          name: ws.name,
+        });
+      }
+    });
+
+    // Quick Open
+    const unlistenQuickOpen = listen("open-quick-open", () => {
+      setQuickOpenOpen(true);
+      setCommandPaletteOpen(false);
+    });
+
+    return () => {
+      unlistenWorkspaceOpen.then((fn) => fn());
+      unlistenQuickOpen.then((fn) => fn());
+    };
+  }, [setCurrentWorkspace]);
 
   // Auto-save workspace
   useEffect(() => {
@@ -131,6 +198,13 @@ function App() {
       ) : (
         <WelcomeScreen deviceId={deviceId} />
       )}
+
+      <Suspense fallback={null}>
+        <CommandPalette isOpen={commandPaletteOpen} onClose={() => setCommandPaletteOpen(false)} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <QuickOpen isOpen={quickOpenOpen} onClose={() => setQuickOpenOpen(false)} />
+      </Suspense>
     </div>
   );
 }
