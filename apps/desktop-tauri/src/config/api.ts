@@ -9,6 +9,7 @@
  */
 
 import { invoke } from "@tauri-apps/api/core";
+import { fetch as tauriFetch } from "@tauri-apps/plugin-http";
 
 // ─── Configuration ───────────────────────────────────────────────
 
@@ -44,7 +45,7 @@ async function probeRtx(): Promise<boolean> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch(`${API_CONFIG.rtx.baseUrl}/health`, {
+    const res = await tauriFetch(`${API_CONFIG.rtx.baseUrl}/health`, {
       signal: controller.signal,
     });
     clearTimeout(timeout);
@@ -142,7 +143,7 @@ async function fetchWithTimeout(
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(url, { ...options, signal: controller.signal });
+    const response = await tauriFetch(url, { ...options, signal: controller.signal });
     clearTimeout(timeoutId);
     return response;
   } catch (error) {
