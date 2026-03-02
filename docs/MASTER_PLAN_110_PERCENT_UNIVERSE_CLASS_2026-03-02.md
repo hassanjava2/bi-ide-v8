@@ -33,10 +33,13 @@
 
 ## 3) Reality Gaps to Close First (Critical)
 
-## Gap A — Desktop Sync realism
+> **ملاحظة:** بعد الفحص الدقيق، بعض الـ Gaps السابقة كانت غير دقيقة. التحديث أدناه يعكس الواقع الفعلي.
+
+## Gap A — Desktop Sync realism 🔴 CRITICAL
 - `SyncPanel.tsx:24` يستدعي `invoke("get_sync_devices")` — لكن هذا الأمر **غير موجود** في `main.rs`.
 - `main.rs` يسجل فقط: `get_sync_status`, `force_sync`, `get_pending_operations` (سطور 84-86).
-- **Action:** إضافة `get_sync_devices` command في Rust + تسجيله في `invoke_handler`.
+- `commands/sync.rs` لا يحتوي على `get_sync_devices` نهائياً — **الـ frontend ينادي API غير موجود!**
+- **Action:** إضافة `get_sync_devices` command في `commands/sync.rs` + تسجيله في `main.rs` invoke_handler.
 
 ## Gap B — Command Palette partial actions
 - الأوامر تستدعي store methods حقيقية (toggleSidebar, toggleTerminal, etc.).
@@ -44,21 +47,37 @@
 - **Action:** مراجعة كل أمر + ربط بتنفيذ فعلي أو إخفاء الأمر مؤقتاً.
 
 ## Gap C — Training Dashboard simulated metrics
-- **14 موضع** `Math.random()` في `TrainingDashboard.tsx` (سطور 315-341) و `GPUMonitor.tsx` (سطور 288-405).
+- **15+ موضع** `Math.random()` في:
+  - `TrainingDashboard.tsx` سطور 315-318 (loss/accuracy)
+  - `TrainingDashboard.tsx` سطور 335-341 (GPU stats)
+  - `GPUMonitor.tsx` سطور 288-293 (جميع المقاييس)
+  - `GPUMonitor.tsx` سطور 405, 415 (read/write speed)
 - GPU utilization, VRAM, temperature, fan speed, power — كلها محاكاة وهمية.
 - **Action:** استبدال بـ `invoke("get_gpu_metrics")` polling حقيقي مع empty/offline states.
 
-## Gap D — Auth contract across desktop/web/api
-- مسارات API محمية، وبعض الاستدعاءات قد تفشل بدون token lifecycle متكامل.
-- **Action:** Device auth bootstrap + token refresh + silent re-auth + error UX.
+## Gap D — Auth contract across desktop/web/api ⚠️ PARTIAL
+> **تحديث:** الـ device ID يعمل، لكن token lifecycle يحتاج مراجعة.
 
-## Gap E — Desktop Component Wiring (الأهم)
-- `Layout.tsx` لا يزال يستخدم `Editor` (textarea) و `Terminal` (محاكي) بدل `MonacoEditor` و `RealTerminal`.
-- `App.tsx` لا يركّب `CommandPalette` ولا `QuickOpen` — لا اختصارات عالمية.
-- `Sidebar.tsx` يملك Search/Git/Training كـ inline code بدل الـ panels الجاهزة (GitPanel, SearchPanel, TrainingDashboard).
-- `App.tsx` لا يستدعي `store.setDeviceId()` — يسبب خلل بـ SyncPanel identity.
-- **Action:** تطبيق خطة الربط (World-Class docs) — تعديل 3 ملفات فقط.
-- **مرجع:** `COMPLETE_INTEGRATION_ALGORITHMS_WORLD_CLASS_2026-03-02.md`
+- ✅ `App.tsx:42` يستدعي `setStoreDeviceId(info.device_id)` — يعمل بشكل صحيح
+- ⚠️ مسارات API محمية، لكن token refresh mechanism غير مؤكد
+- ⚠️ Silent re-auth + error UX يحتاج اختبار end-to-end
+- **Action:** مراجعة `commands::auth` module + اختبار token refresh flow
+
+## Gap E — Desktop Component Wiring ✅ DONE (Verified)
+> **تحديث:** بعد الفحص الميداني — الـ wiring شغال بشكل صحيح.
+
+- ✅ `Layout.tsx` يستخدم `MonacoEditor` و `RealTerminal` (lazy imports)
+- ✅ `App.tsx` يركّب `CommandPalette` و `QuickOpen` مع اختصارات Ctrl+Shift+P و Ctrl+P
+- ✅ `Sidebar.tsx` يستخدم lazy imports لـ `GitPanel`, `SearchPanel`, `SyncPanel`, `TrainingDashboard`
+- ✅ `App.tsx:42` يستدعي `setStoreDeviceId(info.device_id)` بشكل صحيح
+- **الحالة:** لا يوجد action مطلوب — هذا الـ Gap مغلق فعلياً
+- **ملاحظة:** التقرير السابق كان يحتوي على معلومات غير دقيقة عن هذا الجزء
+
+## Gap F — GPU Metrics Backend 🔴 NEW
+- `TrainingDashboard.tsx` و `GPUMonitor.tsx` يحتاجون `get_gpu_metrics` Tauri command.
+- حالياً يستخدمون `Math.random()` (15+ موضع) — بيانات وهمية بالكامل.
+- لا يوجد `get_gpu_metrics` في `commands/training.rs` ولا في `main.rs`.
+- **Action:** إضافة `get_gpu_metrics` command (حقيقي من nvidia-smi/ROCm أو stub مع empty state) + تسجيله.
 
 ---
 
@@ -174,7 +193,8 @@
 ## 5) Phased Delivery (Universe-Class Roadmap)
 
 ## Phase 0 — Reality Stabilization (Week 1)
-- Close gaps A/B/C/D بالكامل.
+- ~~Gap E~~ ✅ مغلق فعلياً.
+- Close gaps A/B/C/D/F بالكامل.
 - Freeze interfaces مؤقتًا.
 - Add smoke tests for IDE core flows.
 
@@ -281,27 +301,48 @@ Release ممنوع إذا:
 
 ---
 
-## 11) Immediate Next 72 Hours (Action Burst)
+## 11) Immediate Next 72 Hours (Action Burst) — UPDATED
 
-### Day 1 (Gap E — الأساس)
-1. **Wire desktop components** — Layout.tsx + App.tsx + Sidebar.tsx حسب World-Class Integration Guide.
-2. `npm run build` + `npm run tauri build` — zero errors.
-3. Install to `/Applications` + smoke test 11 items.
+> **تحديث:** تم إعادة ترتيب الأولويات بناءً على الفحص الفعلي. Gap E مغلق فعلياً، لذا نركز على المشاكل الحقيقية.
 
-### Day 2 (Gap A + C — Realism)
-4. Implement `get_sync_devices` Rust command + register in `main.rs`.
-5. Replace `Math.random()` in TrainingDashboard/GPUMonitor with real metrics API.
-6. Verify SyncPanel shows "This device" correctly.
+### Day 1 (Gap A — Critical Fix)
+1. **Implement `get_sync_devices`** في `commands/sync.rs`:
+   ```rust
+   #[derive(Debug, Serialize)]
+   pub struct SyncDevice {
+       pub device_id: String,
+       pub device_name: String,
+       pub status: String,
+       pub last_seen: u64,
+   }
+   
+   #[tauri::command]
+   pub async fn get_sync_devices(
+       state: State<'_, std::sync::Arc<AppState>>,
+       workspace_id: String,
+   ) -> Result<Vec<SyncDevice>, String> { ... }
+   ```
+2. تسجيل الأمر في `main.rs` invoke_handler.
+3. اختبار SyncPanel يعرض "This device" بشكل صحيح.
 
-### Day 3 (Gap B + D — Hardening)
-7. Audit CommandPalette actions — hide or wire unimplemented commands.
-8. Add basic device auth bootstrap + error handling.
-9. Add end-to-end smoke test: open workspace → edit → search → git → sync → train → council.
+### Day 2 (Gap F + C — GPU Metrics)
+4. **Add `get_gpu_metrics` command** — نظام monitoring حقيقي (أو stub مع empty state).
+5. **Replace `Math.random()`** في `TrainingDashboard.tsx` و `GPUMonitor.tsx` باستدعاء `get_gpu_metrics`.
+6. إضافة empty/offline states للـ GPU monitor.
 
-**Success criteria at 72h:**
-- [ ] Gap E: Desktop wired — Monaco/Terminal/CommandPalette/QuickOpen/GitPanel working
-- [ ] Gap A: `get_sync_devices` returns real data
-- [ ] Gap C: 0 instances of `Math.random()` in production metrics
-- [ ] Gap B: 0 critical no-op commands
+### Day 3 (Gap B + D — Polish)
+7. **Audit CommandPalette** — إخفاء الأوامر الـ no-op أو ربطها:
+   - `file.openFolder` → استدعاء `dialog.open`
+   - `file.newFile` → استدعاء `fs.create` + `workspace.refresh`
+   - `edit.undo/redo` → تمرير للـ Monaco Editor
+8. **Auth hardening** — اختبار token refresh + error UX.
+9. **Smoke test** — open workspace → edit → search → git → sync → train.
+
+**Success criteria at 72h (UPDATED):**
+- [x] ~~Gap E~~: ✅ Already working — Monaco/Terminal/CommandPalette/QuickOpen all functional
+- [ ] Gap A: `get_sync_devices` returns real data (or empty array with proper error handling)
+- [ ] Gap F: `get_gpu_metrics` command exists (real or stub with empty state)
+- [ ] Gap C: 0 instances of `Math.random()` in production metrics paths
+- [ ] Gap B: 0 critical no-op commands (or hidden/disabled)
 - [ ] Build green + smoke tests green
 - [ ] Pushed to `origin/main` with auto-update deployed
