@@ -161,7 +161,8 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 - [ ] معامل ومصانع افتراضية (إعادة بناء الحضارة)
 - [ ] طبقة ربط عُليا ← تستخلص الأفكار المُجمّعة
 
-## 4.2 ذاتي التطوير
+## 4.2 ذاتي التطوير + التكاثر الذاتي ⭐
+**أثناء التدريب يطوّر نفسه:**
 - [ ] `DynamicLayerGenerator` ← ينتج طبقات أوتوماتيكياً (موجود بـ `meta_architect.py` لكن لا يُستدعى)
 - [ ] كل طبقة جديدة تُربط بالشجرة تلقائياً
 - [ ] `brain/evaluator.py` ← تقييم أداء كل طبقة (موجود لكن غير متصل)
@@ -169,6 +170,18 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 - [ ] Autonomous self-repair loops (IDEA-015)
 - [ ] Self-improvement gated: propose → sandbox → evaluate → promote
 - [ ] Kill switch + audit trail
+
+**التكاثر الذاتي — يبرمج نفسه:**
+- [ ] أثناء التدريب **يبرمج ويطور نسخة من نفسه**
+- [ ] يأخذ نسخة → يبرمجها → يطورها → **يجربها 100%**
+- [ ] يعرضها على الرئيس → **من يوافق يستبدل نفسه بالنسخة الأفضل**
+- [ ] حلقة لا نهائية: نسخة → تحسين → اختبار → استبدال → تكرار
+
+**نظام تشغيل خاص (BI-OS):**
+- [ ] يقدر يبني **نظام تشغيل كامل** من الصفر (بدون ويندوز/لينكس/ماك)
+- [ ] يبني: kernel + drivers + scheduler + filesystem مصمم للـ AI
+- [ ] **بعد موافقة الرئيس وتجربته** ← يمسح النظام القديم وينصب نفسه
+- [ ] هدف: نظام مُحسّن بالكامل للذكاء الاصطناعي
 
 ## 4.3 المشروع الموازي
 - [ ] مشروع يتابع الأول بطريقة مغايرة
@@ -405,14 +418,58 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 
 # القسم ٨ — IDE والديسكتوب
 
-## 8.1 ✅ مكتمل
+## 8.1 ✅ مكتمل (ديسكتوب Tauri v8)
 - بناء Tauri v2 (0 أخطاء TypeScript + Rust)
-- AI Chat عبر invoke (إصلاح TypeError)
+- AI Chat عبر invoke
 - Command Palette (25+ أمر)
 - Training Dashboard (بيانات GPU حقيقية)
 - Sync Panel + Auth + GPU Metrics
 
-## 8.2 ❌ مطلوب
+## 8.2 ✅ UI موجود من السابق (3,246 سطر!) — يحتاج ربط
+| ملف | سطور | الوظيفة |
+|-----|-------|---------|
+| `ui/src/pages/IDE.tsx` | **1,604** | صفحة IDE كاملة! |
+| `ui/src/components/ide/AICompletion.tsx` | 267 | اقتراحات AI |
+| `ui/src/components/ide/DiagnosticsPanel.tsx` | 271 | تشخيصات |
+| `ui/src/components/ide/ToolsSidebar.tsx` | 228 | شريط أدوات |
+| `ui/src/components/ide/GitPanel.tsx` | 213 | لوحة Git |
+| `ui/src/components/ide/XTermTerminal.tsx` | 159 | terminal حقيقي |
+| `ui/src/components/ide/DebugPanel.tsx` | 147 | لوحة debug |
+| `ui/src/components/ide/TerminalPanel.tsx` | 97 | terminal |
+| `ui/src/components/ide/FileExplorer.tsx` | 93 | شجرة ملفات |
+| `ui/src/components/ide/CodeEditor.tsx` | 64 | محرر كود |
+
+## 8.3 ✅ صفحات UI موجودة من السابق
+- `Council.tsx` — مجلس الحكماء
+- `Training.tsx` — لوحة التدريب
+- `Dashboard.tsx` — لوحة القيادة
+- `Community.tsx` + `Forums.tsx` + `CodeSharing.tsx` + `KnowledgeBase.tsx`
+- `ERP.tsx` + `Accounting.tsx` + `CRM.tsx` + `HR.tsx` + `Inventory.tsx`
+- `MetaControl.tsx` — تحكم فوقي
+- `Nodes.tsx` — إدارة العقد
+- `Downloads.tsx` + `Settings.tsx` + `Login.tsx`
+
+## 8.4 ✅ من الإصدارات القديمة (v6/v7)
+> من `LEGACY_DESKTOP_AUDIT_2026-02-22.md`
+
+**v6 (Electron):**
+- monaco + xterm + node-pty + onnxruntime-node + transformers
+- terminal integration + training/model handlers + workspace security
+
+**v7 (Electron + Vite + React):**
+- separated: main.ts + preload.ts + IPC + core + renderer
+- secure preload bridge + modular IPC + terminal/session isolation
+
+**v6 Rust Agent** (`v6/desktop-agent-rs/`):
+- worker registration + heartbeat + job claim + command execution
+- cross-platform (Windows PowerShell / Unix sh)
+
+**18 سكربت تدريب مهاجرة** (`ai/training/legacy/`):
+- 11 migrated → `ai/training/` (advanced, continuous, multi_gpu, converter, evaluation)
+- LoRA + Mixed Precision + PyTorch 2.x + CUDA 12.x
+
+## 8.5 ❌ مطلوب (لم يُنجز بعد)
+- [ ] ربط `ui/src/components/ide/` بالديسكتوب الجديد (Tauri)
 - [ ] Monaco editor حقيقي (فتح/تعديل/حفظ ملفات)
 - [ ] PTY terminal integration
 - [ ] Git integration حقيقي (status/diff/commit/push/pull)
