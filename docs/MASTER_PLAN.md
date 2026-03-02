@@ -259,7 +259,103 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 | `worker/bi_worker.py` | 711 | عامل تدريب | **تحسين** — idle training |
 | `orchestrator_api.py` | 476 | توزيع مهام | **تحسين** — deduplication |
 
+## 6.12 💻 IDE Backend (موجود 2,158 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `ide/ide_service.py` | **1,976** | FileSystem + Copilot + Terminal + Git + Diagnostics | **ربط** بالديسكتوب |
+| `ide/ide_interface.py` | 91 | واجهة IDE | **تفعيل** |
+| `ide/ide_service_patch.py` | 13 | تصحيحات | **دمج** |
+
+## 6.13 📱 Mobile (موجود 582 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `mobile/api/mobile_routes.py` | 582 | API موبايل كامل | **تفعيل** |
+| `mobile/pwa/` | — | Progressive Web App | **تفعيل** |
+
+## 6.14 🔀 API Layer (موجود 4,000+ سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `api/gateway.py` | 523 | بوابة API | **تفعيل** |
+| `api/schemas.py` | 1,293 | كل الـ schemas | ✅ مُستخدم |
+| `api/rate_limit.py` | 197 | حد الطلبات | **تفعيل** |
+| `api/rate_limit_redis.py` | 195 | حد طلبات Redis | **تفعيل** |
+| `api/auth.py` | 168 | مصادقة | ✅ مُستخدم |
+| `api/routes/ideas.py` | 110 | إدارة الأفكار | **تفعيل** — No-idea-loss |
+| `api/routes/downloads.py` | 113 | تنزيلات | **تفعيل** |
+| `api/routes/checkpoints.py` | 193 | إدارة checkpoints | **تفعيل** |
+| `api/routes/rtx4090.py` | — | RTX API | **تفعيل** |
+| `api/routes/network.py` | 107 | شبكة | **تفعيل** |
+
+## 6.15 🏭 ERP Modules (موجود 4,500+ سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `erp/erp_database_service.py` | 846 | خدمة قاعدة بيانات ERP | **تحسين** |
+| `erp/accounting.py + modules/accounting/` | 1,053+ | محاسبة + دفتر + تقارير | **تفعيل** |
+| `erp/modules/crm/` | 1,039+ | عملاء + مبيعات + تذاكر | **تفعيل** |
+| `erp/modules/hr/` | 1,038+ | موظفين + رواتب + حضور | **تفعيل** |
+| `erp/modules/inventory/` | — | مخزون + موردين + طلبات شراء | **تفعيل** |
+| `erp/crm.py` | 508 | CRM مبسّط | **تفعيل** |
+| `erp/reports.py` | 557 | تقارير | **تفعيل** |
+
+## 6.16 🖥️ RTX4090 Machine (موجود 1,241+ سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `rtx4090_machine/resource_manager.py` | 653 | إدارة موارد GPU | **تفعيل** |
+| `rtx4090_machine/rtx4090_server.py` | 588 | سيرفر RTX قديم | **دمج** مع rtx_api_server |
+
+## 6.17 📚 Training V6 Scripts (موجود 3,600+ سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `training/v6-scripts/train_ai.py` | 1,089 | تدريب AI رئيسي | **تحديث** وتفعيل |
+| `training/v6-scripts/code_generation_training.py` | 978 | تدريب توليد كود | **تفعيل** |
+| `training/v6-scripts/advanced_training.py` | 872 | تدريب متقدم | **تفعيل** |
+| `training/v6-scripts/smart-learn.py` | 677 | تعلم ذكي | **تفعيل** |
+| `training/v6-scripts/prepare-chat-data.py` | 166 | تحضير بيانات محادثة | **تفعيل** |
+| `training/v6-scripts/convert-to-onnx.py` | 166 | تحويل لـ ONNX | **تفعيل** |
+| `training/v6-scripts/convert-to-gguf.py` | 131 | تحويل لـ GGUF | **تفعيل** |
+
+## 6.18 🦀 Rust Protocol Library (7 ملفات!)
+| ملف | الوظيفة | المطلوب |
+|-----|---------|---------|
+| `libs/protocol/src/telemetry.rs` | تتبّع | **تفعيل** |
+| `libs/protocol/src/contracts/v1.rs` | عقود API | **تفعيل** |
+| `libs/protocol/src/auth.rs` | مصادقة | **تفعيل** |
+| `libs/protocol/src/sync.rs` | مزامنة | **تفعيل** |
+| `libs/protocol/src/training.rs` | تدريب | **تفعيل** |
+
+## 6.19 ☸️ Kubernetes (14 ملف!)
+| المجلد | الملفات | المطلوب |
+|--------|---------|---------|
+| `deploy/k8s/` | deployment-api, deployment-ui, deployment-worker, hpa, pdb, ingress, network-policy, configmap, secret, services | **تفعيل** عند النشر |
+
+## 6.20 🗄️ DB Migrations (6 ملفات!)
+| مجلد | الملفات | المطلوب |
+|------|---------|---------|
+| `alembic/versions/` | 6 migrations (tables, monitoring, users, ERP, invoices) | **تفعيل** مع PostgreSQL |
+
+## 6.21 📊 Analytics + Tests (38+ ملف!)
+| مجلد | سطور | الوظيفة | المطلوب |
+|------|-------|---------|---------|
+| `monitoring/analytics/event_tracker.py` | 614 | تتبّع أحداث | **تفعيل** |
+| `tests/` | 38 ملف | 8,000+ سطر اختبارات | **تفعيل** CI |
+
+## 6.22 🛠️ Scripts (23 ملف!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `scripts/verify_installation.py` | 640 | تحقق تثبيت | **تفعيل** |
+| `scripts/health_check.py` | 613 | فحص صحة | **تفعيل** |
+| `scripts/start_services.py` | 600 | بدء خدمات | **تفعيل** |
+| `scripts/setup_database.py` | 513 | إعداد DB | **تفعيل** |
+
 ---
+
+> ### 📊 إحصائيات المشروع الكاملة
+> - **274 ملف Python** = **100,864 سطر كود**
+> - **7 ملفات Rust** (libs/protocol)
+> - **14 ملف K8s YAML**
+> - **6 DB migrations**
+> - **38 ملف اختبار**
+> - **40+ ملف وثائق**
 
 # القسم ٧ — أفكار الأولوية (من IDEA_PARITY_TOP15)
 
