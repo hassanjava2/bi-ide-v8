@@ -48,7 +48,8 @@ class CouncilStatusResponse(BaseModel):
 @router.post("/message", response_model=MessageResponse)
 async def council_message(
     request: MessageRequest,
-    current_user = Depends(get_current_active_user)
+    # Auth removed: desktop app sends messages without token
+    # current_user = Depends(get_current_active_user)
 ):
     """
     إرسال رسالة للمجلس والحصول على رد
