@@ -175,23 +175,89 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 
 ---
 
-# القسم ٦ — أنظمة موجودة غير مربوطة
+# القسم ٦ — كود موجود يحتاج تفعيل (لا تبدي من الصفر!)
 
-| النظام | المسار | الوصف | مُفعّل؟ |
-|--------|--------|-------|---------|
-| Brain | `brain/` (5 ملفات) | scheduler, evaluator, bi_brain | ❌ |
-| AI Training | `ai/training/` (15 ملف) | continuous, multi_gpu, rtx4090, auto_eval | ❌ |
-| Community | `community/` (7 ملفات) | forums, code_sharing, knowledge_base, profiles | ❌ |
-| Performance | `performance/` (4 ملفات) | cache_layer, cdn, async, db_optimization | ❌ |
-| Security | `security/` (5 ملفات) | ddos, encryption, audit, penetration | ❌ |
-| Monitoring | `monitoring/` (20 ملف) | prometheus, grafana, ELK, jaeger | ❌ |
-| Network | `network/` (8 ملفات) | auto_reconnect, firewall, health_check | ❌ |
-| Specialized AI | `hierarchy/specialized_ai_network.py` | شبكة AI متخصصة | ❌ |
-| Checkpoint Loader | `hierarchy/checkpoint_loader.py` | تحميل checkpoints | ❌ |
-| Cosmic Bridge | `hierarchy/cosmic_bridge.py` | ربط بين الأبعاد | ⚠️ جزئي |
-| ERP | `erp/` (10+ ملف) | accounting, crm, hr, inventory | ⚠️ جزئي |
-| Orchestrator | `orchestrator_api.py` | توزيع مهام | ⚠️ جزئي |
-| Services | `services/` (12 ملف) | training, council, ai, sync, backup | ⚠️ جزئي |
+> ⚠️ **15,448 سطر كود موجود عبر 33+ ملف — يحتاج تفعيل وتحسين لا إنشاء من جديد**
+
+## 6.1 🧠 Brain — الدماغ (موجود 840 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `brain/bi_brain.py` | 241 | الدماغ الرئيسي | **تحسين** — ربطه بالطبقات |
+| `brain/evaluator.py` | 301 | تقييم النماذج | **تحسين** — تفعيل التقييم الدوري |
+| `brain/scheduler.py` | 298 | جدولة مهام | **تحسين** — تفعيل الجدولة التلقائية |
+
+## 6.2 🎓 AI Training — تدريب (موجود 2,910 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `ai/training/continuous_trainer.py` | 734 | تدريب مستمر | **تفعيل** على RTX |
+| `ai/training/multi_gpu_trainer.py` | 607 | تدريب متعدد GPUs | **تفعيل** للـ H200 |
+| `ai/training/rtx4090_trainer.py` | 460 | تدريب RTX مخصص | **تفعيل** وربط |
+| `ai/training/auto_evaluation.py` | 547 | تقييم أوتوماتيكي | **تفعيل** |
+| `ai/training/data_collection.py` | 562 | جمع بيانات | **تفعيل** ← الإنترنت |
+
+## 6.3 🧪 AI Memory + Tokenizer + Optimization (موجود 1,882 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `ai/memory/vector_db.py` | 608 | ذاكرة vector | **تحسين** — 4 مستويات |
+| `ai/memory/conversation_history.py` | 590 | تاريخ المحادثات | **تفعيل** |
+| `ai/tokenizer/arabic_processor.py` | 175 | **معالج عربي!** | **تحسين** — ربط بالتدريب |
+| `ai/optimization/quantization.py` | 509 | تقليل حجم النموذج | **تفعيل** |
+
+## 6.4 🔧 Data Pipeline (موجود 718 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `data/pipeline/data_cleaner.py` | 330 | تنظيف بيانات | **تفعيل** |
+| `data/pipeline/data_validator.py` | 388 | تحقق بيانات | **تفعيل** |
+
+## 6.5 👥 Community (موجود 1,417 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `community/forums.py` | 464 | منتديات | **تفعيل** وربط بالـ UI |
+| `community/code_sharing.py` | 489 | مشاركة كود | **تفعيل** |
+| `community/knowledge_base.py` | 464 | قاعدة معرفة | **تفعيل** |
+
+## 6.6 🔒 Security (موجود 1,108 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `security/ddos_protection.py` | 636 | حماية DDoS | **تفعيل** |
+| `security/encryption.py` | 472 | تشفير | **تفعيل** |
+
+## 6.7 📊 Monitoring (موجود 1,170+ سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `monitoring/alert_manager.py` | 599 | تنبيهات | **تفعيل** |
+| `monitoring/metrics_exporter.py` | 571 | مقاييس | **تفعيل** + Prometheus |
+| `monitoring/grafana/` | — | لوحات عرض | **تفعيل** |
+| `monitoring/elk/` | — | سجلات | **تفعيل** |
+
+## 6.8 🌐 Network (موجود 752+ سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `network/auto_reconnect.py` | 752 | إعادة اتصال تلقائي | **تفعيل** |
+| `network/firewall_manager.py` | — | جدار ناري | **تفعيل** |
+
+## 6.9 ⚙️ Services (موجود 2,406 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `services/training_service.py` | 285 | خدمة تدريب | **تحسين** — ربط بـ RTX |
+| `services/council_service.py` | 501 | خدمة المجلس | **تحسين** — إزالة mocks |
+| `services/ai_service.py` | 525 | خدمة AI | **تحسين** — إزالة mocks |
+| `services/sync_service.py` | 556 | خدمة مزامنة | **تحسين** |
+| `services/backup_service.py` | 539 | خدمة نسخ احتياطي | **تفعيل** |
+
+## 6.10 🏗️ Hierarchy extras (موجود 1,018 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `hierarchy/checkpoint_loader.py` | 233 | تحميل checkpoints | **تفعيل** — ربط بالـ 4.2GB |
+| `hierarchy/specialized_ai_network.py` | 414 | شبكة AI متخصصة | **تفعيل** |
+| `hierarchy/autonomous_learning.py` | 250 | تعلم ذاتي | **تفعيل** |
+| `hierarchy/connect_services.py` | 121 | ربط خدمات | **تفعيل** |
+
+## 6.11 🔄 Worker + Orchestrator (موجود 1,187 سطر!)
+| ملف | سطور | الوظيفة | المطلوب |
+|-----|-------|---------|---------|
+| `worker/bi_worker.py` | 711 | عامل تدريب | **تحسين** — idle training |
+| `orchestrator_api.py` | 476 | توزيع مهام | **تحسين** — deduplication |
 
 ---
 
