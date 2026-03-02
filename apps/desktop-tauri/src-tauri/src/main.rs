@@ -22,7 +22,7 @@ fn main() {
         )
         .init();
 
-    info!("Starting BI-IDE Desktop v0.1.0");
+    info!("Starting BI-IDE Desktop v8.0.1");
 
     let state = Arc::new(AppState::new());
 
