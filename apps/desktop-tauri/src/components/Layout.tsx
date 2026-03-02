@@ -1,10 +1,12 @@
 //! Main Layout Component
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useStore } from "../lib/store";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
 import { Header } from "./Header";
+import { Editor } from "./Editor";
+import { Terminal } from "./Terminal";
 
 interface LayoutProps {
   deviceId: string;
@@ -12,8 +14,9 @@ interface LayoutProps {
 
 export function Layout({ deviceId }: LayoutProps) {
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
+  const [isResizingTerminal, setIsResizingTerminal] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(280);
-  const { sidebarVisible } = useStore();
+  const { sidebarVisible, terminalVisible, terminalHeight, setTerminalHeight } = useStore();
 
   const handleSidebarResize = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,10 +39,31 @@ export function Layout({ deviceId }: LayoutProps) {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
+  const handleTerminalResize = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingTerminal(true);
+    const startY = e.clientY;
+    const startHeight = terminalHeight;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const newHeight = Math.max(100, Math.min(600, startHeight - (e.clientY - startY)));
+      setTerminalHeight(newHeight);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingTerminal(false);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
   return (
     <div className="h-full flex flex-col">
       <Header deviceId={deviceId} />
-      
+
       <div className="flex-1 flex overflow-hidden">
         {sidebarVisible && (
           <>
@@ -47,21 +71,32 @@ export function Layout({ deviceId }: LayoutProps) {
               <Sidebar />
             </div>
             <div
-              className={`w-1 h-full cursor-col-resize transition-colors ${
-                isResizingSidebar ? "bg-primary-500" : "bg-dark-700 hover:bg-primary-500"
-              }`}
+              className={`w-1 h-full cursor-col-resize transition-colors ${isResizingSidebar ? "bg-primary-500" : "bg-dark-700 hover:bg-primary-500"
+                }`}
               onMouseDown={handleSidebarResize}
             />
           </>
         )}
 
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex-1 flex items-center justify-center bg-dark-900">
-            <div className="text-center text-dark-500">
-              <div className="text-4xl mb-4">📁</div>
-              <p>Select a file to start editing</p>
-            </div>
+          {/* Editor Area */}
+          <div className="flex-1 overflow-hidden">
+            <Editor />
           </div>
+
+          {/* Terminal Panel */}
+          {terminalVisible && (
+            <>
+              <div
+                className={`h-1 cursor-row-resize transition-colors ${isResizingTerminal ? "bg-primary-500" : "bg-dark-700 hover:bg-primary-500"
+                  }`}
+                onMouseDown={handleTerminalResize}
+              />
+              <div className="flex-shrink-0 overflow-hidden" style={{ height: terminalHeight }}>
+                <Terminal />
+              </div>
+            </>
+          )}
         </div>
       </div>
 
