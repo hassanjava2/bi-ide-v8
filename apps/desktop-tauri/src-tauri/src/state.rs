@@ -100,7 +100,7 @@ impl AppState {
             workspaces: RwLock::new(HashMap::new()),
             sync_manager: SyncManager {
                 enabled: RwLock::new(false),
-                server_url: RwLock::new("http://localhost:8000".to_string()),
+                server_url: RwLock::new("https://bi-iq.com".to_string()),
                 pending_ops: RwLock::new(Vec::new()),
             },
             training_manager: TrainingManager {

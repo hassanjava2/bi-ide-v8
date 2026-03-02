@@ -101,6 +101,7 @@ _legacy_routes = [
     ("api.routes.rtx4090", "rtx4090"),
     ("api.routes.admin", "admin"),
     ("api.routes.downloads", "downloads"),
+    ("api.routes.updates", "updates"),
 ]
 for module_path, label in _legacy_routes:
     try:
