@@ -11,8 +11,7 @@ from ai.tokenizer.arabic_processor import ArabicProcessor
 from ai.tokenizer.code_tokenizer import CodeTokenizer
 
 # Optimization
-from ai.optimization.quantization import ModelQuantizer, QuantizationConfig
-from ai.optimization.benchmark import Benchmark
+from ai.optimization import Benchmark, ModelQuantizer, QuantizationConfig
 
 __all__ = [
     # Tokenizer

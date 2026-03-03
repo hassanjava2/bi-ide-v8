@@ -16,7 +16,7 @@ from core.user_service import UserService
 from core.config import get_settings
 
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 
 # Configuration
 _settings = get_settings()
@@ -83,9 +83,9 @@ async def authenticate_user(username: str, password: str, db: AsyncSession) -> O
     if not user or not user.is_active:
         return None
     
-    # Verify password using passlib
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    if not pwd_context.verify(password, user.hashed_password):
+    # Verify password using bcrypt (consistent with core.user_service)
+    password_bytes = password.encode("utf-8")[:72]
+    if not bcrypt.checkpw(password_bytes, user.hashed_password.encode("utf-8")):
         return None
     
     # Note: last_login update moved to background task to avoid blocking
@@ -107,30 +107,15 @@ async def get_current_user(
 ) -> Dict:
     """
     Dependency to get the current authenticated user from DB.
-    
-    SECURITY FIX: Debug mode bypass is now restricted to localhost only.
-    """
-    # Get request object if not provided (for dependency injection)
-    if request is None:
-        # This shouldn't happen with FastAPI's dependency injection
-        pass
-    
-    # Development mode: allow access without token ONLY for localhost
-    debug_mode = _settings.DEBUG
-    
-    # Get client IP for localhost check
-    # Note: In production with reverse proxy, use X-Forwarded-For
-    is_localhost = False
-    try:
-        # This is a simplified check - in real implementation use request.client.host
-        # For now, we disable the bypass completely for safety
-        is_localhost = False
-    except:
-        pass
 
-    # Test mode: keep E2E flows stable even when tests provide a token for a user
-    # that doesn't have all permissions. Production behavior is unchanged.
-    # ✅ SECURITY FIX: Only allow debug bypass during pytest
+    SECURITY FIX: Debug mode bypass is allowed only during pytest runs.
+    """
+    # Keep request in signature for FastAPI dependency injection compatibility.
+    _ = request
+
+    debug_mode = _settings.DEBUG
+
+    # Test mode: keep E2E flows stable. Production behavior is unchanged.
     if debug_mode and os.getenv("PYTEST_RUNNING") == "1":
         return {"sub": "debug_user", "username": "debug", "role": "admin", "mode": "debug"}
 

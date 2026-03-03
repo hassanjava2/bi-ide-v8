@@ -3,6 +3,7 @@ BI-IDE API Main Application
 النقطة الرئيسية لتطبيق BI-IDE API
 """
 
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 
@@ -13,6 +14,17 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 import logging
 import time
 
+# CORS Configuration from environment
+_cors_origins = os.getenv("CORS_ORIGINS", os.getenv("ALLOWED_ORIGINS", ""))
+if _cors_origins:
+    CORS_ORIGINS = [o.strip() for o in _cors_origins.split(",") if o.strip()]
+else:
+    CORS_ORIGINS = ["http://localhost:3000", "http://localhost:5173"]
+
+if os.getenv("ENVIRONMENT") == "production":
+    if "*" in CORS_ORIGINS or not CORS_ORIGINS:
+        raise RuntimeError("Wildcard CORS not allowed in production. Set CORS_ORIGINS env var.")
+
 from api.routers import (
     auth_router,
     council_router,
@@ -21,7 +33,8 @@ from api.routers import (
     ai_router,
     erp_router,
     monitoring_router,
-    community_router
+    community_router,
+    admin_router
 )
 from api.middleware import (
     LoggingMiddleware,
@@ -64,10 +77,10 @@ app.add_middleware(ErrorHandlerMiddleware)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure for production
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allow_headers=["Authorization", "Content-Type", "X-API-Key"],
 )
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(RateLimitMiddleware, max_requests=100, window=60)
@@ -80,9 +93,15 @@ app.include_router(council_router, prefix="/api/v1", tags=["Council"])
 app.include_router(training_router, prefix="/api/v1", tags=["Training"])
 app.include_router(hierarchy_router, prefix="/api/v1", tags=["Hierarchy"])
 app.include_router(ai_router, prefix="/api/v1", tags=["AI"])
-app.include_router(erp_router, prefix="/api/v1", tags=["ERP"])
+app.include_router(erp_router, prefix="/api/v2", tags=["ERP"])
 app.include_router(monitoring_router, prefix="/api/v1", tags=["Monitoring"])
 app.include_router(community_router, prefix="/api/v1", tags=["Community"])
+app.include_router(admin_router, prefix="/api/v1", tags=["Admin"])
+
+
+def create_app() -> FastAPI:
+    """Backward-compatible app factory for tests/integration tooling."""
+    return app
 
 # Backward-compatible: include old routes that tests/production still depend on
 _legacy_routes = [
@@ -109,8 +128,8 @@ for module_path, label in _legacy_routes:
         mod = importlib.import_module(module_path)
         if hasattr(mod, "router"):
             app.include_router(mod.router, tags=[f"Legacy-{label}"])
-    except Exception:
-        pass  # Skip routes with missing dependencies
+    except Exception as e:
+        logger.warning(f"Legacy route '{label}' failed to load: {e}")
 
 
 @app.get("/", tags=["Root"])
@@ -126,15 +145,37 @@ async def root():
 
 @app.get("/health", tags=["Health"])
 async def health_check():
-    """Health check endpoint for Docker/K8s"""
+    """Health check endpoint with real service verification for Docker/K8s"""
+    from sqlalchemy import text
+    import redis.asyncio as redis_lib
+    
+    services = {"api": "up"}
+    
+    # Check Database
+    try:
+        from core.database import db_manager
+        async with db_manager.get_session() as session:
+            await session.execute(text("SELECT 1"))
+        services["database"] = "up"
+    except Exception as e:
+        services["database"] = f"down: {str(e)[:50]}"
+    
+    # Check Redis
+    try:
+        redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+        r = redis_lib.from_url(redis_url)
+        await r.ping()
+        await r.close()
+        services["redis"] = "up"
+    except Exception as e:
+        services["redis"] = f"down: {str(e)[:50]}"
+    
+    all_up = all(v == "up" for v in services.values())
+    
     return {
-        "status": "healthy",
+        "status": "healthy" if all_up else "degraded",
         "timestamp": time.time(),
-        "services": {
-            "api": "up",
-            "database": "up",
-            "redis": "up"
-        }
+        "services": services
     }
 
 

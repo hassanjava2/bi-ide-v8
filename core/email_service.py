@@ -5,9 +5,13 @@ Handles password reset and notification emails
 import os
 import smtplib
 import ssl
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Optional
+
+
+logger = logging.getLogger(__name__)
 
 
 class EmailService:
@@ -19,6 +23,7 @@ class EmailService:
         self.smtp_user = os.getenv("SMTP_USER")
         self.smtp_password = os.getenv("SMTP_PASSWORD")
         self.from_email = os.getenv("SMTP_FROM", "noreply@bi-ide.com")
+        self.app_base_url = os.getenv("APP_BASE_URL", "http://localhost:8000").rstrip("/")
         self.enabled = all([self.smtp_user, self.smtp_password])
     
     async def send_password_reset_email(self, to_email: str, token: str) -> bool:
@@ -34,13 +39,8 @@ class EmailService:
         """
         if not self.enabled:
             # Development mode: log the link
-            reset_link = f"http://localhost:8000/reset-password?token={token}"
-            print(f"\n{'='*60}")
-            print(f"📧 DEVELOPMENT MODE - Password Reset Email")
-            print(f"{'='*60}")
-            print(f"To: {to_email}")
-            print(f"Reset Link: {reset_link}")
-            print(f"{'='*60}\n")
+            reset_link = f"{self.app_base_url}/reset-password?token={token}"
+            logger.info("DEVELOPMENT MODE - Password Reset Email | to=%s reset_link=%s", to_email, reset_link)
             return True
         
         try:
@@ -54,7 +54,7 @@ class EmailService:
             msg["To"] = to_email
             
             # HTML content
-            reset_link = f"https://your-domain.com/reset-password?token={token}"
+            reset_link = f"{self.app_base_url}/reset-password?token={token}"
             html = f"""
             <html>
             <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -80,11 +80,11 @@ class EmailService:
                 server.login(self.smtp_user, self.smtp_password)
                 server.sendmail(self.from_email, to_email, msg.as_string())
             
-            print(f"✅ Password reset email sent to {to_email}")
+            logger.info("Password reset email sent | to=%s", to_email)
             return True
             
         except Exception as e:
-            print(f"❌ Failed to send email to {to_email}: {e}")
+            logger.exception("Failed to send password reset email | to=%s error=%s", to_email, e)
             return False
 
 

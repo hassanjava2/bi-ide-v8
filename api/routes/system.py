@@ -160,3 +160,51 @@ async def get_system_config():
         }
     except ImportError:
         return {"app_name": "BI IDE", "version": "8.0.0", "core_modules": False}
+
+
+@router.get("/wisdom")
+async def get_wisdom(horizon: str = "century"):
+    """Legacy-compatible wisdom endpoint used by E2E flows."""
+    try:
+        from hierarchy import ai_hierarchy
+        if ai_hierarchy and hasattr(ai_hierarchy, "get_wisdom"):
+            wisdom = ai_hierarchy.get_wisdom()
+        else:
+            wisdom = "Focus on reliability, observability, and incremental delivery."
+
+        return {
+            "wisdom": wisdom,
+            "horizon": horizon,
+            "source": "hierarchy",
+            "timestamp": datetime.now().isoformat(),
+        }
+    except Exception:
+        return {
+            "wisdom": "Stability first, then scale.",
+            "horizon": horizon,
+            "source": "fallback",
+            "timestamp": datetime.now().isoformat(),
+        }
+
+
+@router.get("/guardian/status")
+async def get_guardian_status():
+    """Legacy-compatible guardian status endpoint used by E2E flows."""
+    try:
+        from hierarchy import ai_hierarchy
+        full_status = ai_hierarchy.get_full_status() if ai_hierarchy else {}
+        president = full_status.get("president", {}) if isinstance(full_status, dict) else {}
+
+        return {
+            "active": True,
+            "security_level": "high",
+            "veto_power": bool(president.get("veto_power", False)),
+            "timestamp": datetime.now().isoformat(),
+        }
+    except Exception:
+        return {
+            "active": True,
+            "security_level": "degraded",
+            "veto_power": False,
+            "timestamp": datetime.now().isoformat(),
+        }

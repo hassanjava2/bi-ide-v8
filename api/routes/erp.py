@@ -47,8 +47,13 @@ def set_erp_db_service(service):
 
 def get_erp_service():
     """Dependency to get ERP service"""
+    global _erp_db_service
     if _erp_db_service is None:
-        raise HTTPException(500, "ERP service not initialized")
+        try:
+            from erp.erp_database_service import get_erp_db_service
+            _erp_db_service = get_erp_db_service()
+        except Exception as exc:
+            raise HTTPException(500, f"ERP service not initialized: {exc}")
     return _erp_db_service
 
 

@@ -146,23 +146,72 @@ def _start_training():
     t.start()
 
 def _run_training():
-    """Actual training loop — uses real_training_system if available."""
+    """Actual training loop — uses ALL 4 training systems."""
     global _training_active, _training_stats
     try:
-        print("🧠 Training started on RTX 5090...")
+        print("🧠 Starting ALL Training Systems on RTX 5090...")
+        
+        # 1. Real Training System
         try:
             from hierarchy.real_training_system import training_system
             training_system.start_all()
-            # Train for 5 minutes then pause
-            time.sleep(300)
+            print("   ✅ RealTrainingSystem started")
+        except ImportError as e:
+            print(f"   ⚠️ RealTrainingSystem: {e}")
+        
+        # 2. Internet Auto Training
+        try:
+            from hierarchy.internet_auto_training import internet_training_system
+            internet_training_system.start_all()
+            print("   ✅ InternetTrainingSystem started")
+        except ImportError as e:
+            print(f"   ⚠️ InternetTrainingSystem: {e}")
+        
+        # 3. Massive Training
+        try:
+            from hierarchy.massive_training import massive_system
+            massive_system.start_all()
+            print("   ✅ MassiveTrainingSystem started")
+        except ImportError as e:
+            print(f"   ⚠️ MassiveTrainingSystem: {e}")
+        
+        # 4. Auto Learning System
+        try:
+            from hierarchy.auto_learning_system import auto_learning_system
+            auto_learning_system.start_all()
+            print("   ✅ AutoLearningSystem started")
+        except ImportError as e:
+            print(f"   ⚠️ AutoLearningSystem: {e}")
+        
+        # Train for 30 minutes
+        print("⏱️ Training for 30 minutes...")
+        time.sleep(1800)
+        
+        # Stop all systems
+        try:
+            from hierarchy.real_training_system import training_system
             training_system.stop_all()
-            status = training_system.get_status()
-            _training_stats["last_training"] = datetime.now().isoformat()
-            _training_stats["training_runs"] += 1
-            print(f"✅ Training completed: {status}")
-        except ImportError:
-            print("⚠️ real_training_system not available, training skipped")
-            time.sleep(1)
+        except: pass
+        
+        try:
+            from hierarchy.internet_auto_training import internet_training_system
+            internet_training_system.stop_all()
+        except: pass
+        
+        try:
+            from hierarchy.massive_training import massive_system
+            massive_system.stop_all()
+        except: pass
+        
+        try:
+            from hierarchy.auto_learning_system import auto_learning_system
+            auto_learning_system.stop_all()
+        except: pass
+        
+        _training_stats["last_training"] = datetime.now().isoformat()
+        _training_stats["training_runs"] += 1
+        print("✅ All training systems completed")
+        
     except Exception as e:
         print(f"❌ Training error: {e}")
     finally:

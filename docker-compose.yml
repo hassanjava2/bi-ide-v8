@@ -43,8 +43,10 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       
       # خدمات خارجية
-      RTX4090_HOST: ${RTX4090_HOST:-192.168.68.125}
-      RTX4090_PORT: ${RTX4090_PORT:-8080}
+      RTX5090_HOST: ${RTX5090_HOST:-192.168.1.164}
+      RTX5090_PORT: ${RTX5090_PORT:-8090}
+      RTX4090_HOST: ${RTX5090_HOST:-192.168.1.164}  # backward compatibility
+      RTX4090_PORT: ${RTX5090_PORT:-8090}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USER: ${SMTP_USER:-}
@@ -174,7 +176,7 @@ services:
     command: >
       celery -A core.celery_config beat
       --loglevel=${LOG_LEVEL:-INFO}
-      --scheduler django_celery_beat.schedulers:DatabaseScheduler
+      --schedule=/tmp/celerybeat-schedule
     
     volumes:
       - ./data:/app/data

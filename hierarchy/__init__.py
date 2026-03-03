@@ -50,9 +50,9 @@ from .meta_architect import (
 )
 
 
-# Standardized RTX Configuration
-RTX_HOST = os.getenv("RTX4090_HOST", "192.168.1.164")
-RTX_PORT = int(os.getenv("RTX4090_PORT", "8090"))
+# Standardized RTX Configuration - يقرأ RTX5090_* أولاً مع fallback للقديم
+RTX_HOST = os.getenv("RTX5090_HOST", os.getenv("RTX4090_HOST", "192.168.1.164"))
+RTX_PORT = int(os.getenv("RTX5090_PORT", os.getenv("RTX4090_PORT", "8090")))
 RTX_URL = f"http://{RTX_HOST}:{RTX_PORT}"
 
 

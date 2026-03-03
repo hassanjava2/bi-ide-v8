@@ -343,6 +343,7 @@ export function NetworkStatus() {
   const [autoReconnect, setAutoReconnect] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // إحصائيات الشبكة
   const stats: NetworkStats = {
@@ -357,29 +358,49 @@ export function NetworkStatus() {
     },
   };
 
-  // محاكاة تحديثات حية
+  // جلب البيانات من API
   useEffect(() => {
-    const interval = setInterval(() => {
-      setDevices(prev => prev.map(device => {
-        if (device.id === "local") return device;
+    const fetchNetworkStatus = async () => {
+      try {
+        // استدعاء API للحصول على حالة النظام
+        const response = await fetch('/api/v1/monitoring/status', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          }
+        });
         
-        // محاكاة تغيرات عشوائية
-        const variation = (Math.random() - 0.5) * 5;
-        const newLatency = Math.max(1, device.latency + variation);
-        
-        return {
-          ...device,
-          latency: device.status === "online" ? newLatency : device.latency,
-          bandwidth: device.status === "online" ? {
-            up: Math.max(0, device.bandwidth.up + (Math.random() - 0.5) * 10),
-            down: Math.max(0, device.bandwidth.down + (Math.random() - 0.5) * 20),
-          } : device.bandwidth,
-          lastSeen: device.status !== "offline" ? new Date() : device.lastSeen,
-        };
-      }));
-      
-      setLastUpdate(Date.now());
-    }, 2000);
+        if (response.ok) {
+          const data = await response.json();
+          // تحديث حالة الأجهزة بناءً على بيانات API
+          if (data.workers) {
+            setDevices(prev => prev.map(device => {
+              const workerData = data.workers.find((w: any) => w.ip === device.ip);
+              if (workerData) {
+                return {
+                  ...device,
+                  status: workerData.status === "online" ? "online" : 
+                          workerData.status === "training" ? "online" : "offline",
+                  latency: workerData.latency || device.latency,
+                  lastSeen: new Date(),
+                };
+              }
+              return device;
+            }));
+          }
+          setError(null);
+        } else {
+          console.warn('Failed to fetch network status from API');
+        }
+      } catch (err) {
+        console.error('Error fetching network status:', err);
+        setError('فشل الاتصال بالخادم');
+      } finally {
+        setLastUpdate(Date.now());
+      }
+    };
+
+    fetchNetworkStatus();
+    const interval = setInterval(fetchNetworkStatus, 5000); // تحديث كل 5 ثواني
 
     return () => clearInterval(interval);
   }, []);
@@ -443,6 +464,13 @@ export function NetworkStatus() {
         </div>
         
         <div className="flex items-center gap-3">
+          {/* رسالة خطأ */}
+          {error && (
+            <span className="text-xs text-red-400 bg-red-500/10 px-3 py-1.5 rounded-lg">
+              {error}
+            </span>
+          )}
+          
           {/* تبديل الإعادة التلقائية */}
           <div className="flex items-center gap-2 px-3 py-1.5 bg-dark-800 rounded-lg">
             <RefreshCw className={`w-4 h-4 text-dark-400 ${autoReconnect ? "" : "opacity-50"}`} />

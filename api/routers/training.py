@@ -126,10 +126,42 @@ class OverallTrainingStatus(BaseModel):
     jobs: List[Dict[str, Any]]
 
 
-fake_history = []
-
 # WebSocket connections
 ws_connections: List[WebSocket] = []
+
+
+async def get_training_history_from_db(limit: int = 50) -> List[Dict[str, Any]]:
+    """Get real training history from database"""
+    try:
+        from core.database import db_manager
+        history = await db_manager.get_training_history(limit)
+        return history
+    except Exception as e:
+        logger.error(f"Error fetching training history from DB: {e}")
+        # Fallback to training_service if DB fails
+        try:
+            jobs = await training_service.get_all_jobs()
+            history = []
+            for job in jobs:
+                if job.status.value in ["completed", "failed", "cancelled"]:
+                    history.append({
+                        "id": job.job_id,
+                        "model_name": job.model_name,
+                        "status": job.status.value,
+                        "started_at": job.created_at,
+                        "completed_at": getattr(job, 'completed_at', None),
+                        "total_epochs": job.config.get("epochs", 0),
+                        "best_accuracy": (job.metrics or {}).get("accuracy", 0.0),
+                        "devices_used": job.config.get("devices", ["local"]),
+                    })
+            history.sort(key=lambda x: x["started_at"], reverse=True)
+            return history[:limit]
+        except Exception as e2:
+            logger.error(f"Fallback also failed: {e2}")
+            return []
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 @router.get(
@@ -143,7 +175,7 @@ async def get_training_status(current_user: User = Depends(get_current_active_us
     الحصول على حالة التدريب عبر جميع الأجهزة.
     Get training status across all devices.
     """
-    jobs = list(training_service._jobs.values())
+    jobs = await training_service.get_all_jobs()
     active_jobs = sum(1 for j in jobs if j.status == ServiceTrainingStatus.RUNNING)
     queued_jobs = sum(1 for j in jobs if j.status in {ServiceTrainingStatus.PENDING, ServiceTrainingStatus.PAUSED})
 
@@ -189,11 +221,25 @@ async def start_training(
     devices = config.device_ids or ["local-gpu-01"]
     job_id = f"job-{int(datetime.utcnow().timestamp())}"
 
+    # Start in training service
     await training_service.start_training(
         job_id=job_id,
         model_name=config.model_id or "bi-ide-model",
         config=config.dict(),
     )
+    
+    # Also store in db_manager for consistent history
+    try:
+        from core.database import db_manager
+        await db_manager.store_training_job(
+            job_id=job_id,
+            model_name=config.model_id or "bi-ide-model",
+            status="running",
+            config=config.dict(),
+            devices_used=devices
+        )
+    except Exception as e:
+        logger.warning(f"Failed to store job in db_manager: {e}")
     
     return StartTrainingResponse(
         job_id=job_id,
@@ -225,17 +271,10 @@ async def stop_training(
 
     await training_service.stop_training(job_id)
     updated_job = await training_service.get_status(job_id)
-
-    fake_history.append({
-        "id": job_id,
-        "model_name": updated_job.model_name,
-        "status": TrainingStatus.COMPLETED,
-        "started_at": updated_job.created_at,
-        "completed_at": datetime.utcnow(),
-        "total_epochs": updated_job.config.get("epochs", 0),
-        "best_accuracy": (updated_job.metrics or {}).get("accuracy", 0.0),
-        "devices_used": ["local-gpu-01"],
-    })
+    
+    # Set completed_at for history tracking
+    if updated_job:
+        updated_job.completed_at = datetime.utcnow()
     
     return {
         "job_id": job_id,
@@ -259,8 +298,10 @@ async def get_metrics(
     Get training metrics.
     """
     target_job_id = job_id
-    if not target_job_id and training_service._jobs:
-        target_job_id = next(reversed(training_service._jobs.keys()))
+    if not target_job_id:
+        jobs = await training_service.get_all_jobs(limit=1)
+        if jobs:
+            target_job_id = jobs[0].job_id
 
     metrics = {}
     if target_job_id:
@@ -349,9 +390,10 @@ async def get_training_history(
 ):
     """
     الحصول على سجل التدريب.
-    Get training history.
+    Get training history from training service.
     """
-    return [TrainingHistoryItem(**h) for h in fake_history[:limit]]
+    history = await get_training_history_from_db(limit)
+    return [TrainingHistoryItem(**h) for h in history]
 
 
 # WebSocket للتحديثات الفورية

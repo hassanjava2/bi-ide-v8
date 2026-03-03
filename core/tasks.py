@@ -9,17 +9,34 @@ from .logging_config import logger
 
 @celery_app.task(bind=True, max_retries=3)
 def process_learning_experience(self, experience_data: Dict[str, Any]):
-    """Process a learning experience in background"""
+    """Process a learning experience in background and store in DB"""
+    import asyncio
+    
+    async def _store_experience():
+        from core.database import db_manager
+        
+        exp_id = experience_data.get('id') or f"exp_{self.request.id}"
+        await db_manager.store_learning_experience(
+            exp_id=exp_id,
+            exp_type=experience_data.get('type', 'unknown'),
+            context=experience_data.get('context', {}),
+            action=experience_data.get('action', ''),
+            outcome=experience_data.get('outcome', ''),
+            reward=experience_data.get('reward', 0.0)
+        )
+        return exp_id
+    
     try:
         logger.info(f"Processing learning experience: {experience_data.get('type')}")
         
-        # TODO: Implement actual learning logic
-        # This could involve:
-        # - Updating model weights
-        # - Storing in vector DB
-        # - Triggering council discussion
+        # Run async DB operation in sync context
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        exp_id = loop.run_until_complete(_store_experience())
+        loop.close()
         
-        return {"status": "success", "experience_id": experience_data.get('id')}
+        logger.info(f"Learning experience stored: {exp_id}")
+        return {"status": "success", "experience_id": exp_id}
     
     except Exception as exc:
         logger.error(f"Learning experience processing failed: {exc}")
@@ -28,17 +45,32 @@ def process_learning_experience(self, experience_data: Dict[str, Any]):
 
 @celery_app.task(bind=True, max_retries=2)
 def generate_code_embeddings(self, code_snippets: list):
-    """Generate embeddings for code snippets"""
+    """Generate simple hash-based embeddings for code snippets (fallback until real model)"""
+    import hashlib
+    import json
+    
     try:
         logger.info(f"Generating embeddings for {len(code_snippets)} snippets")
         
-        # TODO: Use sentence-transformers or similar
         embeddings = []
         for snippet in code_snippets:
-            # Placeholder
-            embeddings.append({"id": snippet['id'], "embedding": []})
+            content = snippet.get('content', snippet.get('code', ''))
+            
+            # Simple hash-based embedding (128-dim) as fallback
+            # In production, replace with sentence-transformers or similar
+            content_hash = hashlib.sha256(content.encode()).hexdigest()
+            
+            # Create 128-dim vector from hash (each 2 chars = 1 dim)
+            embedding = [int(content_hash[i:i+2], 16) / 255.0 for i in range(0, 256, 2)]
+            
+            embeddings.append({
+                "id": snippet.get('id'),
+                "embedding": embedding,
+                "content_hash": content_hash[:16]  # First 16 chars for reference
+            })
         
-        return {"status": "success", "embeddings": embeddings}
+        logger.info(f"Generated {len(embeddings)} embeddings")
+        return {"status": "success", "embeddings": embeddings, "method": "hash_fallback"}
     
     except Exception as exc:
         logger.error(f"Embedding generation failed: {exc}")
@@ -118,12 +150,44 @@ def council_deliberation_task(self, topic: str, context: Dict):
 @celery_app.task(bind=True)
 def cleanup_old_data(self, days: int = 30):
     """Cleanup old data from database"""
+    import asyncio
+    from datetime import datetime, timedelta
+    from sqlalchemy import delete
+    
+    async def _cleanup():
+        from core.database import db_manager, SystemMetrics
+        
+        cutoff = datetime.utcnow() - timedelta(days=days)
+        deleted_counts = {}
+        
+        async with db_manager.get_session() as session:
+            # Cleanup old metrics
+            try:
+                stmt = delete(SystemMetrics).where(SystemMetrics.timestamp < cutoff)
+                result = await session.execute(stmt)
+                deleted_counts['metrics'] = result.rowcount
+            except Exception as e:
+                logger.warning(f"Failed to cleanup metrics: {e}")
+            
+            # Add more tables here as needed
+            # stmt = delete(OtherTable).where(OtherTable.created_at < cutoff)
+            # result = await session.execute(stmt)
+            # deleted_counts['other'] = result.rowcount
+        
+        return deleted_counts
+    
     try:
         logger.info(f"Cleaning up data older than {days} days")
         
-        # TODO: Implement cleanup logic
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        deleted = loop.run_until_complete(_cleanup())
+        loop.close()
         
-        return {"status": "success", "cleaned_days": days}
+        total_deleted = sum(deleted.values())
+        logger.info(f"Cleanup completed: {total_deleted} records deleted")
+        
+        return {"status": "success", "cleaned_days": days, "deleted": deleted}
     
     except Exception as exc:
         logger.error(f"Cleanup failed: {exc}")
@@ -132,11 +196,14 @@ def cleanup_old_data(self, days: int = 30):
 
 @celery_app.task(bind=True)
 def sync_to_rtx4090(self, model_data: Dict):
-    """Sync model data to RTX 4090 server"""
+    """Sync model data to RTX 5090 server"""
     try:
         import requests
         
-        rtx_url = f"http://{os.getenv('RTX4090_HOST', '192.168.68.125')}:{os.getenv('RTX4090_PORT', '8080')}"
+        # يقرأ RTX5090_* أولاً مع fallback للقديم
+        rtx_host = os.getenv("RTX5090_HOST", os.getenv("RTX4090_HOST", "192.168.1.164"))
+        rtx_port = os.getenv("RTX5090_PORT", os.getenv("RTX4090_PORT", "8090"))
+        rtx_url = f"http://{rtx_host}:{rtx_port}"
         
         response = requests.post(
             f"{rtx_url}/sync",

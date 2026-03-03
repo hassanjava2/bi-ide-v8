@@ -3,7 +3,6 @@ Context Awareness Module
 Manage context window and summarize long conversations for Council AI
 """
 
-import torch
 from typing import List, Dict, Optional, Any, Tuple
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -278,8 +277,13 @@ class ContextManager:
         
         # Check if context needs summarization
         current_tokens = self._estimate_tokens()
-        
-        if current_tokens > self.max_context_tokens * 0.8:
+
+        should_summarize = (
+            current_tokens > self.max_context_tokens * 0.8
+            or len(self.active_context) >= 40
+        )
+
+        if should_summarize:
             self._summarize_oldest_segment()
         
         return {

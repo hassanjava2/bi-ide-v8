@@ -31,9 +31,6 @@ root/
 ├── PROJECT_STATUS_REAL.md (5.0 KB) ✅
 │   └─ وثيقة حالة واقعية
 │
-├── PROJECT_AUDIT_REPORT.md (13.3 KB) ✅
-│   └─ تقرير التدقيق الأولي
-│
 ├── PROJECT_AUDIT_REPORT_FINAL.md (12.9 KB) ✅
 │   └─ التقرير النهائي المُحدث
 │
@@ -65,24 +62,24 @@ api/
 │   └─ تقييد الـ bypass لـ pytest فقط
 │
 └── app.py (13.9 KB) ✅ MODIFIED
-    └─ السطر 348-360: تحسين SPA Catch-All Route
-    └─ إضافة EXCLUDED_PATHS
+    └─ تحديث تهيئة التطبيق والـ lifespan
+    └─ تنظيم include_router + دعم legacy routes
 ```
 
 ### 🤖 AI Hierarchy (Transparency Labels)
 ```
 hierarchy/
 ├── __init__.py (19.8 KB) ✅ MODIFIED
-│   └─ السطر 179-195: تحذيرات للـ mock consensus
-│   └─ إضافة '_warning' labels
+│   └─ استبدال consensus الثابت بمداولة حقيقية عبر HighCouncil
+│   └─ قرار نهائي مبني على deliberation + balance + expert opinion
 │
 ├── meta_team.py (19.1 KB) ✅ MODIFIED
-│   └─ السطر 205-212: تحذير Linter وهمي
-│   └─ توضيح placeholder status
+│   └─ فحص style compliance فعلي (line length / indentation / syntax)
+│   └─ تحسين مسار التحقق بدل placeholder checks
 │
 └── scouts.py (14.3 KB) ✅ MODIFIED
-    └─ السطر 101-115: تحذير GitHub API
-    └─ السطر 256-268: تحذير Web Scraping
+    └─ جلب بيانات GitHub عبر HTTP بشكل فعلي
+    └─ fallback آمن عند فشل API (empty list + logging)
 ```
 
 ### ⚙️ Configuration
@@ -101,10 +98,10 @@ hierarchy/
 ║  الإحصائيات النهائية                                  ║
 ╠════════════════════════════════════════════════════════╣
 ║                                                        ║
-║  الملفات الجديدة:        6 files                      ║
+║  الملفات الجديدة:        7 files                      ║
 ║  الملفات المُصلحة:       7 files                      ║
 ║  ─────────────────────────────                        ║
-║  المجموع الكلي:         13 files                      ║
+║  المجموع الكلي:         14 files                      ║
 ║                                                        ║
 ║  الكود الجديد:          ~500 LOC                      ║
 ║  التعديلات:             ~50 line changes              ║
@@ -201,7 +198,7 @@ bi-ide-v8/
 
 ## ✅ Checklist الملفات
 
-### ✅ New Files (6/6)
+### ✅ New Files (7/7)
 - [x] core/email_service.py
 - [x] tests/conftest.py
 - [x] PROJECT_STATUS_REAL.md
@@ -226,7 +223,7 @@ bi-ide-v8/
 **كل الملفات جاهزة!** ✅
 
 ```
-الملفات الجديدة:     ✅ 6/6
+الملفات الجديدة:     ✅ 7/7
 الملفات المُصلحة:    ✅ 7/7
 التوثيق:            ✅ كامل
 الجودة:             ✅ ممتازة

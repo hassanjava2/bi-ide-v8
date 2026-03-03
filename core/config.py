@@ -36,19 +36,30 @@ class Settings(BaseSettings):
     CACHE_ENABLED: bool = True
     CACHE_TTL: int = 3600
     
-    # AI/ML
-    RTX4090_HOST: str = "192.168.68.125"
-    RTX4090_PORT: int = 8080
+    # AI/ML - RTX 5090 Configuration (Standardized)
+    RTX5090_HOST: str = "192.168.1.164"
+    RTX5090_PORT: int = 8090
     
-    # RTX 4090 Retry Configuration - إعدادات إعادة المحاولة
-    RTX4090_MAX_RETRIES: int = 3           # Maximum retry attempts for connection failures
-    RTX4090_RETRY_DELAY: float = 1.0       # Initial delay between retries (seconds)
-    RTX4090_RETRY_BACKOFF: float = 2.0     # Exponential backoff multiplier
-    RTX4090_RETRY_MAX_DELAY: float = 30.0  # Maximum delay between retries (seconds)
-    RTX4090_RETRY_JITTER: bool = True      # Add random jitter to prevent thundering herd
+    # Backward compatibility - aliases to RTX5090_*
+    RTX4090_HOST: str = RTX5090_HOST
+    RTX4090_PORT: int = RTX5090_PORT
+    
+    # RTX 5090 Retry Configuration - إعدادات إعادة المحاولة
+    RTX5090_MAX_RETRIES: int = 3           # Maximum retry attempts for connection failures
+    RTX5090_RETRY_DELAY: float = 1.0       # Initial delay between retries (seconds)
+    RTX5090_RETRY_BACKOFF: float = 2.0     # Exponential backoff multiplier
+    RTX5090_RETRY_MAX_DELAY: float = 30.0  # Maximum delay between retries (seconds)
+    RTX5090_RETRY_JITTER: bool = True      # Add random jitter to prevent thundering herd
+    
+    # Backward compatibility for retry config
+    RTX4090_MAX_RETRIES: int = RTX5090_MAX_RETRIES
+    RTX4090_RETRY_DELAY: float = RTX5090_RETRY_DELAY
+    RTX4090_RETRY_BACKOFF: float = RTX5090_RETRY_BACKOFF
+    RTX4090_RETRY_MAX_DELAY: float = RTX5090_RETRY_MAX_DELAY
+    RTX4090_RETRY_JITTER: bool = RTX5090_RETRY_JITTER
     
     AI_CORE_HOST: Optional[str] = None
-    AI_CORE_PORTS: str = "8080"
+    AI_CORE_PORTS: str = "8090"
     
     # Security
     SECRET_KEY: str = ""
@@ -95,9 +106,14 @@ class Settings(BaseSettings):
         return [f"http://{self.AI_CORE_HOST}:{port}" for port in ports]
     
     @property
+    def rtx5090_url(self) -> str:
+        """Get RTX 5090 server URL"""
+        return f"http://{self.RTX5090_HOST}:{self.RTX5090_PORT}"
+    
+    @property
     def rtx4090_url(self) -> str:
-        """Get RTX 4090 server URL"""
-        return f"http://{self.RTX4090_HOST}:{self.RTX4090_PORT}"
+        """Get RTX 4090 server URL (backward compatibility)"""
+        return self.rtx5090_url
     
     def ensure_directories(self):
         """Create necessary directories"""

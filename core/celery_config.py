@@ -30,6 +30,13 @@ celery_app.conf.update(
     task_time_limit=3600,  # 1 hour
     worker_prefetch_multiplier=1,
     worker_max_tasks_per_child=1000,
+    beat_schedule={
+        'cleanup-old-data': {
+            'task': 'core.tasks.cleanup_old_data',
+            'schedule': 86400.0,  # كل 24 ساعة
+            'args': (30,),
+        },
+    },
 )
 
 

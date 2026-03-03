@@ -301,41 +301,61 @@ function WorkerCard({ worker }: { worker: Worker }) {
 export function WorkerStatus() {
   const [workers, setWorkers] = useState<Worker[]>(defaultWorkers);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // محاكاة تحديثات حية
+  // جلب البيانات من API
   useEffect(() => {
-    const interval = setInterval(() => {
-      setWorkers(prev => prev.map(worker => {
-        if (worker.status === "offline") return worker;
+    const fetchWorkers = async () => {
+      try {
+        setIsLoading(true);
+        // استدعاء API للحصول على حالة التدريب
+        const response = await fetch('/api/v1/training/status', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+          }
+        });
         
-        return {
-          ...worker,
-          cpu: {
-            ...worker.cpu,
-            usage: Math.max(5, Math.min(100, worker.cpu.usage + (Math.random() - 0.5) * 10)),
-          },
-          ram: {
-            ...worker.ram,
-            used: Math.max(4, Math.min(worker.ram.total, worker.ram.used + (Math.random() - 0.5) * 4)),
-          },
-          gpu: worker.gpu ? {
-            ...worker.gpu,
-            usage: worker.status === "training" 
-              ? Math.max(80, Math.min(100, worker.gpu.usage + (Math.random() - 0.5) * 5))
-              : Math.max(0, Math.min(20, worker.gpu.usage + (Math.random() - 0.5) * 5)),
-            temperature: worker.status === "training"
-              ? Math.max(60, Math.min(85, worker.gpu.temperature + (Math.random() - 0.5) * 3))
-              : Math.max(35, Math.min(55, worker.gpu.temperature + (Math.random() - 0.5) * 2)),
-          } : undefined,
-          connection: {
-            ...worker.connection,
-            latency: Math.max(1, worker.connection.latency + Math.floor((Math.random() - 0.5) * 5)),
-            lastSeen: Date.now(),
-          },
-        };
-      }));
-      setLastUpdate(Date.now());
-    }, 2000);
+        if (response.ok) {
+          const data = await response.json();
+          // تحويل بيانات API إلى Worker[]
+          if (data.jobs && data.jobs.length > 0) {
+            const activeWorkers = data.jobs.map((job: any, index: number) => ({
+              id: job.job_id || `worker-${index}`,
+              name: job.model_name || `Worker ${index + 1}`,
+              type: "rtx5090" as const,
+              status: job.status === "running" ? "training" : 
+                      job.status === "pending" ? "idle" : "offline",
+              cpu: { usage: data.avg_cluster_utilization || 45, cores: 32, model: "AMD Ryzen 9" },
+              ram: { used: 64, total: 128 },
+              gpu: { 
+                model: "NVIDIA RTX 5090", 
+                usage: job.status === "running" ? 98 : 5, 
+                vramUsed: 28, 
+                vramTotal: 32,
+                temperature: job.status === "running" ? 72 : 45
+              },
+              connection: { latency: 12, lastSeen: Date.now(), bandwidth: 1250 },
+              ip: "192.168.1.164",
+            }));
+            setWorkers(activeWorkers);
+          }
+          setError(null);
+        } else {
+          // إذا فشل API، استخدم البيانات الافتراضية مع تحذير
+          console.warn('Failed to fetch workers from API, using default data');
+        }
+      } catch (err) {
+        console.error('Error fetching workers:', err);
+        setError('فشل الاتصال بالخادم');
+      } finally {
+        setIsLoading(false);
+        setLastUpdate(Date.now());
+      }
+    };
+
+    fetchWorkers();
+    const interval = setInterval(fetchWorkers, 5000); // تحديث كل 5 ثواني
 
     return () => clearInterval(interval);
   }, []);
@@ -358,9 +378,19 @@ export function WorkerStatus() {
           <span className="px-3 py-1 bg-dark-800 rounded-full text-sm text-dark-400">
             {onlineWorkers} / {workers.length} متصل
           </span>
+          {isLoading && (
+            <span className="text-xs text-blue-400 animate-pulse">جاري التحديث...</span>
+          )}
         </div>
-        <div className="text-xs text-dark-500">
-          آخر تحديث: {new Date(lastUpdate).toLocaleTimeString('ar-SA')}
+        <div className="flex items-center gap-2">
+          {error && (
+            <span className="text-xs text-red-400 bg-red-500/10 px-2 py-1 rounded">
+              {error}
+            </span>
+          )}
+          <div className="text-xs text-dark-500">
+            آخر تحديث: {new Date(lastUpdate).toLocaleTimeString('ar-SA')}
+          </div>
         </div>
       </div>
 

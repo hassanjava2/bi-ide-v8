@@ -4,8 +4,16 @@ Model Optimization - تحسين النماذج
 Quantization and optimization for inference speed
 """
 
-from .quantization import ModelQuantizer, QuantizationConfig
-from .benchmark import Benchmark
+try:
+    from .benchmark import Benchmark
+except ModuleNotFoundError:
+    Benchmark = None
+
+try:
+    from .quantization import ModelQuantizer, QuantizationConfig
+except ModuleNotFoundError:
+    ModelQuantizer = None
+    QuantizationConfig = None
 
 __all__ = [
     "ModelQuantizer",

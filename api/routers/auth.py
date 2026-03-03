@@ -5,10 +5,12 @@
 Provides endpoints for authentication and user management.
 """
 
+import os
+import warnings
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,9 +18,21 @@ from pydantic import BaseModel, EmailStr
 
 from core.database import get_db
 from core.user_service import UserService
+from core.config import get_settings
 
-# إعدادات JWT - JWT Configuration
-SECRET_KEY = "your-secret-key-change-in-production"
+# إعدادات JWT - JWT Configuration (من البيئة)
+_settings = get_settings()
+SECRET_KEY = _settings.SECRET_KEY
+if not SECRET_KEY or SECRET_KEY in {
+    "your-secret-key-change-in-production",
+    "your-super-secret-jwt-key-change-this-in-production",
+    "",
+}:
+    if os.getenv("ENVIRONMENT", "development") == "production":
+        raise RuntimeError("SECRET_KEY must be set to a secure value in production")
+    SECRET_KEY = "dev-insecure-key-change-me"
+    warnings.warn("Using insecure default SECRET_KEY - CHANGE FOR PRODUCTION!")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
@@ -76,6 +90,7 @@ class LoginResponse(BaseModel):
     refresh_token: str
     token_type: str
     user: User
+    expires_in: int
 
 
 def _to_user_model(user_obj) -> User:
@@ -155,15 +170,34 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     summary="تسجيل الدخول | User login"
 )
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    request: Request,
     db: AsyncSession = Depends(get_db),
 ):
     """
     تسجيل الدخول والحصول على رمز JWT.
     Login and obtain JWT token.
     """
+    username = None
+    password = None
+
+    content_type = (request.headers.get("content-type") or "").lower()
+    if "application/json" in content_type:
+        payload = await request.json()
+        username = payload.get("username") if isinstance(payload, dict) else None
+        password = payload.get("password") if isinstance(payload, dict) else None
+    else:
+        form = await request.form()
+        username = form.get("username")
+        password = form.get("password")
+
+    if not username or not password:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="username and password are required",
+        )
+
     user_service = UserService(db)
-    user_obj = await user_service.authenticate(form_data.username, form_data.password)
+    user_obj = await user_service.authenticate(username, password)
     if not user_obj:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -180,7 +214,8 @@ async def login(
         "access_token": access_token,
         "refresh_token": refresh_token,
         "token_type": "bearer",
-        "user": user
+        "user": user,
+        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     }
 
 

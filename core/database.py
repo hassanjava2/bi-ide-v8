@@ -81,6 +81,10 @@ class SystemMetrics(Base):
     timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
+# Note: TrainingJobDB is defined in core/service_models.py
+# Using that definition for training jobs to avoid duplication
+
+
 class DatabaseManager:
     """Database manager with async support"""
     
@@ -339,6 +343,89 @@ class DatabaseManager:
                 labels=labels or {}
             )
             session.add(metric)
+    
+    async def store_training_job(self, job_id: str, model_name: str, status: str, 
+                                  config: Dict = None, devices_used: List[str] = None):
+        """Store training job using TrainingJobDB from service_models"""
+        async with self.get_session() as session:
+            from sqlalchemy import select
+            try:
+                from core.service_models import TrainingJobDB
+                
+                # Check if exists
+                result = await session.execute(
+                    select(TrainingJobDB).where(TrainingJobDB.job_id == job_id)
+                )
+                existing = result.scalar_one_or_none()
+                
+                if existing:
+                    # Update
+                    existing.status = status
+                    existing.config_json = config or {}
+                    if status in ["completed", "failed", "cancelled"]:
+                        existing.completed_at = datetime.now(timezone.utc)
+                else:
+                    # Create new
+                    job = TrainingJobDB(
+                        job_id=job_id,
+                        model_name=model_name,
+                        status=status,
+                        config_json=config or {},
+                        metrics_json={},
+                        created_at=datetime.now(timezone.utc),
+                        updated_at=datetime.now(timezone.utc)
+                    )
+                    session.add(job)
+            except ImportError:
+                logger.warning("TrainingJobDB not available, skipping DB storage")
+    
+    async def update_training_job_metrics(self, job_id: str, metrics: Dict):
+        """Update training job metrics"""
+        async with self.get_session() as session:
+            from sqlalchemy import select
+            try:
+                from core.service_models import TrainingJobDB
+                
+                result = await session.execute(
+                    select(TrainingJobDB).where(TrainingJobDB.job_id == job_id)
+                )
+                job = result.scalar_one_or_none()
+                
+                if job:
+                    job.metrics_json = metrics
+                    job.updated_at = datetime.now(timezone.utc)
+            except ImportError:
+                pass
+    
+    async def get_training_history(self, limit: int = 50) -> List[Dict]:
+        """Get training history from database"""
+        async with self.get_session() as session:
+            from sqlalchemy import select, desc
+            try:
+                from core.service_models import TrainingJobDB
+                
+                result = await session.execute(
+                    select(TrainingJobDB)
+                    .order_by(desc(TrainingJobDB.created_at))
+                    .limit(limit)
+                )
+                jobs = result.scalars().all()
+                
+                return [
+                    {
+                        "id": j.job_id,
+                        "model_name": j.model_name,
+                        "status": j.status,
+                        "started_at": j.created_at,
+                        "completed_at": j.completed_at,
+                        "total_epochs": (j.config_json or {}).get("epochs", 0),
+                        "best_accuracy": (j.metrics_json or {}).get("accuracy", 0.0),
+                        "devices_used": ["local"],  # Default since TrainingJobDB doesn't have devices_used
+                    }
+                    for j in jobs
+                ]
+            except ImportError:
+                return []
     
     async def close(self):
         """Close database connections"""

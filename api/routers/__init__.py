@@ -7,6 +7,7 @@ from .ai import router as ai_router
 from .erp import router as erp_router
 from .monitoring import router as monitoring_router
 from .community import router as community_router
+from .admin import router as admin_router
 
 __all__ = [
     'auth_router',
@@ -16,5 +17,6 @@ __all__ = [
     'ai_router',
     'erp_router',
     'monitoring_router',
-    'community_router'
+    'community_router',
+    'admin_router'
 ]

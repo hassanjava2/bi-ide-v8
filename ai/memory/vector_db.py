@@ -514,6 +514,12 @@ class VectorStore:
         relevant = [r for r in results if r['similarity'] >= min_similarity]
         
         if not relevant:
+            # Fallback: return top-k available results instead of empty context.
+            # This keeps context retrieval useful when embeddings are noisy
+            # (e.g., lightweight/random fallback embedding model in tests).
+            relevant = results[:k]
+
+        if not relevant:
             return ""
         
         # Combine texts

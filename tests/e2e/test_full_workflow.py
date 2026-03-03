@@ -53,6 +53,8 @@ def auth_token(client):
                     last_name="Test",
                     role_names=["admin"]
                 )
+            else:
+                await user_service.change_password(user.id, "E2E_Test_Password123!")
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(_create_admin())
@@ -74,6 +76,7 @@ class TestCompleteBusinessWorkflow:
         """سير عمل تجاري شامل"""
         headers = {"Authorization": f"Bearer {auth_token}"}
         workflow_data = {}
+        run_suffix = datetime.now().strftime('%Y%m%d%H%M%S%f')
         
         # ═══════════════════════════════════════════════════════════
         # 1. إنشاء مستخدم جديد (مع صلاحيات admin)
@@ -96,6 +99,8 @@ class TestCompleteBusinessWorkflow:
                         last_name="Owner",
                         role_names=["admin"]
                     )
+                else:
+                    await user_service.change_password(user.id, "Business123!")
                 return user
 
         loop = asyncio.get_event_loop()
@@ -120,7 +125,7 @@ class TestCompleteBusinessWorkflow:
         # ═══════════════════════════════════════════════════════════
         print("[3/7] Creating customer...")
         customer_response = client.post("/api/v1/erp/customers", json={
-            "customer_code": f"CUST-E2E-{datetime.now().strftime('%Y%m%d')}",
+            "customer_code": f"CUST-E2E-{run_suffix}",
             "name": "E2E Test Customer",
             "email": "customer@e2e-test.com",
             "phone": "+966501234567",
@@ -136,7 +141,7 @@ class TestCompleteBusinessWorkflow:
         # ═══════════════════════════════════════════════════════════
         print("[4/7] Creating product...")
         product_response = client.post("/api/v1/erp/products", json={
-            "sku": f"PROD-E2E-{datetime.now().strftime('%Y%m%d')}",
+            "sku": f"PROD-E2E-{run_suffix}",
             "name": "E2E Test Product",
             "description": "Product created during E2E testing",
             "quantity": 100,

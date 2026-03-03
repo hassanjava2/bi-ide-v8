@@ -10,16 +10,17 @@ from pathlib import Path
 
 
 class RTX4090Client:
-    """Client for RTX 4090 inference server"""
+    """Client for RTX 5090 inference server"""
     
     def __init__(
         self, 
         host: Optional[str] = None, 
-        port: int = 8080,
+        port: int = 8090,
         timeout: int = 300
     ):
-        self.host = host or os.getenv("RTX4090_HOST", "192.168.68.125")
-        self.port = port or int(os.getenv("RTX4090_PORT", "8080"))
+        # يقرأ RTX5090_* أولاً مع fallback للقديم
+        self.host = host or os.getenv("RTX5090_HOST", os.getenv("RTX4090_HOST", "192.168.1.164"))
+        self.port = port or int(os.getenv("RTX5090_PORT", os.getenv("RTX4090_PORT", "8090")))
         self.base_url = f"http://{self.host}:{self.port}"
         self.timeout = timeout
         self.session: Optional[aiohttp.ClientSession] = None
@@ -216,13 +217,14 @@ class RTX4090Pool:
     
     def __init__(self, hosts: Optional[List[str]] = None):
         """
-        Initialize pool of RTX 4090 servers
+        Initialize pool of RTX 5090 servers
         
         Args:
-            hosts: List of host IPs. If None, uses RTX4090_HOSTS env var or defaults
+            hosts: List of host IPs. If None, uses RTX5090_HOSTS or RTX4090_HOSTS env var
         """
         if hosts is None:
-            hosts_env = os.getenv("RTX4090_HOSTS", "192.168.68.125")
+            # يقرأ RTX5090_HOSTS أولاً مع fallback للقديم
+            hosts_env = os.getenv("RTX5090_HOSTS", os.getenv("RTX4090_HOSTS", "192.168.1.164"))
             hosts = [h.strip() for h in hosts_env.split(",") if h.strip()]
         
         self.hosts = hosts

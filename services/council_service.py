@@ -111,6 +111,13 @@ class CouncilService:
         self._members: Dict[str, CouncilMember] = {}
         self._decisions: Dict[str, Decision] = {}
         self._query_cache: Dict[str, CacheEntry] = {}
+
+        # Ensure an event loop exists (pytest can clear current loop between modules)
+        try:
+            asyncio.get_event_loop()
+        except RuntimeError:
+            asyncio.set_event_loop(asyncio.new_event_loop())
+
         self._cache_lock = asyncio.Lock()
         
         # Initialize from high_council

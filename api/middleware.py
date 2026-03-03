@@ -9,9 +9,11 @@ This module contains all custom middleware for the BI-IDE API:
 - ErrorHandlerMiddleware: معالجة الأخطاء العامة
 """
 
+import os
 import time
 import logging
 import json
+import warnings
 from typing import Optional, Callable
 from datetime import datetime
 
@@ -233,7 +235,19 @@ class AuthMiddleware(BaseHTTPMiddleware):
             secret_key: JWT secret key
         """
         super().__init__(app)
-        self.secret_key = secret_key or "your-secret-key-change-in-production"
+        # قراءة secret_key من البيئة أو settings
+        from core.config import get_settings
+        _settings = get_settings()
+        self.secret_key = secret_key or os.getenv("SECRET_KEY") or _settings.SECRET_KEY
+        if not self.secret_key or self.secret_key in {
+            "your-secret-key-change-in-production",
+            "your-super-secret-jwt-key-change-this-in-production",
+            "",
+        }:
+            if os.getenv("ENVIRONMENT", "development") == "production":
+                raise RuntimeError("JWT secret_key is required in production")
+            self.secret_key = "dev-insecure-key-change-me"
+            warnings.warn("Using insecure default secret_key in AuthMiddleware")
         self.logger = logging.getLogger("api.auth")
     
     def _is_excluded(self, path: str) -> bool:

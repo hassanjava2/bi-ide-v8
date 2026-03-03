@@ -221,6 +221,33 @@ def sample_training_config():
 
 
 @pytest.fixture
+def sample_invoice():
+    """
+    Sample invoice payload for ERP API tests.
+    بيانات فاتورة نموذجية للاختبارات.
+    """
+    return {
+        "customer_name": "Test Customer",
+        "customer_id": "CUST-001",
+        "invoice_number": "INV-TEST-001",
+        "amount": 115.0,
+        "subtotal": 100.0,
+        "tax": 15.0,
+        "tax_amount": 15.0,
+        "total": 115.0,
+        "items": [
+            {
+                "name": "Test Service",
+                "quantity": 1,
+                "price": 100.0
+            }
+        ],
+        "notes": "Automated test invoice",
+        "due_date": "2026-12-31",
+    }
+
+
+@pytest.fixture
 def sample_council_query():
     """
     Sample council query for testing.

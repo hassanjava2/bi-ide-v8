@@ -8,11 +8,64 @@ Council API endpoints with standardized RTX configuration.
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
+import time
 
 from hierarchy import ai_hierarchy, RTX_HOST, RTX_PORT, RTX_URL
 from api.routers.auth import get_current_active_user
 
 router = APIRouter(prefix="/council", tags=["council"])
+RTX4090_URL = RTX_URL
+SMART_COUNCIL_AVAILABLE = True
+
+
+def _check_rtx4090(timeout: float = 2.0) -> bool:
+    try:
+        import requests
+        response = requests.get(f"{RTX4090_URL}/health", timeout=timeout)
+        return response.status_code == 200
+    except Exception:
+        return False
+
+
+def check_rtx4090_with_retry(timeout: float = 5.0, retries: int = 3, retry_delay: float = 0.5) -> bool:
+    for _ in range(max(1, retries)):
+        if _check_rtx4090(timeout=timeout):
+            return True
+        time.sleep(max(0.0, retry_delay))
+    return False
+
+
+def send_rtx4090_request_with_retry(
+    endpoint: str,
+    json_data: Optional[Dict[str, Any]] = None,
+    timeout: float = 5.0,
+    retries: int = 3,
+    retry_delay: float = 0.5,
+):
+    try:
+        import requests
+    except Exception:
+        return None
+
+    endpoint = endpoint if endpoint.startswith("/") else f"/{endpoint}"
+    url = f"{RTX4090_URL}{endpoint}"
+
+    for _ in range(max(1, retries)):
+        try:
+            response = requests.post(url, json=json_data or {}, timeout=timeout)
+            return response
+        except Exception:
+            time.sleep(max(0.0, retry_delay))
+
+    return None
+
+
+def get_live_metrics_snapshot() -> Dict[str, Any]:
+    return {
+        "rtx_connected": _check_rtx4090(timeout=1.5),
+        "smart_council_available": SMART_COUNCIL_AVAILABLE,
+        "timestamp": datetime.now().isoformat(),
+    }
 
 
 class MessageRequest(BaseModel):
@@ -58,7 +111,6 @@ async def council_message(
     1. Try RTX 4090 server first
     2. Fallback to local hierarchy
     """
-    import time
     start_time = time.time()
     
     try:

@@ -5,6 +5,7 @@ API endpoints for user management, authentication, and authorization
 
 from typing import List, Optional
 from datetime import timedelta
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -23,6 +24,7 @@ from api.auth import (
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
 security = HTTPBearer()
+logger = logging.getLogger(__name__)
 
 
 # ========== Pydantic Schemas ==========
@@ -45,7 +47,7 @@ class UserCreateRequest(BaseModel):
     last_name: Optional[str] = Field(None, max_length=50)
     is_active: bool = True
     is_superuser: bool = False
-    role_names: Optional[List[str]] = []
+    role_names: Optional[List[str]] = Field(default_factory=list)
 
 
 class UserUpdateRequest(BaseModel):
@@ -133,7 +135,7 @@ class RoleCreateRequest(BaseModel):
     """Role creation request"""
     name: str = Field(..., min_length=2, max_length=50)
     description: Optional[str] = None
-    permissions: List[str] = []
+    permissions: List[str] = Field(default_factory=list)
 
 
 class RoleResponse(BaseModel):
@@ -321,7 +323,7 @@ async def request_password_reset(
             await send_password_reset_email(request.email, token)
         except Exception as e:
             # Log error but don't expose to user (security)
-            print(f"⚠️ Failed to send password reset email: {e}")
+            logger.exception("Failed to send password reset email | email=%s error=%s", request.email, e)
             # Still continue - don't let attacker know if email exists
     
     # ✅ SECURITY FIX: Never return token in response!

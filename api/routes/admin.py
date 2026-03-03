@@ -1,8 +1,9 @@
 """
 Admin Routes - نقاط النهاية لإدارة النظام
-إدارة المستخدمين والصلاحيات
+⚠️ DEPRECATED: These endpoints are deprecated. Use /api/v1/* endpoints instead.
 """
 
+import warnings
 from typing import Optional, List, Dict
 from datetime import datetime
 
@@ -20,7 +21,17 @@ from api.rbac import (
 from core.database import get_db
 from core.user_service import UserService, RoleService
 
-router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
+warnings.warn(
+    "api/routes/admin.py is deprecated. Use api/routers/ endpoints instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
+
+router = APIRouter(
+    prefix="/api/v1/admin", 
+    tags=["admin"],
+    deprecated=True
+)
 
 
 # ─────────────── Request Models ───────────────

@@ -234,10 +234,12 @@ class PreferenceStore:
         cursor = conn.cursor()
         
         cursor.execute('DELETE FROM user_profiles WHERE user_id = ?', (user_id,))
+        profile_deleted = cursor.rowcount > 0
         cursor.execute('DELETE FROM interaction_patterns WHERE user_id = ?', (user_id,))
+        patterns_deleted = cursor.rowcount > 0
         
         conn.commit()
-        success = cursor.rowcount > 0
+        success = profile_deleted or patterns_deleted
         cursor.close()
         
         return success

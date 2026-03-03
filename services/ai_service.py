@@ -19,6 +19,28 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+# RAG Integration - Direct import to avoid ai/__init__.py dependencies
+try:
+    import sys
+    import importlib.util
+    
+    # Load vector_db.py directly without ai/__init__.py
+    vector_db_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "ai", "memory", "vector_db.py"
+    )
+    spec = importlib.util.spec_from_file_location("vector_db", vector_db_path)
+    vector_db_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(vector_db_module)
+    VectorStore = vector_db_module.VectorStore
+    RAG_AVAILABLE = True
+    logger.info("RAG VectorStore loaded successfully")
+except Exception as e:
+    logger.warning(f"RAG VectorStore not available: {e}")
+    RAG_AVAILABLE = False
+    VectorStore = None
+
+
 class ProviderType(Enum):
     """أنواع موفري الخدمة"""
     RTX = "rtx4090"
@@ -125,12 +147,13 @@ class ProviderAdapter:
 
 
 class RTXProvider(ProviderAdapter):
-    """موفر RTX 4090"""
+    """موفر RTX 5090"""
     
     def __init__(self):
         super().__init__(ProviderType.RTX)
-        self.host = os.getenv("RTX4090_HOST", "192.168.1.164")
-        self.port = int(os.getenv("RTX4090_PORT", "8090"))
+        # يقرأ RTX5090_* أولاً مع fallback للقديم
+        self.host = os.getenv("RTX5090_HOST", os.getenv("RTX4090_HOST", "192.168.1.164"))
+        self.port = int(os.getenv("RTX5090_PORT", os.getenv("RTX4090_PORT", "8090")))
         self.base_url = f"http://{self.host}:{self.port}"
         self.timeout = 60  # Longer timeout for RTX
     
@@ -260,7 +283,22 @@ class AIService:
             ProviderType.LOCAL,
         ]
         
-        logger.info("AI Service V2 initialized (No mocks)")
+        # Initialize RAG Vector Store
+        rag_data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "rag_memory")
+        os.makedirs(rag_data_dir, exist_ok=True)
+        
+        try:
+            self._vector_store = VectorStore(backend='faiss', embedding_dim=768)
+            # Load existing memory if available
+            memory_file = os.path.join(rag_data_dir, "council_memory")
+            if os.path.exists(memory_file + '.faiss'):
+                self._vector_store.load(memory_file)
+                logger.info(f"RAG memory loaded from {memory_file}")
+        except Exception as e:
+            logger.warning(f"RAG VectorStore init failed, using fallback: {e}")
+            self._vector_store = None
+        
+        logger.info("AI Service V2 initialized (No mocks, RAG enabled)")
     
     def _get_user_rate_limit(self, user_id: str) -> RateLimit:
         """الحصول على حدود المعدل للمستخدم"""
@@ -287,19 +325,59 @@ class AIService:
         self,
         prompt: str,
         context: str = "",
-        language: str = "python"
+        language: str = "python",
+        use_rag: bool = True,
+        session_id: Optional[str] = None
     ) -> Dict[str, Any]:
-        """توليد مع fallback بين الموفرين"""
+        """توليد مع fallback بين الموفرين + RAG context"""
         
+        # Enhance context with RAG
+        enhanced_context = context
+        if use_rag and self._vector_store:
+            try:
+                # Search for relevant memories
+                rag_context = self._vector_store.get_relevant_context(
+                    query=prompt,
+                    k=3,
+                    min_similarity=0.6
+                )
+                if rag_context:
+                    enhanced_context = f"[Relevant Memories]\n{rag_context}\n\n[Current Context]\n{context}"
+                    logger.debug("RAG context enhanced")
+            except Exception as e:
+                logger.warning(f"RAG enhancement failed: {e}")
+        
+        # Try providers
         for provider_type in self._provider_order:
             provider = self._providers.get(provider_type)
             if not provider:
                 continue
             
             try:
-                result = await provider.generate(prompt, context, language)
+                result = await provider.generate(prompt, enhanced_context, language)
                 if result:
                     result["provider"] = provider_type.value
+                    
+                    # Store in RAG memory
+                    if use_rag and self._vector_store and session_id:
+                        try:
+                            self._vector_store.store(
+                                text=f"Q: {prompt}\nA: {result['content'][:500]}",
+                                metadata={
+                                    "type": "qa",
+                                    "language": language,
+                                    "provider": provider_type.value,
+                                    "session": session_id,
+                                    "timestamp": datetime.now().isoformat()
+                                }
+                            )
+                            # Save periodically
+                            rag_data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "rag_memory")
+                            memory_file = os.path.join(rag_data_dir, "council_memory")
+                            self._vector_store.save(memory_file)
+                        except Exception as e:
+                            logger.warning(f"RAG storage failed: {e}")
+                    
                     return result
             except Exception as e:
                 logger.warning(f"Provider {provider_type.value} failed: {e}")
@@ -329,9 +407,9 @@ class AIService:
                 user_context = await self._get_context(user_id)
                 context = user_context.get_context()
             
-            # Generate with fallback
+            # Generate with fallback + RAG
             lang = language or "python"
-            result = await self._generate_with_fallback(prompt, context, lang)
+            result = await self._generate_with_fallback(prompt, context, lang, use_rag=True, session_id=user_id)
             
             # Update context
             if use_context:
