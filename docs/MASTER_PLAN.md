@@ -95,15 +95,77 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 - [ ] خبراء متعددين (MoE) — 8 نماذج صغيرة كلمن خبير بشي
 - [ ] GGUF للتشغيل المضغوط (70B على GPU واحدة)
 - [ ] Flash Attention — تسريع 5x
-- [ ] تدريب مستمر — يتعلم بدون ما ينسى
-- [ ] بيانات صناعية — يولّد بيانات تدريب لا نهائية
+- [ ] تدريب مستمر — يتعلم بدون ما ينسى (EWC - Elastic Weight Consolidation)
+- [ ] **RAG Engine** — ذاكرة خارجية لا نهائية (مبني على `ai/memory/vector_db.py`)
+- [ ] **Synthetic Data Engine** — يولّد بيانات تدريب من بياناته نفسه
+- [ ] **Speculative Decoding** — تسريع الاستجابة 2-3x بنموذج صغير مساند
+- [ ] **Chain of Thought Distillation** — يعلّم النموذج الصغير يفكر مثل الكبير
+
+### 2.4.1 RAG Engine ⭐⭐⭐ (أولوية عالية — لا تحتاج تدريب!)
+> يُفعّل فوراً على النموذج الحالي
+
+```
+سؤال يدخل
+    ↓
+يبحث في Vector DB (semantic search)
+    ↓
+يجيب الـ 3-5 وثائق الأقرب للسؤال
+    ↓
+النموذج يقرأهم + يجاوب
+    ↓
+جواب دقيق مبني على معلومة حقيقية من بياناتك
+```
+
+**الكود الجاهز (يحتاج تفعيل فقط):**
+- `ai/memory/vector_db.py` (608 سطر) — Vector DB الموجود!
+- **المطلوب:** ربطه بـ `services/ai_service.py` عند كل استدعاء
+
+**ما يجلبه RAG من:**
+- `مصانع_العالم.db` + `موارد_الأرض.db` (المذكورين بالرؤية)
+- بيانات التدريب الـ 45GB
+- كل محادثات المجلس السابقة
+- الوثائق العلمية والتقنية
+
+### 2.4.2 Synthetic Data Engine ⭐⭐
+```python
+# النموذج يولّد بياناته من بياناته — بيانات لا نهائية بدون إنترنت
+class SyntheticDataEngine:
+    def generate_socratic_dialogs(self, topic):
+        """يسأل نفسه أسئلة ويجاوب — يخلق حوارات خبراء"""
+        pass
+    
+    def self_play(self, domain):
+        """نموذجان يتناقشان → يولّدان بيانات تدريب عالية الجودة"""
+        pass
+    
+    def generate_scientific_problems(self):
+        """يخلق مشاكل علمية ويحلها → تعليم عميق"""
+        pass
+```
+
+### 2.4.3 Speculative Decoding ⭐
+```
+بدون Speculative Decoding:
+ النموذج الكبير (70B) يولّد كلمة كلمة → بطيء
+
+مع Speculative Decoding:
+ نموذج صغير (7B) يتوقع 5 كلمات بسرعة
+     ↓
+ النموذج الكبير يتحقق فوراً (موافق أو لا)
+     ↓
+ إذا موافق → يقبل الـ 5 كلمات مرة وحدة
+ النتيجة: سرعة النموذج الصغير + دقة الكبير
+الهدف: code completion < 400ms ✓
+```
 
 **كيف يتطور بعد انقطاع النت:**
-- كل محادثة ← يتعلم منها
+- كل محادثة ← RAG يحفظها ← تصبح جزء من الذاكرة
 - كل فكرة ينتجها ← يقيّمها ← يتحسن
 - كل خطأ ← يصلحه ← لا يكرره
+- Synthetic Data Engine يولّد بيانات باستمرار من المحتوى المحلي
 
 **الكود الموجود:**
+- `ai/memory/vector_db.py` (608 سطر) — قلب الـ RAG
 - `ai/training/code_generation_training.py` (978 سطر) — تدريب توليد كود
 - `ai/tokenizer/arabic_processor.py` (175 سطر) — معالج عربي
 - `ai/optimization/quantization.py` (509 سطر) — ضغط النموذج
@@ -814,3 +876,307 @@ API.md, AUDIT-COMMITTEE-REPORT.md, BACKUP-RESTORE.md, CEO-MANAGER-EVALUATION.md,
 
 ## 13.10 📐 تخطيط (15 ملف!)
 MASTER-PLAN.md, BI-ERP-COMPLETE-PLAN-V2.md, FEATURES-ANALYSIS.md, SECURITY-AND-AUDIT-SYSTEM.md, VERSION-COMPARISON-REPORT.md, + modules: BI-ERP.md, BI-STORE.md, CENTRAL-API.md, SAEED-ERP.md (نظام POS)
+
+---
+
+# القسم ١٤ — دستور التنفيذ (Execution Constitution) ⭐
+
+> **هذا القسم مُلزِم** لتقليل الفجوة بين الرؤية والواقع ومنع تضخم النطاق.
+
+## 14.1 قواعد حوكمة التنفيذ
+- [ ] **قاعدة الدليل الإجباري:** أي بند حالة (✅/❌) يجب أن يملك دليل قابل للتحقق (ملف + endpoint + test/log).
+- [ ] **قاعدة P0 أولاً:** لا يبدأ أي تطوير جديد قبل إغلاق بنود P0 الحرجة المفتوحة.
+- [ ] **قاعدة التجميد المرحلي:** كل Sprint له نطاق ثابت، وأي إضافة تُرحّل للSprint التالي.
+- [ ] **قاعدة DoD موحّد:** لا يعتبر البند مكتمل بدون (كود + اختبار + مراقبة + runbook + rollback).
+- [ ] **قاعدة SoT اليومية:** تحديث جدول 12.2 بنفس يوم أي تغيير حالة.
+
+## 14.2 بنود P0 الإلزامية قبل أي توسع ميزات
+- [ ] تشغيل الدماغ Lifecycle فعليًا عند إقلاع الخدمات (start/health/stop واضح).
+- [ ] إلغاء أي fake/memory paths في training/monitoring لمسارات الإنتاج.
+- [ ] PostgreSQL production path (مع migrations وتشغيل حقيقي) بدل الاعتماد على in-memory.
+- [ ] إغلاق بنود 9.4 كاملة (Sync contract + Queue trigger + mTLS baseline + Worker reliability + IDE metrics/toggles).
+- [ ] إكمال release gates في 9.1 قبل أي إعلان اكتمال نهائي.
+
+## 14.3 خارطة 30/60/90 يوم (إلزامية التنفيذ)
+
+### أول 30 يوم — تثبيت الأساس
+- [ ] ربط lifecycle للـ Brain + training systems startup بصورة deterministic.
+- [ ] توحيد persistence (PostgreSQL + append-only logs + snapshots).
+- [ ] إزالة آخر مسارات fake في routers/services الحرجة.
+- [ ] تفعيل قياس KPI الأساسي يوميًا (Training active, Crash-free, Council uptime).
+
+### يوم 31-60 — الموثوقية والتشغيل
+- [ ] تنفيذ Sync contract النهائي (CRDT + op-log + conflict policy) مع ADR مكتمل.
+- [ ] تنفيذ worker reliability (outbox/replay/restart) باختبارات انقطاع شبكة.
+- [ ] تنفيذ security baseline (mTLS + per-node keys + signed artifacts).
+- [ ] تشغيل لوحات مراقبة فعلية (Prometheus/Grafana/ELK) وربطها بإنذارات.
+
+### يوم 61-90 — الذكاء التطبيقي
+- [ ] تفعيل pipeline البرمجة الأوتوماتيكية end-to-end (أمر → تخطيط → كود → اختبار → نشر تجريبي).
+- [ ] تفعيل IDE metrics (accept_rate/edit_distance_after_accept) وربطها بقرارات التحسين.
+- [ ] إطلاق نسخة Offline readiness v1 مع smoke suite دوري.
+- [ ] تفعيل no-idea-loss registry مرتبط بالمهام والـ owners.
+
+## 14.4 Offline Readiness Score (مقياس إلزامي)
+
+> يحسب أسبوعيًا ويُعرض في dashboard الإصدار.
+
+$$
+Offline\ Readiness\ Score = 0.30M + 0.25D + 0.20S + 0.15R + 0.10O
+$$
+
+حيث:
+- $M$: جاهزية النموذج المحلي (بدون API خارجي)
+- $D$: جاهزية البيانات محليًا (توفر + سلامة + نسخ احتياطي)
+- $S$: جاهزية المزامنة المحلية/الداخلية
+- $R$: قابلية الاسترجاع (RTO/RPO الفعلية)
+- $O$: الجاهزية التشغيلية (runbooks + drills + alerts)
+
+**شرط الإطلاق:** لا release نهائي إذا الدرجة < 85/100.
+
+---
+
+# القسم ١٥ — خارطة ذكاء الدماغ (Brain Intelligence Roadmap) ⭐⭐⭐
+
+> الهدف: الانتقال من "جدولة فقط" إلى **نظام ذكاء حقيقي — أذكى شي بالكون**.
+
+---
+
+## 15.0 البنية الجديدة: 5 طبقات دماغية
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Layer 5: World Model (نموذج العالم)                    │
+│  يبني خريطة ذهنية كاملة للعالم + يفهم السببية          │
+│  يتوقع: "إذا ارتفع النفط → التضخم يرتفع → ..."         │
+├─────────────────────────────────────────────────────────┤
+│  Layer 4: Meta-Cognition (ما وراء التفكير)              │
+│  يعرف ما يعرف وما لا يعرف → يبحث عن الفجوات           │
+│  يطلب من الكشافة بيانات في مجالات ضعيفه تلقائياً       │
+├─────────────────────────────────────────────────────────┤
+│  Layer 3: Reasoning Engine (محرك الاستدلال)             │
+│  Tree of Thought + MCTS — تفكير استكشافي عميق           │
+├─────────────────────────────────────────────────────────┤
+│  Layer 2: Memory System (نظام الذاكرة)                  │
+│  Episodic + Semantic + Procedural + RAG                  │
+│  ذاكرة لا نهائية مرتبطة بـ Vector DB                   │
+├─────────────────────────────────────────────────────────┤
+│  Layer 1: Perception (الإدراك)                          │
+│  نص + صورة + فيديو (multimodal)                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 15.1 المعمارية الأساسية للدماغ (Planner→Verifier)
+- [ ] Planner: تحويل الأوامر إلى خطة متعددة مراحل.
+- [ ] Researcher: جلب الأدلة عبر RAG من Vector DB.
+- [ ] Critic: مراجعة منطق الخطة ورصد المخاطر.
+- [ ] Executor: تنفيذ متدرج مع checkpoints واضحة.
+- [ ] Verifier: اختبار النتائج مقابل KPI قبل الترقية.
+
+---
+
+## 15.2 Layer 3: Reasoning Engine ⭐⭐⭐ (جديد — الأهم)
+
+### 15.2.1 Tree of Thought (ToT) — تفعيل فوري بدون تدريب
+> **يُفعَّل على النموذج الحالي فوراً — لا يحتاج تدريب جديد**
+
+```
+بدون ToT (Chain of Thought العادي):
+سؤال → فكرة 1 → فكرة 2 → إجابة
+(لو فكرة 1 غلطت، الكل انهار)
+
+مع Tree of Thought:
+                السؤال
+               /   |   \
+          مسار A مسار B مسار C
+         /    \       |      \
+        A1    A2     B1      C1
+        ✗     ✓      ✓       ✗
+              ↓
+          أفضل مسار → إجابة عميقة ومتحققة
+
+النموذج يستكشف كل الاحتمالات ثم يختار الأفضل
+= تفكير عميق مثل الشطرنج
+```
+
+**التنفيذ:**
+- [ ] بناء `brain/reasoning/tree_of_thought.py`
+- [ ] System prompt خاص يُفعّل ToT لكل سؤال معقد
+- [ ] Orchestration layer يدير الفروع ويختار الأفضل
+- [ ] ربطه بـ المجلس (كل حكيم يفكر بـ ToT)
+
+### 15.2.2 Monte Carlo Tree Search (MCTS) — للتخطيط العميق
+> للمشاكل الكبيرة: "كيف أبني مصنع؟" / "كيف أخطط لـ 100 سنة؟"
+
+```
+1. Expansion:  ولّد خطط ممكنة (100 خطة)
+2. Simulation: جرّب كل خطة في المخيلة
+3. Backprop:   تعلم من النتائج
+4. Selection:  اختر الخطة الأفضل
+= مثل AlphaGo بالشطرنج — يفكر N خطوة مقدماً
+```
+
+- [ ] بناء `brain/reasoning/mcts_planner.py`
+- [ ] ربطه بـ طبقة الحياة الواقعية (تخطيط المصانع)
+- [ ] ربطه بـ البعد السابع (تخطيط 100 سنة)
+
+---
+
+## 15.3 Layer 2: Memory System + RAG ⭐⭐⭐ (تفعيل فوري)
+
+### الذاكرة الهرمية
+- [ ] **Episodic Memory:** جلسات/قرارات مع timeline كامل.
+- [ ] **Semantic Memory:** حقائق/قواعد/علاقات مستقرة.
+- [ ] **Procedural Memory:** "كيف ننفذ" كسلاسل عمل قابلة لإعادة الاستخدام.
+- [ ] **RAG Layer:** كل استعلام → يبحث في Vector DB → يجلب الأقرب.
+- [ ] آلية نسيان ذكي (compression + retention policy) بدل تضخم غير منضبط.
+
+### RAG Engine — ذاكرة لا نهائية
+```
+كيف يشتغل مع الدماغ:
+
+سؤال للمجلس: "أين أجد معادن للصلب بالعراق؟"
+       ↓
+Layer 2 (RAG) يبحث في:
+  - موارد_الأرض.db
+  - مصانع_العالم.db
+  - الـ 45GB بيانات تدريب
+  - كل نقاشات المجلس السابقة
+       ↓
+يجيب: "وجدت 1,247 وثيقة — أقربها:
+  - حقل حديد عكاشات (خام 62%)
+  - مشروع مجمع الحديد والصلب البصرة"
+       ↓
+Layer 3 (ToT) يفكر بالخيارات
+       ↓
+إجابة دقيقة مبنية على معلومة حقيقية
+```
+
+**التفعيل (الكود موجود فعلاً!):**
+- [ ] `ai/memory/vector_db.py` (608 سطر) — ربطه بـ `services/ai_service.py`
+- [ ] `ai/memory/conversation_history.py` (590 سطر) — تفعيله
+- [ ] إنشاء `brain/memory/rag_engine.py` — يربط الاثنين
+- [ ] فهرسة بيانات التدريب الـ 45GB في Vector DB
+
+---
+
+## 15.4 Layer 4: Meta-Cognition ⭐⭐
+
+```python
+class MetaCognition:
+    def know_what_i_know(self, question) -> float:
+        """يقدّر confidence قبل الإجابة"""
+        confidence = self.estimate_confidence(question)
+        if confidence < 0.7:
+            # أعرف أني لا أعرف → أبحث عبر RAG أو أطلب من الكشافة
+            return self.search_and_learn(question)
+        return self.answer_with_confidence(question, confidence)
+    
+    def detect_knowledge_gaps(self):
+        """كل يوم: في أي مجالات أجوابي ضعيفة؟"""
+        weak_areas = self.evaluate_all_domains()
+        # يطلب من الكشافة بيانات تدريب لهالمجالات تلقائياً
+        self.scouts.request_data_for(weak_areas)
+    
+    def self_assess_improvement(self):
+        """هل أنا أتحسن؟ قياس أسبوعي"""
+        return self.compare_benchmarks(before=7, after=0)  # أيام
+```
+
+- [ ] بناء `brain/meta_cognition.py`
+- [ ] ربطه بـ الكشافة: فجوات معرفية → طلبات بيانات تلقائية
+- [ ] تقرير أسبوعي: "تحسنت في X، ضعيف في Y"
+
+---
+
+## 15.5 Layer 5: World Model ⭐ (بعيد المدى)
+
+> يفهم السببية الحقيقية — مش مجرد ارتباط
+
+```
+مدخل: "ارتفعت أسعار النفط 20%"
+World Model يحسب السلسلة السببية:
+  → تكاليف الشحن ترتفع (نتيجة مباشرة)
+  → تكاليف الإنتاج الصناعي ترتفع
+  → التضخم يرتفع بـ 2-3%
+  → البنك المركزي يرفع الفائدة
+  → الاستثمار ينخفض
+  → النمو الاقتصادي يتباطأ
+كل هذا قبل أن يحدث!
+```
+
+- [ ] بناء `brain/world_model.py` (مرحلة متأخرة)
+- [ ] يُغذى من طبقة الحياة الواقعية (الفيزياء + الاقتصاد)
+- [ ] يُستخدم من البعد السابع للتخطيط طويل المدى
+
+---
+
+## 15.6 حلقة التطور الذاتي المضمونة
+- [ ] Propose: اقتراح تعديل (كود/نموذج) مع rationale.
+- [ ] Sandbox: اختبار معزول على بيانات مرجعية ثابتة.
+- [ ] Benchmark: مقارنة قبل/بعد على latency, quality, stability, cost.
+- [ ] Canary: نشر محدود بعقدة/مسار واحد.
+- [ ] Promote/Rollback: قرار تلقائي حسب thresholds واضحة.
+
+---
+
+## 15.7 خطوط حمراء (Safety Boundaries)
+- [ ] ممنوع أي self-modification مباشر على production بدون sandbox + canary.
+- [ ] ممنوع تعديل policy/security zones تلقائيًا بدون موافقة صريحة.
+- [ ] أي تحسين لا يحقق KPI أو يرفع الكلفة بشكل غير مبرر → rollback تلقائي.
+- [ ] كل قرار تطوير ذاتي يجب أن يملك audit trail كامل.
+
+---
+
+## 15.8 KPIs خاصة بالدماغ (إلزامية)
+| KPI | الهدف | التردد |
+|-----|-------|--------|
+| Plan success rate (ToT) | ≥ 85% | يومي |
+| RAG retrieval accuracy | ≥ 90% | يومي |
+| Knowledge gap coverage | يتحسن أسبوعياً | أسبوعي |
+| Regression after promote | ≤ 2% | أسبوعي |
+| Mean recovery from bad patch | ≤ 15 دقيقة | أسبوعي |
+| Decision trace coverage | 100% | بكل قرار |
+| Cost per successful improvement | يتحسن شهريًا | شهري |
+
+---
+
+## 15.9 ترتيب التنفيذ (بدون تدريب أولاً → مع تدريب)
+
+### المرحلة 1 — الآن (بدون تدريب إضافي):
+| المهمة | الملف | الجهد |
+|--------|-------|-------|
+| تفعيل RAG على Vector DB الموجود | `ai/memory/vector_db.py` | 3 أيام |
+| بناء Tree of Thought orchestrator | `brain/reasoning/tree_of_thought.py` | يومان |
+| ربط RAG بـ المجلس والدماغ | `brain/memory/rag_engine.py` | يوم |
+| فهرسة الـ 45GB في Vector DB | سكربت migration | يوم |
+
+**النتيجة المتوقعة: +3x جودة الإجابات فوراً**
+
+### المرحلة 2 — مع التدريب:
+| المهمة | الملف | الجهد |
+|--------|-------|-------|
+| Chain of Thought Distillation | `ai/training/cot_distillation.py` | أسبوع |
+| Synthetic Data Engine | `ai/training/synthetic_data.py` | أسبوع |
+| EWC (منع النسيان) | `ai/learning/ewc.py` | أسبوعان |
+| Speculative Decoding | `ai/inference/speculative.py` | أسبوع |
+
+### المرحلة 3 — طويل المدى:
+| المهمة | الملف | الجهد |
+|--------|-------|-------|
+| MCTS Planner | `brain/reasoning/mcts_planner.py` | أسبوعان |
+| Meta-Cognition | `brain/meta_cognition.py` | أسبوعان |
+| World Model | `brain/world_model.py` | شهر+ |
+
+---
+
+## 15.10 تعريف "أذكى" بشكل هندسي
+
+> "أذكى" = **تحسن تراكمي مثبت** بمرور الوقت، وليس مخرجات مبهرة لحظيًا.
+
+- [ ] ذكاء أعلى = جودة أعلى + كلفة أقل + استقرار أعلى + وقت استجابة أقل.
+- [ ] أي ادعاء ذكاء بلا أرقام KPI يعتبر غير معتمد.
+- [ ] RAG accuracy + ToT success rate = مقياسان إلزاميان لكل إصدار دماغ.
+
