@@ -1,6 +1,6 @@
 # 📋 الخطة الشاملة النهائية — BI-IDE v8
 
-> **المرجع:** [VISION_MASTER.md](file:///Users/bi/Documents/bi-ide-v8/docs/VISION_MASTER.md)
+> **المرجع:** [VISION_MASTER.md](VISION_MASTER.md)
 > **آخر تحديث:** 2026-03-03
 > **الحالة:** هذا الملف يدمج كل الخطط السابقة بملف واحد
 
@@ -448,6 +448,11 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 - Training Dashboard (بيانات GPU حقيقية)
 - Sync Panel + Auth + GPU Metrics
 
+> **توضيح مهم (لمنع التضارب):**
+> - **مكتمل:** الديسكتوب Tauri الحالي (`apps/desktop-tauri`).
+> - **غير مكتمل:** توحيد واجهات `ui/src/components/ide/` مع الديسكتوب Tauri ضمن واجهة واحدة.
+> يعني 8.1 يصف حالة الديسكتوب الحالي، بينما 8.5 يصف الدمج الشامل المطلوب بين مسارين واجهة.
+
 ## 8.2 ✅ UI موجود من السابق (3,246 سطر!) — يحتاج ربط
 | ملف | سطور | الوظيفة |
 |-----|-------|---------|
@@ -493,14 +498,33 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 
 ## 8.5 ❌ مطلوب (لم يُنجز بعد)
 - [ ] ربط `ui/src/components/ide/` بالديسكتوب الجديد (Tauri)
-- [ ] Monaco editor حقيقي (فتح/تعديل/حفظ ملفات)
-- [ ] PTY terminal integration
-- [ ] Git integration حقيقي (status/diff/commit/push/pull)
 - [ ] Code completion (Monaco inline) — P95 < 400ms
 - [ ] Explain/Refactor/Fix actions
 - [ ] Multi-language depth
 - [ ] Live collaboration
-- [ ] Quick Open (Cmd+P)
+- [ ] توحيد event contracts بين `ui` و`desktop-tauri` (بدون no-op events)
+
+---
+
+# القسم ٩.١ — بوابات الإصدار (Release Gates) ⭐
+
+> **ممنوع أي release بدون تحقق هذه البوابات بالكامل:**
+
+## بوابات build & test
+- [ ] `npm run build` (desktop + ui) = أخضر
+- [ ] `cargo check` = أخضر
+- [ ] `npm run tauri build` = bundle ناجح
+- [ ] smoke tests (open workspace → edit → search → git → sync → training) = ناجح
+
+## بوابات الجودة الوظيفية
+- [ ] 0 no-op في الأوامر الحرجة
+- [ ] 0 mock في المسارات الإنتاجية الحرجة (training/sync/council decisions)
+- [ ] كل حدث `emit(...)` له listener فعلي أو يُحذف
+
+## بوابات الأمان والتشغيل
+- [ ] لا يوجد High/Critical مفتوح قبل release
+- [ ] rollback path مجرّب عمليًا
+- [ ] runbook حادثة الإنتاج محدث
 
 ---
 
@@ -515,6 +539,46 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 - [ ] Disaster recovery rehearsal
 - [ ] Deploy systemd services (brain, training, etc.)
 - [ ] Monitoring: Prometheus + Grafana + ELK (موجود غير مفعّل)
+
+## 9.1 RTO / RPO (إلزامي)
+- **RTO الهدف:** 30 دقيقة
+- **RPO الهدف:** 5 دقائق
+- [ ] اختبار DR شهري (backup restore + service resume)
+- [ ] توثيق نتائج كل DR drill في `docs/DR_REPORTS/`
+
+## 9.2 Risk Register (مختصر تنفيذي)
+| الخطر | الاحتمال | الأثر | المالك | خطة المعالجة |
+|-------|----------|-------|--------|---------------|
+| اعتماد الإنترنت للنموذج | متوسط | عالي | AI/Training | Offline model milestones + data relay buffer |
+| فقدان بيانات تدريب | متوسط | عالي | Data/Sync | Dedup IDs + append-only logs + periodic snapshots |
+| انهيار worker cluster | متوسط | عالي | Orchestrator | Sharded resilient queue + retry/backoff + health checks |
+| Drift بين الخطة والواقع | عالي | متوسط | PM/Architecture | Weekly truth-table review + evidence links |
+
+## 9.3 ADR (Architectural Decision Record)
+- [ ] لكل قرار معماري كبير ADR مستقل في `docs/adr/`
+- [ ] كل ADR يحتوي: المشكلة، البدائل، القرار، الأثر، خطة الرجوع
+- [ ] القرارات الإلزامية حاليًا:
+  - [ ] استراتيجية Offline model
+  - [ ] PostgreSQL migration path
+  - [ ] Council governance & voting policy
+  - [ ] Sync conflict resolution policy
+
+## 9.4 Legacy/V6 Gap Closure (بنود إلزامية مضافة)
+> هذا القسم يغلق العناصر التي كانت موجودة/مخططة في وثائق سابقة ولم تكن ممثلة صراحةً في الخطة النهائية.
+
+| البند | المصدر السابق | المطلوب في الخطة النهائية | المالك | الاستحقاق | الحالة |
+|------|---------------|---------------------------|--------|-----------|--------|
+| Sync architecture contract (CRDT + op-log + conflict policy) | `docs/DESKTOP_IDE_MASTER_PLAN_2026.md` | ADR تقني + خطة تنفيذ تدريجية + KPI convergence | IDE + Sync | 2026-03-10 | [ ] |
+| Queue strategy (Redis Streams → NATS JetStream) + trigger واضح | `docs/DESKTOP_IDE_MASTER_PLAN_2026.md` + `docs/V6_WEB_DESKTOP_MASTER_PLAN.md` | وثيقة قرار انتقال + حدود throughput/latency | Orchestrator | 2026-03-11 | [ ] |
+| Node security baseline (mTLS + per-node keys + signed artifacts) | `docs/DESKTOP_IDE_MASTER_PLAN_2026.md` | security gate ملزم قبل أي release موزع | Security | 2026-03-12 | [ ] |
+| Worker reliability (outbox retry + auto-restart + replay pending queue) | `docs/DISTRIBUTED_HIERARCHICAL_TRAINING_PLAN.md` + `docs/V6_WEB_DESKTOP_MASTER_PLAN.md` | runbook + اختبار انقطاع شبكة + قياس recovery time | Platform | 2026-03-12 | [ ] |
+| IDE quality metrics (accept_rate + edit_distance_after_accept) | `docs/IDE_IDEAS_MASTER.md` | إضافتها إلى KPI الرسمية وربط dashboard | IDE + QA | 2026-03-09 | [ ] |
+| IDE production toggles (feature flags + profiling + copilot cache policy) | `docs/IDE_IDEAS_MASTER.md` | checklist تفعيل/تعطيل حسب البيئة + perf budget | IDE | 2026-03-13 | [ ] |
+
+### قواعد تنفيذ هذا القسم
+- [ ] تحديث حالة البنود أسبوعيًا ضمن جدول SoT (القسم 12.2)
+- [ ] أي بند يتأخر عن الاستحقاق يحتاج risk entry مباشر في 9.2
+- [ ] يمنع إعلان اكتمال نهائي بدون إغلاق كل بنود 9.4 أو قبول استثناء موقّع (ADR)
 
 ---
 
@@ -615,6 +679,35 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 | النموذج اللغوي الخاص | يشتغل offline | ❌ يعتمد APIs |
 | وضع Offline | كل شي بدون نت | ❌ يحتاج إنترنت |
 
+## 12.1 KPI Instrumentation (مصدر القياس)
+| KPI | مصدر القياس | المالك | التردد |
+|-----|-------------|--------|--------|
+| Training systems active | orchestrator metrics + worker heartbeats | Training Lead | يومي |
+| Crash-free sessions | desktop telemetry + error logs | Desktop Lead | يومي |
+| Council autonomous uptime | council loop monitor | Hierarchy Lead | يومي |
+| Mock endpoints count | CI static checks + runtime flags | QA Lead | بكل PR |
+| Code completion P95 | IDE latency dashboard | IDE Lead | يومي |
+| Offline readiness score | offline smoke suite | Release Manager | أسبوعي |
+
+## 12.2 Single Source of Truth (SoT)
+> لمنع التضارب بين الأقسام (مثل 8.1 vs 8.5)، هذا الجدول هو المرجع الوحيد للحالة.
+
+| الميزة | الحالة | الدليل | المالك | آخر تحقق |
+|--------|--------|--------|--------|----------|
+| Desktop Tauri shell | ✅ مكتمل | `apps/desktop-tauri` + `apps/desktop-tauri/src-tauri/target/release/bundle/` | Desktop | 2026-03-03 |
+| UI↔Desktop IDE unification | ❌ غير مكتمل | `docs/MASTER_PLAN.md` (القسم 8.5) | IDE | 2026-03-03 |
+| PostgreSQL production | ❌ غير مكتمل | `database/schema.sql` + خطة migration في هذا الملف (القسم 4) | Data | 2026-03-03 |
+| Offline model readiness | ❌ غير مكتمل | `docs/VISION_MASTER.md` + milestones (القسم 10/11) | AI | 2026-03-03 |
+| Sync architecture contract (CRDT/op-log/conflict policy) | ❌ غير مكتمل | `docs/MASTER_PLAN.md` (القسم 9.4) | IDE + Sync | 2026-03-03 |
+| Queue strategy (Redis→NATS trigger) | ❌ غير مكتمل | `docs/MASTER_PLAN.md` (القسم 9.4) | Orchestrator | 2026-03-03 |
+| Node security baseline (mTLS/keys/signed artifacts) | ❌ غير مكتمل | `docs/MASTER_PLAN.md` (القسم 9.4) | Security | 2026-03-03 |
+| Worker reliability (outbox/restart/replay) | ❌ غير مكتمل | `docs/MASTER_PLAN.md` (القسم 9.4) | Platform | 2026-03-03 |
+| IDE quality metrics (accept_rate/edit_distance) | ❌ غير مكتمل | `docs/MASTER_PLAN.md` (القسم 9.4) | IDE + QA | 2026-03-03 |
+| IDE production toggles (flags/profiling/cache policy) | ❌ غير مكتمل | `docs/MASTER_PLAN.md` (القسم 9.4) | IDE | 2026-03-03 |
+
+> **قاعدة إلزامية:** أي فقرة حالة خارج هذا الجدول تعتبر وصفًا مساعدًا فقط، وليس مرجع قرار release.
+> **قاعدة إضافية:** تحديث حالة أي بند في 9.4 يجب أن ينعكس هنا بنفس اليوم.
+
 ---
 
 # القسم ١٣ — كنوز الإصدارات السابقة (bi Management 3.4GB) ⭐
@@ -622,7 +715,7 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 > ⚠️ **هذا القسم يوثق كل شي موجود بالإصدار القديم ولازم ما يضيع!**
 > المسار: `bi-projects/_archive/bi Management/`
 
-## 12.1 📷 camera-ai — نظام كاميرات المراقبة!
+## 13.1 📷 camera-ai — نظام كاميرات المراقبة!
 > **هذا اللي نحتاجه بعد الكارثة — مراقبة + تحليل + توجيه!**
 
 | ملف | الوظيفة | المطلوب |
@@ -635,7 +728,7 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 | `camera-ai/app/routes/cameras.py` | API كاميرات | **نقل** |
 | `camera-ai/app/routes/analysis.py` | API تحليل | **نقل** |
 
-## 12.2 🤖 ai-engine — محرك AI كامل!
+## 13.2 🤖 ai-engine — محرك AI كامل!
 | ملف | الوظيفة | المطلوب |
 |-----|---------|---------|
 | `ai-engine/app/services/chat_service.py` | دردشة AI | **دمج** مع المجلس |
@@ -647,7 +740,7 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 | `ai-engine/app/routes/tasks.py` | API مهام | **دمج** |
 | `ai-engine/app/routes/analysis.py` | API تحليل | **دمج** |
 
-## 12.3 🖥️ frontend — 111 ملف JSX (45 صفحة!)
+## 13.3 🖥️ frontend — 111 ملف JSX (45 صفحة!)
 ### صفحات مهمة مو موجودة بـ v8:
 | الصفحة | الوظيفة |
 |--------|---------|
@@ -681,14 +774,14 @@ RTX 5090 (المركز) ← checkpoints + data + merge
 - `SocketContext` — WebSocket اتصال مباشر
 - `InventoryForms + InspectionForm` — مخزون
 
-## 12.4 ⚙️ backend — 45 route + 20+ service!
+## 13.4 ⚙️ backend — 45 route + 20+ service!
 ### كل الـ Routes الموجودة:
 accounting, ai, ai-distribution, alerts, analytics, approval, attendance, audit, auth, backup, bot, calculator, cameras, cashbox, companies, currency, customers, dashboard, delivery, device, external, fixed-assets, goals, hr, inventory, invoice, media, notifications, permissions, print, products, reports, returns, sales, security, settings, shares, suppliers, task, training, unit, user, warranty
 
 ### Services المهمة:
 warranty-claims, delivery, scheduler, pricing, customer, returns, print, accounting, goals, audit, onboarding, invoice, warranty, product, voucher, quote, damaged, alert, unit
 
-## 12.5 📱 mobile — تطبيق موبايل كامل (React Native/Expo)
+## 13.5 📱 mobile — تطبيق موبايل كامل (React Native/Expo)
 | ملف | الوظيفة |
 |-----|---------|
 | `ScanScreen.js` | ماسح باركود |
@@ -699,16 +792,16 @@ warranty-claims, delivery, scheduler, pricing, customer, returns, print, account
 | `DeviceDetailsScreen.js` | تفاصيل جهاز |
 | `usePushNotifications.js` | إشعارات push |
 
-## 12.6 🐳 Docker — بنية جاهزة!
+## 13.6 🐳 Docker — بنية جاهزة!
 - PostgreSQL 16 + Redis 7 + Backend + Frontend + AI-Engine + Camera-AI
 - `docker-compose.yml` + `docker-compose.prod.yml`
 
-## 12.7 📊 سكربتات مالية (18 ملف)
+## 13.7 📊 سكربتات مالية (18 ملف)
 - تحليل مبيعات + أرباح + مصروفات
 - **ربط Morabaa ERP** (import/export بيانات)
 - `migrate-morabaa.js` — استيراد بيانات من نظام مرابعة
 
-## 12.8 💡 أفكار مستقبلية (FUTURE-IDEAS.md)
+## 13.8 💡 أفكار مستقبلية (FUTURE-IDEAS.md)
 | الفكرة | الأولوية |
 |--------|----------|
 | **AI Sales Assistant** (مساعد مبيعات ذكي — يحلل احتياجات الزبون ويقترح) | عالية |
@@ -716,8 +809,8 @@ warranty-claims, delivery, scheduler, pricing, customer, returns, print, account
 | **Customer Targeting Algorithm** | متوسطة |
 | **Voice Commands** | منخفضة |
 
-## 12.9 📑 وثائق (21 ملف!)
+## 13.9 📑 وثائق (21 ملف!)
 API.md, AUDIT-COMMITTEE-REPORT.md, BACKUP-RESTORE.md, CEO-MANAGER-EVALUATION.md, DATABASE-POSTGRESQL.md, DEPLOYMENT-CHECKLIST.md, DEVELOPER-GUIDE.md, OPERATIONS-GUIDE.md, USER-GUIDE.md, + 12 وثيقة أخرى
 
-## 12.10 📐 تخطيط (15 ملف!)
+## 13.10 📐 تخطيط (15 ملف!)
 MASTER-PLAN.md, BI-ERP-COMPLETE-PLAN-V2.md, FEATURES-ANALYSIS.md, SECURITY-AND-AUDIT-SYSTEM.md, VERSION-COMPARISON-REPORT.md, + modules: BI-ERP.md, BI-STORE.md, CENTRAL-API.md, SAEED-ERP.md (نظام POS)
