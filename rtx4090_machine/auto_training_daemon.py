@@ -483,18 +483,57 @@ def gpu_training_loop():
 
 
 # ═══════════════════════════════════════════════════════════════
+# Thermal Protection — CPU temp monitoring
+# ═══════════════════════════════════════════════════════════════
+
+CPU_TEMP_LIMIT = 90  # °C — throttle above this
+CPU_TEMP_RESUME = 82  # °C — back to full power below this
+
+def get_cpu_temp():
+    """Get current max CPU temperature in °C."""
+    max_temp = 0
+    if IS_LINUX:
+        try:
+            for hwmon in Path("/sys/class/hwmon/").glob("hwmon*"):
+                name_file = hwmon / "name"
+                if name_file.exists() and name_file.read_text().strip() in ("coretemp", "k10temp"):
+                    for t_file in hwmon.glob("temp*_input"):
+                        t = int(t_file.read_text().strip()) / 1000
+                        if t > max_temp and t < 120:
+                            max_temp = t
+        except Exception:
+            pass
+        if max_temp == 0:
+            try:
+                for zone in Path("/sys/class/thermal/").glob("thermal_zone*"):
+                    t = int((zone / "temp").read_text().strip()) / 1000
+                    if t > max_temp and t < 120:
+                        max_temp = t
+            except Exception:
+                pass
+    return max_temp
+
+
+# ═══════════════════════════════════════════════════════════════
 # CPU Training Thread (Heavyweight LSTM) — Burns ALL CPU cores
 # ═══════════════════════════════════════════════════════════════
 
 def cpu_training_loop():
-    """Continuous CPU training — burns ALL cores, NEVER stops."""
-    log(f"🔥 CPU TRAINING THREAD: Starting — {NUM_CPUS} cores, ZERO gap mode")
+    """Continuous CPU training — burns ALL cores, with thermal protection."""
+    log(f"🔥 CPU TRAINING THREAD: Starting — {NUM_CPUS} cores, thermal limit {CPU_TEMP_LIMIT}°C")
     time.sleep(15)  # Brief wait for data
     
     while True:
         try:
             import torch
             # torch.set_num_threads already called at module level
+            
+            # THERMAL CHECK before starting
+            temp = get_cpu_temp()
+            if temp > CPU_TEMP_LIMIT:
+                log(f"🌡️ [CPU] THROTTLE: {temp:.0f}°C > {CPU_TEMP_LIMIT}°C — pausing 15s...")
+                time.sleep(15)
+                continue
             
             samples = _collect_training_samples()
             if len(samples) < MIN_SAMPLES_TO_TRAIN:
@@ -503,9 +542,15 @@ def cpu_training_loop():
             
             _state["status"] = "cpu_training"
             
+            # Adjust batch size based on temperature
+            throttled = temp > (CPU_TEMP_LIMIT - 5)  # 85°C+ = throttled mode
+            batch_size = 2 if throttled else 4
+            seq_len_max = 128 if throttled else 256
+            
             # ALWAYS train on CPU — even if GPU is available
             device = torch.device("cpu")
-            log(f"🔥 [CPU] Training on {NUM_CPUS} cores: {len(samples)} samples")
+            mode_str = "THROTTLED" if throttled else "FULL POWER"
+            log(f"🔥 [CPU] Training ({mode_str} {temp:.0f}°C) {NUM_CPUS} cores: {len(samples)} samples")
             
             # Big model to use ALL CPU resources
             vocab_size = 32000
@@ -526,11 +571,17 @@ def cpu_training_loop():
             
             train_samples = samples[:MAX_SAMPLES_PER_RUN]
             for epoch in range(5):  # More epochs on CPU
+                # Thermal check mid-training
+                mid_temp = get_cpu_temp()
+                if mid_temp > CPU_TEMP_LIMIT:
+                    log(f"🌡️ [CPU] THROTTLE mid-epoch: {mid_temp:.0f}°C — cooling 10s...")
+                    time.sleep(10)
+                
                 epoch_loss = 0.0
                 for i, sample in enumerate(train_samples):
-                    seq_len = min(len(sample["input"]), 256)  # Longer sequences = more CPU work
-                    inp_ids = torch.randint(0, vocab_size, (4, max(seq_len, 1)))  # Batch of 4
-                    tgt = torch.randn(4, hidden_dim)
+                    seq_len = min(len(sample["input"]), seq_len_max)
+                    inp_ids = torch.randint(0, vocab_size, (batch_size, max(seq_len, 1)))
+                    tgt = torch.randn(batch_size, hidden_dim)
                     out, _ = model(inp_ids)
                     loss = loss_fn(out.mean(dim=1), tgt)
                     optimizer.zero_grad()
