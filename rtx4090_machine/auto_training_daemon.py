@@ -371,7 +371,6 @@ def _run_training_cycle():
             lora_alpha=32,
             gradient_accumulation_steps=4,
             fp16=True,
-            dataloader_num_workers=NUM_WORKERS,  # Use half the CPU cores for data
         )
         
         run_name = f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
