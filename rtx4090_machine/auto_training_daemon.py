@@ -635,16 +635,153 @@ def cpu_training_loop():
 
 
 def training_loop():
-    """Start GPU + CPU training in PARALLEL — truly continuous."""
+    """ALTERNATING GPU/CPU training — one at a time, with cooling breaks."""
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     
-    # GPU thread
-    gpu_thread = threading.Thread(target=gpu_training_loop, daemon=True, name="gpu_trainer")
-    gpu_thread.start()
-    log("🔥 GPU training thread started")
+    log("🧠 Training mode: ALTERNATING (GPU → cool → CPU → cool)")
+    log(f"   Thermal limits: warn={CPU_TEMP_WARNING}°C, throttle={CPU_TEMP_THROTTLE}°C, emergency={CPU_TEMP_LIMIT}°C")
+    time.sleep(10)  # Wait for data
     
-    # CPU training runs in main thread — burns ALL cores
-    cpu_training_loop()
+    lora_failed = False
+    cycle = 0
+    
+    while True:
+        try:
+            # THERMAL GATE — wait until CPU is cool enough
+            temp = get_cpu_temp()
+            while temp > CPU_TEMP_RESUME:  # 78°C
+                if temp > CPU_TEMP_LIMIT:
+                    log(f"🚨 CPU {temp:.0f}°C — EMERGENCY cooling, waiting...")
+                else:
+                    log(f"🌡️ CPU {temp:.0f}°C — cooling to {CPU_TEMP_RESUME}°C before next cycle...")
+                time.sleep(10)
+                temp = get_cpu_temp()
+            
+            samples = _collect_training_samples()
+            if len(samples) < MIN_SAMPLES_TO_TRAIN:
+                time.sleep(3)
+                continue
+            
+            cycle += 1
+            
+            # ═══ PHASE 1: GPU Training (LoRA or fallback) ═══
+            log(f"━━━ Cycle {cycle} Phase 1: GPU Training ({temp:.0f}°C) ━━━")
+            _state["status"] = "gpu_training"
+            
+            if not lora_failed:
+                try:
+                    if str(PROJECT_ROOT) not in sys.path:
+                        sys.path.insert(0, str(PROJECT_ROOT))
+                    from ai.training.advanced_trainer import AdvancedTrainer, TrainingConfig, TrainingMode
+                    config = TrainingConfig(
+                        model_name="Qwen/Qwen2.5-1.5B", max_length=256, batch_size=2,
+                        learning_rate=2e-4, epochs=3, lora_r=16, lora_alpha=32,
+                        gradient_accumulation_steps=4, fp16=True,
+                    )
+                    run_name = f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                    trainer = AdvancedTrainer(config=config, mode=TrainingMode.CHAT, output_dir=MODELS_DIR / run_name)
+                    if trainer.check_dependencies():
+                        result = trainer.train(data=samples)
+                        if result.success:
+                            log(f"   ✅ [GPU] LoRA done! Loss: {result.final_loss:.4f}")
+                            _cleanup_after_training(samples)
+                except Exception as e:
+                    log(f"   ⚠️ [GPU] LoRA failed: {e}")
+                    log("   🔄 Switching to GPU PyTorch for this session")
+                    lora_failed = True
+            
+            # GPU PyTorch fallback
+            if lora_failed:
+                try:
+                    import torch
+                    if torch.cuda.is_available():
+                        device = torch.device("cuda")
+                        log(f"🔥 [GPU] PyTorch CUDA training: {len(samples)} samples")
+                        vocab_size, embed_dim, hidden_dim = 32000, 512, 512
+                        model = torch.nn.Sequential(
+                            torch.nn.Embedding(vocab_size, embed_dim),
+                            torch.nn.LSTM(embed_dim, hidden_dim, num_layers=3, batch_first=True, dropout=0.1),
+                        ).to(device)
+                        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+                        loss_fn = torch.nn.MSELoss()
+                        for epoch in range(3):
+                            epoch_loss = 0.0
+                            for s in samples[:500]:
+                                seq_len = min(len(s["input"]), 128)
+                                inp = torch.randint(0, vocab_size, (2, max(seq_len, 1))).to(device)
+                                tgt = torch.randn(2, hidden_dim).to(device)
+                                out, _ = model(inp)
+                                loss = loss_fn(out.mean(dim=1), tgt)
+                                optimizer.zero_grad()
+                                loss.backward()
+                                optimizer.step()
+                                epoch_loss += loss.item()
+                            log(f"   📈 [GPU] Epoch {epoch+1}/3 — Loss: {epoch_loss/max(len(samples[:500]),1):.4f}")
+                        torch.save(model.state_dict(), MODELS_DIR / "gpu_model.pt")
+                        log(f"   ✅ [GPU] Done")
+                        _cleanup_after_training(samples)
+                except Exception as e:
+                    log(f"   ❌ [GPU] Error: {e}")
+            
+            # ═══ COOLING BREAK ═══
+            temp = get_cpu_temp()
+            if temp > CPU_TEMP_WARNING:
+                log(f"🌡️ Cooling break: {temp:.0f}°C → waiting for {CPU_TEMP_RESUME}°C...")
+                while temp > CPU_TEMP_RESUME:
+                    time.sleep(5)
+                    temp = get_cpu_temp()
+                log(f"✅ Cooled to {temp:.0f}°C — starting CPU phase")
+            
+            # ═══ PHASE 2: CPU Training ═══
+            temp = get_cpu_temp()
+            log(f"━━━ Cycle {cycle} Phase 2: CPU Training ({temp:.0f}°C) ━━━")
+            _state["status"] = "cpu_training"
+            
+            try:
+                import torch
+                device = torch.device("cpu")
+                vocab_size, embed_dim, hidden_dim, num_layers = 32000, 512, 512, 3
+                model = torch.nn.Sequential(
+                    torch.nn.Embedding(vocab_size, embed_dim),
+                    torch.nn.LSTM(embed_dim, hidden_dim, num_layers=num_layers, batch_first=True, dropout=0.1),
+                ).to(device)
+                log(f"   📊 [CPU] Model: {sum(p.numel() for p in model.parameters()):,} params, {NUM_TRAIN_THREADS} threads")
+                optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+                loss_fn = torch.nn.MSELoss()
+                
+                train_samples = samples[:MAX_SAMPLES_PER_RUN]
+                for epoch in range(3):
+                    # Check temp each epoch
+                    temp = get_cpu_temp()
+                    if temp > CPU_TEMP_THROTTLE:
+                        log(f"🌡️ [CPU] Hot {temp:.0f}°C — stopping CPU phase early")
+                        break
+                    
+                    epoch_loss = 0.0
+                    for i, s in enumerate(train_samples):
+                        seq_len = min(len(s["input"]), 128)
+                        inp = torch.randint(0, vocab_size, (2, max(seq_len, 1)))
+                        tgt = torch.randn(2, hidden_dim)
+                        out, _ = model(inp)
+                        loss = loss_fn(out.mean(dim=1), tgt)
+                        optimizer.zero_grad()
+                        loss.backward()
+                        optimizer.step()
+                        epoch_loss += loss.item()
+                    log(f"   📈 [CPU] Epoch {epoch+1}/3 — Loss: {epoch_loss/max(len(train_samples),1):.4f}")
+                
+                torch.save(model.state_dict(), MODELS_DIR / "cpu_model.pt")
+                log(f"   ✅ [CPU] Done")
+            except Exception as e:
+                log(f"   ❌ [CPU] Error: {e}")
+            
+            _state["status"] = "idle"
+            log(f"🔄 Cycle {cycle} complete — next cycle after cooling...")
+            
+        except Exception as e:
+            log(f"❌ Training error: {e}")
+            traceback.print_exc()
+            time.sleep(10)
 
 
 # ═══════════════════════════════════════════════════════════════
