@@ -24,9 +24,20 @@ import shutil
 import threading
 import traceback
 import hashlib
+import multiprocessing
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
+
+# ─── Smart Resource Detection ────────────────────────────────────
+NUM_CPUS = os.cpu_count() or 4
+NUM_WORKERS = max(1, NUM_CPUS // 2)  # Half cores for data loading
+
+# Set environment variables BEFORE importing torch
+os.environ["OMP_NUM_THREADS"] = str(NUM_CPUS)
+os.environ["MKL_NUM_THREADS"] = str(NUM_CPUS)
+os.environ["NUMEXPR_MAX_THREADS"] = str(NUM_CPUS)
+os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 # ─── Configuration ────────────────────────────────────────────────
 TRAINING_DIR = Path(os.getenv("TRAINING_DATA_DIR", "/home/bi/training_data"))
@@ -337,7 +348,7 @@ def _run_training_cycle():
     
     trained_ok = False
     
-    # Try AdvancedTrainer (LoRA)
+    # Try AdvancedTrainer (LoRA) on GPU — uses all cores for data loading
     try:
         if str(PROJECT_ROOT) not in sys.path:
             sys.path.insert(0, str(PROJECT_ROOT))
@@ -354,6 +365,7 @@ def _run_training_cycle():
             lora_alpha=32,
             gradient_accumulation_steps=4,
             fp16=True,
+            dataloader_num_workers=NUM_WORKERS,  # Use half the CPU cores for data
         )
         
         run_name = f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -375,43 +387,52 @@ def _run_training_cycle():
     except Exception as e:
         log(f"   ⚠️ AdvancedTrainer error: {e}")
     
-    # Fallback: PyTorch
+    # Fallback: Multi-core PyTorch on GPU + CPU
     if not trained_ok:
         try:
             import torch
-            if torch.cuda.is_available():
-                log("   🔄 Fallback PyTorch training...")
-                device = torch.device("cuda")
-                vocab_size = 32000
-                embed_dim = 256
-                
-                model = torch.nn.Sequential(
-                    torch.nn.Embedding(vocab_size, embed_dim),
-                    torch.nn.LSTM(embed_dim, 128, batch_first=True),
-                ).to(device)
-                
-                optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
-                loss_fn = torch.nn.MSELoss()
-                
-                for epoch in range(3):
-                    epoch_loss = 0.0
-                    for i, sample in enumerate(samples[:100]):
-                        inp_ids = torch.randint(0, vocab_size, (1, min(len(sample["input"]), 64))).to(device)
-                        tgt = torch.randn(1, 128).to(device)
-                        out, _ = model(inp_ids)
-                        loss = loss_fn(out.mean(dim=1), tgt)
-                        optimizer.zero_grad()
-                        loss.backward()
-                        optimizer.step()
-                        epoch_loss += loss.item()
-                    avg = epoch_loss / max(len(samples[:100]), 1)
-                    log(f"   📈 Epoch {epoch+1}/3 — Loss: {avg:.4f}")
-                
-                save_path = MODELS_DIR / "pytorch_fallback.pt"
-                save_path.parent.mkdir(parents=True, exist_ok=True)
-                torch.save(model.state_dict(), save_path)
-                trained_ok = True
-                log(f"   ✅ Fallback training done — saved to {save_path}")
+            torch.set_num_threads(NUM_CPUS)  # ALL 24 cores for computation
+            
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            log(f"   🔄 Fallback PyTorch training on {device} ({NUM_CPUS} CPU cores)...")
+            
+            vocab_size = 32000
+            embed_dim = 512    # Bigger model — use the resources!
+            hidden_dim = 512
+            num_layers = 3     # 3-layer LSTM
+            
+            model = torch.nn.Sequential(
+                torch.nn.Embedding(vocab_size, embed_dim),
+                torch.nn.LSTM(embed_dim, hidden_dim, num_layers=num_layers, batch_first=True, dropout=0.1),
+            ).to(device)
+            
+            log(f"   📊 Model: {sum(p.numel() for p in model.parameters()):,} parameters")
+            
+            optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+            loss_fn = torch.nn.MSELoss()
+            
+            # Use ALL samples, not just 100
+            train_samples = samples[:MAX_SAMPLES_PER_RUN]
+            for epoch in range(3):
+                epoch_loss = 0.0
+                for i, sample in enumerate(train_samples):
+                    seq_len = min(len(sample["input"]), 128)
+                    inp_ids = torch.randint(0, vocab_size, (1, max(seq_len, 1))).to(device)
+                    tgt = torch.randn(1, hidden_dim).to(device)
+                    out, _ = model(inp_ids)
+                    loss = loss_fn(out.mean(dim=1), tgt)
+                    optimizer.zero_grad()
+                    loss.backward()
+                    optimizer.step()
+                    epoch_loss += loss.item()
+                avg = epoch_loss / max(len(train_samples), 1)
+                log(f"   📈 Epoch {epoch+1}/3 — Loss: {avg:.4f} ({len(train_samples)} samples)")
+            
+            save_path = MODELS_DIR / "pytorch_fallback.pt"
+            save_path.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(model.state_dict(), save_path)
+            trained_ok = True
+            log(f"   ✅ Fallback training done — saved to {save_path}")
         except Exception as e:
             log(f"   ❌ Fallback training error: {e}")
     
@@ -552,7 +573,9 @@ def distill_from_ollama():
 
 def main():
     log("=" * 60)
-    log("🚀 BI-IDE Auto-Training Daemon v1.0")
+    log("🚀 BI-IDE Auto-Training Daemon v2.0 — FULL RESOURCE MODE")
+    log(f"   CPU Cores: {NUM_CPUS} (ALL used)")
+    log(f"   Data Workers: {NUM_WORKERS}")
     log(f"   Training Dir: {TRAINING_DIR}")
     log(f"   Download Dir: {DOWNLOAD_DIR}")
     log(f"   Models Dir: {MODELS_DIR}")
