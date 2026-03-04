@@ -12,6 +12,14 @@ with support for PyTorch 2.x and CUDA 12.x.
 - Model Converter: Export to multiple formats (ONNX, GGUF)
 """
 
+from typing import List, Dict, Any, Union, Optional
+from pathlib import Path
+import sys
+try:
+    import torch
+except ImportError:
+    pass
+
 # Core imports - existing modules
 from .data_collection import (
     DataCollector,
@@ -380,11 +388,3 @@ __all__ = [
     '__v6_migrated__',
 ]
 
-
-# Type imports
-from typing import List, Dict, Any, Union
-import sys
-try:
-    import torch
-except ImportError:
-    pass
