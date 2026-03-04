@@ -31,7 +31,7 @@ from typing import List, Dict, Any, Optional
 # ─── Configuration ────────────────────────────────────────────────
 TRAINING_DIR = Path(os.getenv("TRAINING_DATA_DIR", "/home/bi/training_data"))
 INGEST_DIR = TRAINING_DIR / "ingest"
-DOWNLOAD_DIR = TRAINING_DIR / "downloads"  # New data downloads go here
+DOWNLOAD_DIR = Path("/data/downloads")  # Second 4TB NVMe drive
 ARCHIVE_DIR = TRAINING_DIR / "trained_archive"  # Trained data metadata (tiny)
 MODELS_DIR = TRAINING_DIR / "models" / "finetuned"
 CHECKPOINT_DIR = TRAINING_DIR / "data" / "checkpoints"
