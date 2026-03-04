@@ -39,14 +39,28 @@ os.environ["MKL_NUM_THREADS"] = str(NUM_CPUS)
 os.environ["NUMEXPR_MAX_THREADS"] = str(NUM_CPUS)
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
-# ─── Configuration ────────────────────────────────────────────────
-TRAINING_DIR = Path(os.getenv("TRAINING_DATA_DIR", "/home/bi/training_data"))
+# ─── Configuration (Cross-Platform) ──────────────────────────────
+import platform
+IS_WINDOWS = platform.system() == "Windows"
+IS_LINUX = platform.system() == "Linux"
+
+if IS_WINDOWS:
+    _home = Path(os.environ.get("USERPROFILE", "C:/Users/BI"))
+    _default_training = str(_home / "training_data")
+    _default_project = str(_home / "bi-ide-v8")
+else:
+    _default_training = "/home/bi/training_data"
+    _default_project = "/home/bi/bi-ide-v8"
+
+TRAINING_DIR = Path(os.getenv("TRAINING_DATA_DIR", _default_training))
 INGEST_DIR = TRAINING_DIR / "ingest"
-DOWNLOAD_DIR = Path("/data/downloads")  # Second 4TB NVMe drive
-ARCHIVE_DIR = TRAINING_DIR / "trained_archive"  # Trained data metadata (tiny)
+# Use /data if available (RTX 5090 second drive), else fall back to TRAINING_DIR/downloads
+_data_drive = Path("/data/downloads")
+DOWNLOAD_DIR = _data_drive if _data_drive.parent.exists() else TRAINING_DIR / "downloads"
+ARCHIVE_DIR = TRAINING_DIR / "trained_archive"
 MODELS_DIR = TRAINING_DIR / "models" / "finetuned"
 CHECKPOINT_DIR = TRAINING_DIR / "data" / "checkpoints"
-PROJECT_ROOT = Path("/home/bi/bi-ide-v8")
+PROJECT_ROOT = Path(os.getenv("PROJECT_ROOT", _default_project))
 
 # Timing — NON-STOP CONTINUOUS MODE
 TRAIN_INTERVAL_SECONDS = 5  # Near-continuous: 5sec between cycles
