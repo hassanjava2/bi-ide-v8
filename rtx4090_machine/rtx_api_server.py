@@ -197,9 +197,9 @@ def _run_training():
                 max_length=512,
                 batch_size=4,
                 learning_rate=2e-4,
-                num_epochs=3,
-                use_lora=True,
-                lora_rank=16,
+                epochs=3,
+                lora_r=16,
+                lora_alpha=32,
             )
             output_dir = TRAINING_DIR / "models" / "finetuned" / f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
             trainer = AdvancedTrainer(
