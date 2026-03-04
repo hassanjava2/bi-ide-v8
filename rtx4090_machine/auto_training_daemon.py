@@ -31,18 +31,20 @@ from typing import List, Dict, Any, Optional
 
 # ─── Smart Resource Detection ────────────────────────────────────
 NUM_CPUS = os.cpu_count() or 4
-NUM_WORKERS = max(1, NUM_CPUS // 2)  # Half cores for data loading
+# Use max 16 threads — leave headroom for GPU data loading + OS
+NUM_TRAIN_THREADS = min(NUM_CPUS, 16)
+NUM_WORKERS = max(1, NUM_TRAIN_THREADS // 4)
 
 # Set environment variables BEFORE importing torch
-os.environ["OMP_NUM_THREADS"] = str(NUM_CPUS)
-os.environ["MKL_NUM_THREADS"] = str(NUM_CPUS)
-os.environ["NUMEXPR_MAX_THREADS"] = str(NUM_CPUS)
+os.environ["OMP_NUM_THREADS"] = str(NUM_TRAIN_THREADS)
+os.environ["MKL_NUM_THREADS"] = str(NUM_TRAIN_THREADS)
+os.environ["NUMEXPR_MAX_THREADS"] = str(NUM_TRAIN_THREADS)
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 # Set torch threads ONCE at startup (before any threads)
 try:
     import torch
-    torch.set_num_threads(NUM_CPUS)
+    torch.set_num_threads(NUM_TRAIN_THREADS)
     # NOTE: Do NOT call set_num_interop_threads — it crashes LoRA/AdvancedTrainer
 except Exception:
     pass
@@ -394,6 +396,11 @@ def gpu_training_loop():
     
     while True:
         try:
+            # CHECK THERMAL PAUSE
+            if _thermal_pause:
+                time.sleep(5)
+                continue
+            
             samples = _collect_training_samples()
             if len(samples) < MIN_SAMPLES_TO_TRAIN:
                 time.sleep(2)
@@ -473,8 +480,13 @@ def gpu_training_loop():
 # Thermal Protection — CPU temp monitoring
 # ═══════════════════════════════════════════════════════════════
 
-CPU_TEMP_LIMIT = 90  # °C — throttle above this
-CPU_TEMP_RESUME = 82  # °C — back to full power below this
+CPU_TEMP_WARNING = 85    # °C — start reducing load
+CPU_TEMP_THROTTLE = 88   # °C — heavy throttle
+CPU_TEMP_LIMIT = 92      # °C — EMERGENCY pause ALL training
+CPU_TEMP_RESUME = 78     # °C — safe to resume full power
+
+# Global thermal pause flag — checked by ALL training threads
+_thermal_pause = False
 
 def get_cpu_temp():
     """Get current max CPU temperature in °C."""
@@ -501,25 +513,51 @@ def get_cpu_temp():
     return max_temp
 
 
+def thermal_watchdog():
+    """Dedicated thread: checks CPU temp every 5s, pauses ALL training if too hot."""
+    global _thermal_pause
+    log(f"🌡️ Thermal watchdog started — limits: warn={CPU_TEMP_WARNING}°C, throttle={CPU_TEMP_THROTTLE}°C, emergency={CPU_TEMP_LIMIT}°C")
+    
+    while True:
+        try:
+            temp = get_cpu_temp()
+            if temp >= CPU_TEMP_LIMIT:
+                if not _thermal_pause:
+                    log(f"🚨 EMERGENCY THERMAL PAUSE: {temp:.0f}°C >= {CPU_TEMP_LIMIT}°C — ALL training paused!")
+                    _thermal_pause = True
+            elif temp <= CPU_TEMP_RESUME:
+                if _thermal_pause:
+                    log(f"✅ Temperature safe: {temp:.0f}°C <= {CPU_TEMP_RESUME}°C — resuming training")
+                    _thermal_pause = False
+            elif temp >= CPU_TEMP_THROTTLE:
+                log(f"⚠️ Thermal warning: {temp:.0f}°C — training throttled")
+        except Exception:
+            pass
+        time.sleep(5)
+
+
 # ═══════════════════════════════════════════════════════════════
 # CPU Training Thread (Heavyweight LSTM) — Burns ALL CPU cores
 # ═══════════════════════════════════════════════════════════════
 
 def cpu_training_loop():
-    """Continuous CPU training — burns ALL cores, with thermal protection."""
-    log(f"🔥 CPU TRAINING THREAD: Starting — {NUM_CPUS} cores, thermal limit {CPU_TEMP_LIMIT}°C")
+    """Continuous CPU training — with AGGRESSIVE thermal protection."""
+    log(f"🔥 CPU TRAINING THREAD: Starting — {NUM_TRAIN_THREADS} threads (of {NUM_CPUS} cores), thermal limit {CPU_TEMP_LIMIT}°C")
     time.sleep(15)  # Brief wait for data
     
     while True:
         try:
-            import torch
-            # torch.set_num_threads already called at module level
+            # CHECK THERMAL PAUSE (global watchdog)
+            if _thermal_pause:
+                time.sleep(5)
+                continue
             
-            # THERMAL CHECK before starting
+            import torch
+            
             temp = get_cpu_temp()
-            if temp > CPU_TEMP_LIMIT:
-                log(f"🌡️ [CPU] THROTTLE: {temp:.0f}°C > {CPU_TEMP_LIMIT}°C — pausing 15s...")
-                time.sleep(15)
+            if temp > CPU_TEMP_THROTTLE:
+                log(f"🌡️ [CPU] Hot ({temp:.0f}°C) — pausing 10s...")
+                time.sleep(10)
                 continue
             
             samples = _collect_training_samples()
@@ -529,15 +567,15 @@ def cpu_training_loop():
             
             _state["status"] = "cpu_training"
             
-            # Adjust batch size based on temperature
-            throttled = temp > (CPU_TEMP_LIMIT - 5)  # 85°C+ = throttled mode
-            batch_size = 2 if throttled else 4
-            seq_len_max = 128 if throttled else 256
+            # Adjust intensity based on temperature
+            throttled = temp > CPU_TEMP_WARNING  # 85°C+
+            batch_size = 1 if throttled else 2
+            seq_len_max = 64 if throttled else 128
+            num_epochs = 3 if throttled else 5
             
-            # ALWAYS train on CPU — even if GPU is available
             device = torch.device("cpu")
-            mode_str = "THROTTLED" if throttled else "FULL POWER"
-            log(f"🔥 [CPU] Training ({mode_str} {temp:.0f}°C) {NUM_CPUS} cores: {len(samples)} samples")
+            mode_str = "THROTTLED" if throttled else "NORMAL"
+            log(f"🔥 [CPU] Training ({mode_str} {temp:.0f}°C) {NUM_TRAIN_THREADS} threads: {len(samples)} samples")
             
             # Big model to use ALL CPU resources
             vocab_size = 32000
@@ -557,15 +595,20 @@ def cpu_training_loop():
             loss_fn = torch.nn.MSELoss()
             
             train_samples = samples[:MAX_SAMPLES_PER_RUN]
-            for epoch in range(5):  # More epochs on CPU
-                # Thermal check mid-training
-                mid_temp = get_cpu_temp()
-                if mid_temp > CPU_TEMP_LIMIT:
-                    log(f"🌡️ [CPU] THROTTLE mid-epoch: {mid_temp:.0f}°C — cooling 10s...")
-                    time.sleep(10)
+            for epoch in range(num_epochs):
+                # CHECK THERMAL PAUSE between epochs
+                if _thermal_pause:
+                    log(f"🌡️ [CPU] Thermal pause mid-training — waiting...")
+                    while _thermal_pause:
+                        time.sleep(5)
+                    log(f"✅ [CPU] Resumed after thermal pause")
                 
                 epoch_loss = 0.0
                 for i, sample in enumerate(train_samples):
+                    # Check thermal every 50 samples
+                    if i > 0 and i % 50 == 0 and _thermal_pause:
+                        while _thermal_pause:
+                            time.sleep(3)
                     seq_len = min(len(sample["input"]), seq_len_max)
                     inp_ids = torch.randint(0, vocab_size, (batch_size, max(seq_len, 1)))
                     tgt = torch.randn(batch_size, hidden_dim)
@@ -576,7 +619,7 @@ def cpu_training_loop():
                     optimizer.step()
                     epoch_loss += loss.item()
                 avg = epoch_loss / max(len(train_samples), 1)
-                log(f"   📈 [CPU] Epoch {epoch+1}/5 — Loss: {avg:.4f} ({len(train_samples)} samples)")
+                log(f"   📈 [CPU] Epoch {epoch+1}/{num_epochs} — Loss: {avg:.4f} ({len(train_samples)} samples)")
             
             save_path = MODELS_DIR / "cpu_model.pt"
             save_path.parent.mkdir(parents=True, exist_ok=True)
@@ -786,6 +829,10 @@ def main():
     sync_thread = threading.Thread(target=sync_data_to_rtx, daemon=True, name="data_sync")
     sync_thread.start()
     log("📡 Data sync thread started")
+    
+    # Start thermal watchdog — checks CPU temp every 5s, pauses training if hot
+    thermal_thread = threading.Thread(target=thermal_watchdog, daemon=True, name="thermal_watchdog")
+    thermal_thread.start()
     
     # Main training loop (blocking)
     log("🧠 Starting training loop...")
