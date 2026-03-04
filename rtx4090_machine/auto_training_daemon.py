@@ -453,8 +453,8 @@ def training_loop():
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     
     # Wait a bit for first download batch
-    log("⏳ Waiting 2 minutes for initial data download...")
-    time.sleep(120)
+    log("⏳ Waiting 30 seconds for initial data download...")
+    time.sleep(30)
     
     while True:
         try:
@@ -557,7 +557,7 @@ def main():
     log(f"   Download Dir: {DOWNLOAD_DIR}")
     log(f"   Models Dir: {MODELS_DIR}")
     log(f"   Train Interval: {TRAIN_INTERVAL_MINUTES} min")
-    log(f"   Download Interval: {DOWNLOAD_INTERVAL_MINUTES} min")
+    log(f"   Download Interval: {DOWNLOAD_INTERVAL_SECONDS}s")
     log(f"   Min Samples: {MIN_SAMPLES_TO_TRAIN}")
     log("=" * 60)
     

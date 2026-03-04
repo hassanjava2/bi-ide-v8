@@ -351,7 +351,7 @@ def download_source(source: dict, state: dict) -> int:
         if "subset" in source:
             kwargs["name"] = source["subset"]
 
-        ds = load_dataset(**kwargs, trust_remote_code=True)
+        ds = load_dataset(**kwargs)
         count = 0
 
         with output_path.open("a", encoding="utf-8") as f:
