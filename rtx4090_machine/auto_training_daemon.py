@@ -289,25 +289,31 @@ def _collect_training_samples() -> List[dict]:
                 except json.JSONDecodeError:
                     continue
     
-    # 2. From download dir (internet data)
-    if DOWNLOAD_DIR.exists():
-        for f in sorted(DOWNLOAD_DIR.glob("*.jsonl")):
-            with f.open("r", encoding="utf-8") as fh:
-                for line in fh:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    try:
-                        d = json.loads(line)
-                        inp = d.get("input_text", "")
-                        out = d.get("output_text", "")
-                        if inp and out:
-                            h = hashlib.md5(f"{inp}{out}".encode()).hexdigest()
-                            if h not in seen_hashes:
-                                seen_hashes.add(h)
-                                samples.append({"input": inp, "output": out, "source": d.get("source", "download")})
-                    except json.JSONDecodeError:
-                        continue
+    # 2. From ALL /data subdirectories (scout downloads here)
+    data_root = Path("/data")
+    if data_root.exists():
+        for f in sorted(data_root.rglob("*.jsonl")):
+            try:
+                with f.open("r", encoding="utf-8") as fh:
+                    for line in fh:
+                        if len(samples) >= MAX_SAMPLES_PER_RUN:
+                            break
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            d = json.loads(line)
+                            inp = d.get("input_text") or d.get("input", "")
+                            out = d.get("output_text") or d.get("output", "")
+                            if inp and out:
+                                h = hashlib.md5(f"{inp[:200]}{out[:200]}".encode()).hexdigest()
+                                if h not in seen_hashes:
+                                    seen_hashes.add(h)
+                                    samples.append({"input": inp, "output": out, "source": d.get("source", f.stem)})
+                        except json.JSONDecodeError:
+                            continue
+            except Exception:
+                continue
     
     return samples[:MAX_SAMPLES_PER_RUN]
 
