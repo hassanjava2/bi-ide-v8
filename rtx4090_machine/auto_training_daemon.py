@@ -78,36 +78,47 @@ DOWNLOAD_INTERVAL_SECONDS = 10  # Near-continuous downloads
 MIN_SAMPLES_TO_TRAIN = 5  # Start training with just 5 samples
 MAX_SAMPLES_PER_RUN = 1000  # Process more per run
 
-# Internet data sources
+# Internet data sources — MASSIVE EXPANSION for all 11 domain specialties
 DATA_SOURCES = [
-    # Wikipedia Arabic
-    {
-        "name": "wikipedia_ar",
-        "type": "huggingface",
-        "dataset": "wikimedia/wikipedia",
-        "subset": "20231101.ar",
-        "split": "train",
-        "max_samples": 10000,
-        "priority": 1,
-    },
-    # Arabic Instructions
-    {
-        "name": "arabic_instructions",
-        "type": "huggingface",
-        "dataset": "FreedomIntelligence/alpaca-gpt4-arabic",
-        "split": "train",
-        "max_samples": 5000,
-        "priority": 2,
-    },
-    # Code Instructions
-    {
-        "name": "code_instructions",
-        "type": "huggingface",
-        "dataset": "sahil2801/CodeAlpaca-20k",
-        "split": "train",
-        "max_samples": 5000,
-        "priority": 3,
-    },
+    # ═══ ARABIC KNOWLEDGE ═══
+    {"name": "wikipedia_ar", "type": "huggingface", "dataset": "wikimedia/wikipedia", "subset": "20231101.ar", "split": "train", "max_samples": 100000, "priority": 1},
+    {"name": "arabic_instructions", "type": "huggingface", "dataset": "FreedomIntelligence/alpaca-gpt4-arabic", "split": "train", "max_samples": 100000, "priority": 1},
+    {"name": "arabic_culture", "type": "huggingface", "dataset": "arbml/Arabic-Alpaca", "split": "train", "max_samples": 50000, "priority": 2},
+    
+    # ═══ CODE & PROGRAMMING (Auto-Programming Pipeline) ═══
+    {"name": "code_instructions", "type": "huggingface", "dataset": "sahil2801/CodeAlpaca-20k", "split": "train", "max_samples": 50000, "priority": 1},
+    {"name": "code_python", "type": "huggingface", "dataset": "iamtarun/python_code_instructions_18k_alpaca", "split": "train", "max_samples": 50000, "priority": 2},
+    {"name": "code_feedback", "type": "huggingface", "dataset": "m-a-p/CodeFeedback-Filtered-Instruction", "split": "train", "max_samples": 50000, "priority": 3},
+    {"name": "code_exercises", "type": "huggingface", "dataset": "jinaai/code_exercises", "split": "train", "max_samples": 50000, "priority": 3},
+    
+    # ═══ MEDICINE (Domain Expert: Medicine) ═══
+    {"name": "medical_qa", "type": "huggingface", "dataset": "medalpaca/medical_meadow_medical_flashcards", "split": "train", "max_samples": 50000, "priority": 2},
+    {"name": "medical_dialog", "type": "huggingface", "dataset": "ruslanmv/ai-medical-chatbot", "split": "train", "max_samples": 50000, "priority": 3},
+    
+    # ═══ SCIENCE & ENGINEERING (Domain Expert: Engineering/Physics) ═══
+    {"name": "science_qa", "type": "huggingface", "dataset": "allenai/sciq", "split": "train", "max_samples": 50000, "priority": 2},
+    {"name": "stem_qa", "type": "huggingface", "dataset": "camel-ai/physics", "split": "train", "max_samples": 50000, "priority": 3},
+    {"name": "math_qa", "type": "huggingface", "dataset": "camel-ai/math", "split": "train", "max_samples": 50000, "priority": 3},
+    
+    # ═══ BUSINESS & FINANCE (Market Layer) ═══
+    {"name": "finance_qa", "type": "huggingface", "dataset": "FinGPT/fingpt-sentiment-train", "split": "train", "max_samples": 30000, "priority": 3},
+    
+    # ═══ GENERAL KNOWLEDGE & CONVERSATIONS (Brain) ═══
+    {"name": "openassistant", "type": "huggingface", "dataset": "OpenAssistant/oasst2", "split": "train", "max_samples": 100000, "priority": 1},
+    {"name": "dolly_15k", "type": "huggingface", "dataset": "databricks/databricks-dolly-15k", "split": "train", "max_samples": 50000, "priority": 2},
+    {"name": "ultrachat", "type": "huggingface", "dataset": "stingning/ultrachat", "split": "train", "max_samples": 100000, "priority": 3},
+    {"name": "sharegpt", "type": "huggingface", "dataset": "anon8231489123/ShareGPT_Vicuna_unfiltered", "split": "train", "max_samples": 100000, "priority": 2},
+    
+    # ═══ SURVIVAL & REAL-LIFE (Real-Life Factory Layer) ═══
+    {"name": "wikihow", "type": "huggingface", "dataset": "b-mc2/wikihow_lists", "split": "train", "max_samples": 50000, "priority": 2},
+    {"name": "self_instruct", "type": "huggingface", "dataset": "yizhongw/self_instruct", "split": "train", "max_samples": 50000, "priority": 3},
+    
+    # ═══ MULTILINGUAL (Scouts Layer — World Knowledge) ═══
+    {"name": "wikipedia_en", "type": "huggingface", "dataset": "wikimedia/wikipedia", "subset": "20231101.en", "split": "train", "max_samples": 100000, "priority": 2},
+    {"name": "flan_v2", "type": "huggingface", "dataset": "Muennighoff/flan", "split": "train", "max_samples": 100000, "priority": 3},
+    
+    # ═══ SECURITY (Security Layer) ═══
+    {"name": "cybersec_qa", "type": "huggingface", "dataset": "CyberNative/CyberSecEval_QA", "split": "train", "max_samples": 20000, "priority": 3},
 ]
 
 # ─── State ────────────────────────────────────────────────────────
@@ -204,51 +215,112 @@ def _download_hf_dataset(source: dict) -> int:
 
 
 def _convert_to_training_sample(item: dict, source: dict) -> Optional[dict]:
-    """Convert a dataset item to our training format."""
+    """Universal converter — handles ALL dataset formats."""
     name = source["name"]
+    ts = datetime.now().isoformat()
     
+    # Wikipedia-style (has title + text)
     if "wikipedia" in name:
         text = item.get("text", "")
         if len(text) < 100:
             return None
-        # Create Q&A from Wikipedia
         title = item.get("title", "")
-        return {
-            "input_text": f"ما هو {title}؟" if title else "اشرح هذا النص",
-            "output_text": text[:2000],  # Cap at 2000 chars
-            "source": name,
-            "kind": "knowledge",
-            "language": "ar",
-            "timestamp": datetime.now().isoformat(),
-        }
+        lang = "ar" if "ar" in name else "en"
+        q = f"ما هو {title}؟" if lang == "ar" and title else f"What is {title}?" if title else "Explain this"
+        return {"input_text": q, "output_text": text[:2000], "source": name, "kind": "knowledge", "language": lang, "timestamp": ts}
     
-    elif "instruction" in name or "alpaca" in name.lower():
-        instruction = item.get("instruction", "") or item.get("input", "")
-        output = item.get("output", "")
+    # Instruction/Alpaca format (instruction + output)
+    if any(k in name for k in ["instruction", "alpaca", "culture", "dolly", "self_instruct", "flan"]):
+        instruction = item.get("instruction", "") or item.get("input", "") or item.get("question", "") or item.get("prompt", "")
+        output = item.get("output", "") or item.get("response", "") or item.get("answer", "") or item.get("text", "")
         if not instruction or not output:
             return None
-        return {
-            "input_text": instruction,
-            "output_text": output,
-            "source": name,
-            "kind": "instruction",
-            "language": "ar" if any(c in instruction for c in "ابتثجحخد") else "en",
-            "timestamp": datetime.now().isoformat(),
-        }
+        lang = "ar" if any(c in instruction for c in "ابتثجحخد") else "en"
+        return {"input_text": instruction, "output_text": output, "source": name, "kind": "instruction", "language": lang, "timestamp": ts}
     
-    elif "code" in name.lower():
-        prompt = item.get("prompt", "") or item.get("instruction", "")
-        completion = item.get("completion", "") or item.get("output", "")
+    # Code format 
+    if "code" in name.lower():
+        prompt = item.get("prompt", "") or item.get("instruction", "") or item.get("question", "") or item.get("input", "")
+        completion = item.get("completion", "") or item.get("output", "") or item.get("answer", "") or item.get("response", "") or item.get("code", "")
         if not prompt or not completion:
             return None
-        return {
-            "input_text": prompt,
-            "output_text": completion,
-            "source": name,
-            "kind": "code",
-            "language": "en",
-            "timestamp": datetime.now().isoformat(),
-        }
+        return {"input_text": prompt, "output_text": completion, "source": name, "kind": "code", "language": "en", "timestamp": ts}
+    
+    # Medical format
+    if "medical" in name or "med" in name:
+        q = item.get("question", "") or item.get("input", "") or item.get("instruction", "") or item.get("Description", "")
+        a = item.get("answer", "") or item.get("output", "") or item.get("response", "") or item.get("Doctor", "")
+        if not q or not a:
+            return None
+        return {"input_text": q, "output_text": a, "source": name, "kind": "medical", "language": "en", "timestamp": ts}
+    
+    # Science/STEM/Math format
+    if any(k in name for k in ["science", "stem", "math", "physics"]):
+        q = item.get("question", "") or item.get("input", "") or item.get("message_1", "")
+        a = item.get("correct_answer", "") or item.get("answer", "") or item.get("output", "") or item.get("message_2", "")
+        support = item.get("support", "")
+        if not q:
+            return None
+        full_a = f"{a}\n{support}" if support else a
+        if not full_a:
+            return None
+        return {"input_text": q, "output_text": full_a[:2000], "source": name, "kind": "science", "language": "en", "timestamp": ts}
+    
+    # Finance format
+    if "finance" in name or "finanz" in name:
+        text = item.get("sentence", "") or item.get("text", "") or item.get("input", "")
+        label = item.get("sentiment_label", "") or item.get("label", "") or item.get("output", "")
+        if not text:
+            return None
+        return {"input_text": f"Analyze: {text}", "output_text": str(label) if label else "neutral", "source": name, "kind": "finance", "language": "en", "timestamp": ts}
+    
+    # Conversation/Chat format (OpenAssistant, ShareGPT, UltraChat)
+    if any(k in name for k in ["openassistant", "sharegpt", "ultrachat"]):
+        # Try conversations format
+        messages = item.get("messages", []) or item.get("conversations", []) or item.get("data", [])
+        if messages and len(messages) >= 2:
+            human = ""
+            assistant = ""
+            for m in messages:
+                role = m.get("role", "") or m.get("from", "")
+                content = m.get("content", "") or m.get("value", "") or m.get("text", "")
+                if role in ("user", "human", "prompter") and not human:
+                    human = content
+                elif role in ("assistant", "gpt", "chatgpt") and not assistant:
+                    assistant = content
+            if human and assistant:
+                return {"input_text": human[:1000], "output_text": assistant[:2000], "source": name, "kind": "conversation", "language": "en", "timestamp": ts}
+        # Fallback: text field
+        text = item.get("text", "") or item.get("content", "")
+        if text and len(text) > 50:
+            return {"input_text": "Continue this conversation:", "output_text": text[:2000], "source": name, "kind": "conversation", "language": "en", "timestamp": ts}
+        return None
+    
+    # WikiHow / Survival format
+    if "wikihow" in name:
+        title = item.get("title", "") or item.get("input", "")
+        text = item.get("text", "") or item.get("steps", "") or item.get("output", "")
+        if not text:
+            return None
+        q = f"How to: {title}" if title else "Explain this process"
+        return {"input_text": q, "output_text": text[:2000], "source": name, "kind": "survival", "language": "en", "timestamp": ts}
+    
+    # Security format
+    if "cyber" in name or "security" in name:
+        q = item.get("question", "") or item.get("input", "") or item.get("prompt", "")
+        a = item.get("answer", "") or item.get("output", "") or item.get("response", "")
+        if not q or not a:
+            return None
+        return {"input_text": q, "output_text": a, "source": name, "kind": "security", "language": "en", "timestamp": ts}
+    
+    # UNIVERSAL FALLBACK — try any text-like fields
+    for q_key in ["instruction", "input", "question", "prompt", "text"]:
+        for a_key in ["output", "answer", "response", "completion", "text"]:
+            if q_key != a_key:
+                q = item.get(q_key, "")
+                a = item.get(a_key, "")
+                if q and a and len(q) > 10 and len(a) > 10:
+                    return {"input_text": q[:1000], "output_text": a[:2000], "source": name, "kind": "general", "language": "en", "timestamp": ts}
     
     return None
 
