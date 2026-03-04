@@ -4,6 +4,7 @@ BI-IDE API Main Application
 """
 
 import os
+import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
 
@@ -55,10 +56,32 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan — startup & shutdown"""
     logger.info("🚀 BI-IDE API starting up...")
-    # Initialize services, connections, etc.
+    
+    # 1. Initialize AI Hierarchy
+    bg_tasks = []
+    try:
+        from hierarchy import ai_hierarchy
+        await ai_hierarchy.initialize()
+        logger.info("✅ AI Hierarchy initialized")
+        
+        # 2. Start continuous operations in background
+        task = asyncio.create_task(ai_hierarchy.start_continuous_operations())
+        bg_tasks.append(task)
+        logger.info("🔄 Continuous operations started (council + scouts + meta)")
+    except Exception as e:
+        logger.warning(f"⚠️ Hierarchy init failed (non-fatal): {e}")
+    
     yield
+    
+    # Shutdown
     logger.info("🛑 BI-IDE API shutting down...")
-    # Cleanup resources
+    for task in bg_tasks:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+    logger.info("✅ All background tasks stopped")
 
 
 # Create FastAPI app

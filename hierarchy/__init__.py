@@ -49,6 +49,14 @@ from .meta_architect import (
     DynamicLayerGenerator
 )
 
+# استيراد الطبقات الجديدة (Phase 5)
+from .penetration_layer import PenetrationLayer, penetration_layer
+from .vulnerability_layer import VulnerabilityLayer, vulnerability_layer
+from .qa_layer import QALayer, qa_layer
+from .ux_excellence_layer import UXExcellenceLayer, ux_excellence_layer
+from .integration_layer import IntegrationLayer, integration_layer
+from .regeneration_layer import RegenerationLayer, regeneration_layer
+
 
 # Standardized RTX Configuration - يقرأ RTX5090_* أولاً مع fallback للقديم
 RTX_HOST = os.getenv("RTX5090_HOST", os.getenv("RTX4090_HOST", "192.168.1.164"))
@@ -78,6 +86,14 @@ class AIHierarchy:
         self.meta_architect = None
         self.builder_council = None
         self.executive_controller = None
+        
+        # الطبقات الجديدة (Phase 5 — 6 طبقات)
+        self.penetration = penetration_layer
+        self.vulnerability = vulnerability_layer
+        self.qa = qa_layer
+        self.ux_excellence = ux_excellence_layer
+        self.integration = integration_layer
+        self.regeneration = regeneration_layer
         
         # الحالة
         self.is_initialized = False
@@ -448,87 +464,50 @@ class AIHierarchy:
 
     def ask(self, message: str) -> Dict[str, Any]:
         """
-        Synchronous ask() used by council endpoints.
+        Synchronous ask() — AI only, no fake responses.
         
-        Pipeline: RTX → provider fallback → local heuristic
+        Pipeline: RTX Ollama → honest unavailable message
         """
         import requests
         
-        # 1. Try RTX endpoint first
-        rtx_url = f"{RTX_URL}/council/message"
+        # Get sage name for attribution
+        wise_man_name = "حكيم القرار"
+        try:
+            import random
+            sages = list(self.council.sages.values())
+            if sages:
+                wise_man_name = random.choice(sages).name
+        except Exception:
+            pass
         
+        # 1. Try RTX endpoint (Ollama on RTX 5090)
+        rtx_url = f"{RTX_URL}/council/message"
         try:
             resp = requests.post(
                 rtx_url,
                 json={"message": message},
-                timeout=10,
+                timeout=35,
             )
             if resp.status_code == 200:
                 data = resp.json()
-                return {
-                    "response": data.get("response", ""),
-                    "wise_man": data.get("council_member", "حكيم القرار"),
-                    "confidence": data.get("confidence", 0.85),
-                    "evidence": data.get("evidence", []),
-                    "response_source": "rtx4090",
-                }
+                if data.get("confidence", 0) > 0:
+                    return {
+                        "response": data.get("response", ""),
+                        "wise_man": data.get("wise_man", wise_man_name),
+                        "confidence": data.get("confidence", 0.85),
+                        "evidence": data.get("evidence", []),
+                        "response_source": data.get("response_source", "rtx5090"),
+                    }
         except Exception as e:
             print(f"⚠️ RTX council call failed: {e}")
-
-        # 2. Try to get first sage for attribution
-        first_sage = None
-        try:
-            sages = list(self.council.sages.values())
-            if sages:
-                first_sage = sages[0]
-        except Exception:
-            pass
-
-        wise_man_name = first_sage.name if first_sage else "حكيم القراء"
-
-        # 3. Local heuristic fallback (last resort)
-        msg_lower = message.lower()
         
-        responses = {
-            "greeting": {
-                "keywords": ["مرحبا", "سلام", "أهلا", "hello", "hi"],
-                "response": f"أهلاً بك في مجلس الحكماء! أنا {wise_man_name}. كيف أقدر أساعدك اليوم؟"
-            },
-            "strategy": {
-                "keywords": ["خطة", "استراتيجية", "plan", "strategy"],
-                "response": f"من منظور استراتيجي، يحتاج الأمر تحليلاً شاملاً. أقترح تقسيم العمل لمراحل: تحليل، تخطيط، تنفيذ، مراجعة."
-            },
-            "problem": {
-                "keywords": ["مشكلة", "خطأ", "error", "bug", "fix"],
-                "response": f"فهمت المشكلة. دعني أحللها: أولاً تحديد السبب الجذري، ثم خطة إصلاح، وأخيراً التحقق."
-            },
-            "training": {
-                "keywords": ["تدريب", "train", "learn", "model"],
-                "response": f"بخصوص التدريب: النظام جاهز. يمكنني بدء دورة تدريب جديدة أو تحليل النتائج."
-            },
-            "performance": {
-                "keywords": ["أداء", "سرعة", "performance"],
-                "response": f"لتحسين الأداء: حلل نقاط الاختناق أولاً، ثم حسّن الأهم فالأهم."
-            }
-        }
-        
-        for category, data in responses.items():
-            if any(kw in msg_lower for kw in data["keywords"]):
-                return {
-                    "response": data["response"],
-                    "wise_man": wise_man_name,
-                    "confidence": 0.6,
-                    "evidence": ["local-heuristic"],
-                    "response_source": "hierarchy-local-heuristic",
-                }
-        
-        # Default response
+        # 2. AI unavailable — honest message (NO FAKE RESPONSES)
         return {
-            "response": f"أنا {wise_man_name} من مجلس الحكماء. رسالتك '{message}' مهمة. أقترح تحليل الموضوع من عدة زوايا.",
+            "response": "عذراً، الذكاء الاصطناعي غير متاح حالياً. يرجى المحاولة لاحقاً.",
             "wise_man": wise_man_name,
-            "confidence": 0.5,
+            "confidence": 0.0,
             "evidence": [],
-            "response_source": "hierarchy-local-fallback",
+            "response_source": "hierarchy-ai-unavailable",
         }
 
     def discuss(self, topic: str):
@@ -613,6 +592,12 @@ __all__ = [
     'DomainExpertTeam',
     'ExecutionManager',
     'SeventhDimension',
+    'PenetrationLayer',
+    'VulnerabilityLayer',
+    'QALayer',
+    'UXExcellenceLayer',
+    'IntegrationLayer',
+    'RegenerationLayer',
     'RTX_HOST',
     'RTX_PORT',
     'RTX_URL',

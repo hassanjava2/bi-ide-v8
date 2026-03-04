@@ -36,9 +36,13 @@ description: Deploy BI-IDE v8 to all machines (VPS, RTX 5090, Windows, Domain)
 - **ملاحظة:** المجلد كان manually deployed — الملفات تنسخ من `bi-ide-v8/` → `.bi-ide-worker/`
 
 ### 4. Windows (RTX 4050)
-- **الوصول:** غير متصل عبر SSH حالياً
-- **النشر:** يدوي عبر `git pull` أو PowerShell script `scripts/deploy_windows.ps1`
-- **ملاحظة:** يحتاج إعداد SSH أو Remote Desktop
+- **Host (LAN):** `BI@192.168.1.130`
+- **Hostname:** `desktop-3957e1r`
+- **SSH:** ✅ key-based (passwordless — مفتاح مثبّت)
+- **Password (fallback):** `353631`
+- **الريبو:** `C:\Users\BI\bi-ide-v8`
+- **GPU:** NVIDIA RTX 4050
+- **النشر:** `ssh BI@192.168.1.130` + `cd C:\Users\BI\bi-ide-v8 && git pull`
 
 ## خطوات النشر
 

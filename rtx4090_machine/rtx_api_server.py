@@ -309,49 +309,74 @@ async def health():
 
 @app.post("/council/message", response_model=MessageResponse)
 async def council_message(request: MessageRequest):
-    """Send message to AI hierarchy — direct RTX path."""
+    """Send message to AI hierarchy — uses Ollama (real AI only, no fakes)."""
     start = time.time()
+
+    # Pick wise man name from hierarchy
+    wise_man_name = "حكيم القرار"
     hierarchy = get_hierarchy()
+    if hierarchy:
+        try:
+            sages = list(hierarchy.council.sages.values())
+            if sages:
+                import random
+                wise_man_name = random.choice(sages).name
+        except Exception:
+            pass
 
-    if hierarchy is None:
-        return MessageResponse(
-            response="عذراً، نظام AI غير متاح حالياً على هذا الجهاز.",
-            source="rtx5090-error",
-            confidence=0.0,
-            response_source="rtx5090-error",
-            wise_man="النظام",
-            processing_time_ms=0,
-            timestamp=datetime.now().isoformat(),
-        )
+    response_text = ""
+    confidence = 0.0
+    source = "rtx5090-direct"
+    evidence = []
 
-    try:
-        result = hierarchy.ask(request.message)
-        processing_time = int((time.time() - start) * 1000)
-        response_text = result.get("response", "")
+    # Try Ollama with multiple model fallbacks (REAL AI only)
+    models_to_try = ["qwen2.5:1.5b", "llama3.2:latest", "codellama:7b"]
+    for model_name in models_to_try:
+        try:
+            import requests as req
+            ollama_resp = req.post(
+                "http://localhost:11434/api/generate",
+                json={
+                    "model": model_name,
+                    "prompt": request.message,
+                    "system": f"أنت {wise_man_name} من مجلس حكماء BI-IDE. أجب باحترافية بالعربية.",
+                    "stream": False,
+                },
+                timeout=30,
+            )
+            if ollama_resp.status_code == 200:
+                data = ollama_resp.json()
+                response_text = data.get("response", "").strip()
+                if response_text:
+                    confidence = 0.9
+                    source = f"rtx5090-ollama-{model_name}"
+                    evidence = [f"ollama-{model_name}"]
+                    break
+        except Exception:
+            continue
 
-        # 🧠 Auto-record conversation for Arabic training
+    # If ALL AI failed → honest "not available" (NO FAKE RESPONSES per rules)
+    if not response_text:
+        response_text = "عذراً، الذكاء الاصطناعي غير متاح حالياً. يرجى المحاولة لاحقاً."
+        confidence = 0.0
+        source = "rtx5090-unavailable"
+
+    processing_time = int((time.time() - start) * 1000)
+
+    # Auto-record for training (only real AI responses)
+    if confidence > 0:
         _auto_record_conversation(request.message, response_text, "council-rtx5090")
 
-        return MessageResponse(
-            response=response_text,
-            source="rtx5090",
-            confidence=result.get("confidence", 0.85),
-            evidence=result.get("evidence", []),
-            response_source="rtx5090-direct",
-            wise_man=result.get("wise_man", "المجلس"),
-            processing_time_ms=processing_time,
-            timestamp=datetime.now().isoformat(),
-        )
-    except Exception as e:
-        return MessageResponse(
-            response=f"خطأ في معالجة الطلب: {str(e)}",
-            source="rtx5090-error",
-            confidence=0.0,
-            response_source="rtx5090-error",
-            wise_man="النظام",
-            processing_time_ms=int((time.time() - start) * 1000),
-            timestamp=datetime.now().isoformat(),
-        )
+    return MessageResponse(
+        response=response_text,
+        source="rtx5090",
+        confidence=confidence,
+        evidence=evidence,
+        response_source=source,
+        wise_man=wise_man_name,
+        processing_time_ms=processing_time,
+        timestamp=datetime.now().isoformat(),
+    )
 
 
 @app.post("/api/v1/training-data/ingest")
@@ -416,6 +441,53 @@ async def start_training():
         return {"status": "already_running"}
     _start_training()
     return {"status": "started", "samples": _count_samples()}
+
+
+@app.post("/api/v1/auto-program")
+async def auto_program(request: MessageRequest):
+    """Auto-programming: command → full project via AI pipeline."""
+    try:
+        project_root = Path("/home/bi/bi-ide-v8")
+        if project_root.exists() and str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+        
+        from hierarchy.auto_programming import auto_programming
+        result = await auto_programming.execute(request.message)
+        return result
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+
+@app.get("/api/v1/self-dev/analyze")
+async def analyze_for_improvement():
+    """Analyze project for improvement opportunities."""
+    try:
+        project_root = Path("/home/bi/bi-ide-v8")
+        if project_root.exists() and str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+        
+        from hierarchy.self_development import self_development
+        self_development.project_root = str(project_root)
+        result = await self_development.analyze_project()
+        return result
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+
+@app.post("/api/v1/self-dev/improve")
+async def run_improvement_cycle():
+    """Run a full self-improvement cycle (analyze → propose → test)."""
+    try:
+        project_root = Path("/home/bi/bi-ide-v8")
+        if project_root.exists() and str(project_root) not in sys.path:
+            sys.path.insert(0, str(project_root))
+        
+        from hierarchy.self_development import self_development
+        self_development.project_root = str(project_root)
+        result = await self_development.run_improvement_cycle()
+        return result
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
 
 
 if __name__ == "__main__":
