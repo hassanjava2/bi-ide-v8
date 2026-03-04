@@ -37,11 +37,11 @@ MODELS_DIR = TRAINING_DIR / "models" / "finetuned"
 CHECKPOINT_DIR = TRAINING_DIR / "data" / "checkpoints"
 PROJECT_ROOT = Path("/home/bi/bi-ide-v8")
 
-# Timing
-TRAIN_INTERVAL_MINUTES = 30  # Train every 30 minutes
-DOWNLOAD_INTERVAL_MINUTES = 5  # Check for new data every 5 minutes
-MIN_SAMPLES_TO_TRAIN = 10  # Minimum samples before training
-MAX_SAMPLES_PER_RUN = 500  # Cap samples per training run
+# Timing — CONTINUOUS MODE
+TRAIN_INTERVAL_MINUTES = 15  # Train every 15 minutes
+DOWNLOAD_INTERVAL_SECONDS = 10  # Near-continuous downloads
+MIN_SAMPLES_TO_TRAIN = 5  # Start training with just 5 samples
+MAX_SAMPLES_PER_RUN = 1000  # Process more per run
 
 # Internet data sources
 DATA_SOURCES = [
@@ -245,8 +245,8 @@ def download_loop():
             log(f"❌ Download error: {e}")
             _state["errors"].append({"time": datetime.now().isoformat(), "error": str(e)})
         
-        # Wait before next download check
-        time.sleep(DOWNLOAD_INTERVAL_MINUTES * 60)
+        # Near-continuous — tiny pause then download more
+        time.sleep(DOWNLOAD_INTERVAL_SECONDS)
 
 
 # ═══════════════════════════════════════════════════════════════
