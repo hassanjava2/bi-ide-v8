@@ -490,6 +490,40 @@ async def run_improvement_cycle():
         return {"status": "error", "error": str(e)}
 
 
+@app.get("/api/v1/monitor")
+async def monitor_all_machines():
+    """بيانات مراقبة كل الأجهزة — JSON"""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "multi_machine_monitor",
+            "/home/bi/bi-ide-v8/monitoring/multi_machine_monitor.py"
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return await mod.collect_all()
+    except Exception as e:
+        return {"error": str(e), "machines": [], "total": 0, "online": 0}
+
+
+@app.get("/monitor/dashboard")
+async def monitor_dashboard():
+    """لوحة مراقبة HTML — للـ IDE"""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "multi_machine_monitor",
+            "/home/bi/bi-ide-v8/monitoring/multi_machine_monitor.py"
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=mod.DASHBOARD_HTML)
+    except Exception as e:
+        from fastapi.responses import HTMLResponse
+        return HTMLResponse(content=f"<h1>Error: {e}</h1>")
+
+
 if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting RTX AI API Server v8.0.1 on 0.0.0.0:8090")

@@ -59,6 +59,15 @@
 
 ---
 
+## 📊 monitoring/ — المراقبة
+
+| الملف | السطور | الوصف |
+|-------|--------|-------|
+| `multi_machine_monitor.py` | 200 | **[NEW]** لوحة مراقبة 3 أجهزة (SSH + HTML dashboard) |
+| `system_monitor.py` | 377 | مراقب محلي (psutil + aiohttp) |
+
+---
+
 ## 🧠 brain/ — الدماغ (5 ملفات)
 
 | الملف | السطور | الوصف |
