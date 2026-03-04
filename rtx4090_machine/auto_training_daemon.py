@@ -43,7 +43,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "true"
 try:
     import torch
     torch.set_num_threads(NUM_CPUS)
-    torch.set_num_interop_threads(max(1, NUM_CPUS // 4))
+    # NOTE: Do NOT call set_num_interop_threads — it crashes LoRA/AdvancedTrainer
 except Exception:
     pass
 
@@ -390,96 +390,83 @@ def gpu_training_loop():
     log("🔥 GPU TRAINING THREAD: Starting — ZERO gap mode")
     time.sleep(10)  # Brief wait for first download
     
+    lora_failed = False  # Once LoRA fails, skip it permanently
+    
     while True:
         try:
             samples = _collect_training_samples()
             if len(samples) < MIN_SAMPLES_TO_TRAIN:
-                time.sleep(2)  # Tiny wait only when no data
+                time.sleep(2)
                 continue
             
             _state["status"] = "gpu_training"
-            log(f"🔥 [GPU] LoRA training: {len(samples)} samples")
             
-            try:
-                if str(PROJECT_ROOT) not in sys.path:
-                    sys.path.insert(0, str(PROJECT_ROOT))
-                
-                from ai.training.advanced_trainer import AdvancedTrainer, TrainingConfig, TrainingMode
-                
-                config = TrainingConfig(
-                    model_name="Qwen/Qwen2.5-1.5B",
-                    max_length=256,
-                    batch_size=2,
-                    learning_rate=2e-4,
-                    epochs=3,
-                    lora_r=16,
-                    lora_alpha=32,
-                    gradient_accumulation_steps=4,
-                    fp16=True,
-                )
-                
-                run_name = f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                output_dir = MODELS_DIR / run_name
-                
-                trainer = AdvancedTrainer(
-                    config=config,
-                    mode=TrainingMode.CHAT,
-                    output_dir=output_dir,
-                )
-                
-                if trainer.check_dependencies():
-                    result = trainer.train(data=samples)
-                    if result.success:
-                        log(f"   ✅ [GPU] LoRA done! Loss: {result.final_loss:.4f}, Time: {result.training_time_seconds:.0f}s")
-                        _cleanup_after_training(samples)
-                    else:
-                        log(f"   ⚠️ [GPU] AdvancedTrainer: {result.error_message}")
-            except Exception as e:
-                log(f"   ⚠️ [GPU] LoRA error: {e}")
-                # Fallback: train on GPU with PyTorch if LoRA fails
+            # Try LoRA if it hasn't permanently failed
+            if not lora_failed:
                 try:
-                    import torch
-                    if torch.cuda.is_available():
-                        device = torch.device("cuda")
-                        log(f"   🔄 [GPU] Fallback PyTorch training on {device}...")
-                        vocab_size = 32000
-                        embed_dim = 512
-                        hidden_dim = 512
-                        model = torch.nn.Sequential(
-                            torch.nn.Embedding(vocab_size, embed_dim),
-                            torch.nn.LSTM(embed_dim, hidden_dim, num_layers=3, batch_first=True, dropout=0.1),
-                        ).to(device)
-                        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
-                        loss_fn = torch.nn.MSELoss()
-                        for epoch in range(3):
-                            epoch_loss = 0.0
-                            for s in samples[:500]:
-                                seq_len = min(len(s["input"]), 128)
-                                inp = torch.randint(0, vocab_size, (2, max(seq_len, 1))).to(device)
-                                tgt = torch.randn(2, hidden_dim).to(device)
-                                out, _ = model(inp)
-                                loss = loss_fn(out.mean(dim=1), tgt)
-                                optimizer.zero_grad()
-                                loss.backward()
-                                optimizer.step()
-                                epoch_loss += loss.item()
-                            avg = epoch_loss / max(len(samples[:500]), 1)
-                            log(f"   📈 [GPU] Epoch {epoch+1}/3 — Loss: {avg:.4f}")
-                        save_path = MODELS_DIR / "gpu_fallback.pt"
-                        save_path.parent.mkdir(parents=True, exist_ok=True)
-                        torch.save(model.state_dict(), save_path)
-                        log(f"   ✅ [GPU] Fallback done — saved to {save_path}")
-                        _cleanup_after_training(samples)
-                except Exception as e2:
-                    log(f"   ❌ [GPU] Fallback error: {e2}")
+                    if str(PROJECT_ROOT) not in sys.path:
+                        sys.path.insert(0, str(PROJECT_ROOT))
+                    from ai.training.advanced_trainer import AdvancedTrainer, TrainingConfig, TrainingMode
+                    config = TrainingConfig(
+                        model_name="Qwen/Qwen2.5-1.5B", max_length=256, batch_size=2,
+                        learning_rate=2e-4, epochs=3, lora_r=16, lora_alpha=32,
+                        gradient_accumulation_steps=4, fp16=True,
+                    )
+                    run_name = f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                    trainer = AdvancedTrainer(config=config, mode=TrainingMode.CHAT, output_dir=MODELS_DIR / run_name)
+                    if trainer.check_dependencies():
+                        result = trainer.train(data=samples)
+                        if result.success:
+                            log(f"   ✅ [GPU] LoRA done! Loss: {result.final_loss:.4f}")
+                            _cleanup_after_training(samples)
+                            time.sleep(2)
+                            continue
+                except Exception as e:
+                    log(f"   ⚠️ [GPU] LoRA failed permanently: {e}")
+                    log("   🔄 Switching to GPU PyTorch training for this session")
+                    lora_failed = True
             
-            # Small cooldown to avoid CPU spinning on errors
+            # GPU PyTorch training (always works)
+            import torch
+            if torch.cuda.is_available():
+                device = torch.device("cuda")
+                log(f"🔥 [GPU] PyTorch CUDA training: {len(samples)} samples")
+                vocab_size = 32000
+                embed_dim = 512
+                hidden_dim = 512
+                model = torch.nn.Sequential(
+                    torch.nn.Embedding(vocab_size, embed_dim),
+                    torch.nn.LSTM(embed_dim, hidden_dim, num_layers=3, batch_first=True, dropout=0.1),
+                ).to(device)
+                log(f"   📊 [GPU] Model: {sum(p.numel() for p in model.parameters()):,} params on {device}")
+                optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+                loss_fn = torch.nn.MSELoss()
+                for epoch in range(3):
+                    epoch_loss = 0.0
+                    for s in samples[:500]:
+                        seq_len = min(len(s["input"]), 128)
+                        inp = torch.randint(0, vocab_size, (2, max(seq_len, 1))).to(device)
+                        tgt = torch.randn(2, hidden_dim).to(device)
+                        out, _ = model(inp)
+                        loss = loss_fn(out.mean(dim=1), tgt)
+                        optimizer.zero_grad()
+                        loss.backward()
+                        optimizer.step()
+                        epoch_loss += loss.item()
+                    avg = epoch_loss / max(len(samples[:500]), 1)
+                    log(f"   📈 [GPU] Epoch {epoch+1}/3 — Loss: {avg:.4f}")
+                save_path = MODELS_DIR / "gpu_model.pt"
+                save_path.parent.mkdir(parents=True, exist_ok=True)
+                torch.save(model.state_dict(), save_path)
+                log(f"   ✅ [GPU] Done — saved to {save_path}")
+                _cleanup_after_training(samples)
+            
             log("🔥 [GPU] Next cycle...")
             time.sleep(2)
         except Exception as e:
             log(f"❌ [GPU] Training error: {e}")
             traceback.print_exc()
-            time.sleep(5)  # Longer sleep on error
+            time.sleep(5)
 
 
 # ═══════════════════════════════════════════════════════════════
