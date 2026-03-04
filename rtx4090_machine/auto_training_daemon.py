@@ -587,6 +587,76 @@ def distill_from_ollama():
 
 
 # ═══════════════════════════════════════════════════════════════
+# Data Sync to RTX 5090 (runs on Windows/VPS only)
+# ═══════════════════════════════════════════════════════════════
+
+RTX_HOST = "bi@192.168.1.164"
+RTX_DATA_DIR = "/data/sync_from_remote"
+SYNC_INTERVAL = 300  # 5 minutes
+
+def sync_data_to_rtx():
+    """Sync local training data to RTX 5090 central hub."""
+    import subprocess
+    import socket
+    
+    hostname = socket.gethostname()
+    remote_dir = f"{RTX_DATA_DIR}/{hostname}"
+    
+    # Skip if we ARE the RTX 5090
+    if IS_LINUX and Path("/data").exists() and Path("/data/wikipedia").exists():
+        log("📡 This IS the RTX 5090 — skipping sync")
+        return
+    
+    time.sleep(60)  # Wait 1 min for initial data
+    
+    while True:
+        try:
+            # Collect all local jsonl files
+            local_files = list(DOWNLOAD_DIR.glob("*.jsonl")) if DOWNLOAD_DIR.exists() else []
+            ingest_file = INGEST_DIR / "samples.jsonl"
+            if ingest_file.exists():
+                local_files.append(ingest_file)
+            
+            if not local_files:
+                time.sleep(SYNC_INTERVAL)
+                continue
+            
+            total_size = sum(f.stat().st_size for f in local_files if f.exists())
+            if total_size < 1000:  # Less than 1KB
+                time.sleep(SYNC_INTERVAL)
+                continue
+            
+            log(f"📡 Syncing {len(local_files)} files ({total_size/1e6:.1f}MB) to RTX 5090...")
+            
+            # Create remote dir
+            subprocess.run(
+                ["ssh", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=5",
+                 RTX_HOST, f"mkdir -p {remote_dir}"],
+                capture_output=True, timeout=10
+            )
+            
+            # SCP files
+            for f in local_files:
+                try:
+                    result = subprocess.run(
+                        ["scp", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=5",
+                         str(f), f"{RTX_HOST}:{remote_dir}/{f.name}"],
+                        capture_output=True, timeout=60
+                    )
+                    if result.returncode == 0:
+                        log(f"   ✅ Synced: {f.name}")
+                except Exception as e:
+                    log(f"   ⚠️ Sync error for {f.name}: {e}")
+            
+            log(f"📡 Sync complete — {len(local_files)} files sent to RTX 5090")
+            
+        except Exception as e:
+            log(f"⚠️ Sync error: {e}")
+        
+        time.sleep(SYNC_INTERVAL)
+
+
+# ═══════════════════════════════════════════════════════════════
 # Main Entry Point
 # ═══════════════════════════════════════════════════════════════
 
@@ -616,6 +686,11 @@ def main():
     distill_thread = threading.Thread(target=lambda: [time.sleep(60), distill_from_ollama()], daemon=True, name="distiller")
     distill_thread.start()
     log("🧬 Distillation thread started")
+    
+    # Start data sync thread (syncs local data → RTX 5090)
+    sync_thread = threading.Thread(target=sync_data_to_rtx, daemon=True, name="data_sync")
+    sync_thread.start()
+    log("📡 Data sync thread started")
     
     # Main training loop (blocking)
     log("🧠 Starting training loop...")
