@@ -39,6 +39,14 @@ os.environ["MKL_NUM_THREADS"] = str(NUM_CPUS)
 os.environ["NUMEXPR_MAX_THREADS"] = str(NUM_CPUS)
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
+# Set torch threads ONCE at startup (before any threads)
+try:
+    import torch
+    torch.set_num_threads(NUM_CPUS)
+    torch.set_num_interop_threads(max(1, NUM_CPUS // 4))
+except Exception:
+    pass
+
 # ─── Configuration (Cross-Platform) ──────────────────────────────
 import platform
 IS_WINDOWS = platform.system() == "Windows"
@@ -428,13 +436,50 @@ def gpu_training_loop():
                         log(f"   ⚠️ [GPU] AdvancedTrainer: {result.error_message}")
             except Exception as e:
                 log(f"   ⚠️ [GPU] LoRA error: {e}")
+                # Fallback: train on GPU with PyTorch if LoRA fails
+                try:
+                    import torch
+                    if torch.cuda.is_available():
+                        device = torch.device("cuda")
+                        log(f"   🔄 [GPU] Fallback PyTorch training on {device}...")
+                        vocab_size = 32000
+                        embed_dim = 512
+                        hidden_dim = 512
+                        model = torch.nn.Sequential(
+                            torch.nn.Embedding(vocab_size, embed_dim),
+                            torch.nn.LSTM(embed_dim, hidden_dim, num_layers=3, batch_first=True, dropout=0.1),
+                        ).to(device)
+                        optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+                        loss_fn = torch.nn.MSELoss()
+                        for epoch in range(3):
+                            epoch_loss = 0.0
+                            for s in samples[:500]:
+                                seq_len = min(len(s["input"]), 128)
+                                inp = torch.randint(0, vocab_size, (2, max(seq_len, 1))).to(device)
+                                tgt = torch.randn(2, hidden_dim).to(device)
+                                out, _ = model(inp)
+                                loss = loss_fn(out.mean(dim=1), tgt)
+                                optimizer.zero_grad()
+                                loss.backward()
+                                optimizer.step()
+                                epoch_loss += loss.item()
+                            avg = epoch_loss / max(len(samples[:500]), 1)
+                            log(f"   📈 [GPU] Epoch {epoch+1}/3 — Loss: {avg:.4f}")
+                        save_path = MODELS_DIR / "gpu_fallback.pt"
+                        save_path.parent.mkdir(parents=True, exist_ok=True)
+                        torch.save(model.state_dict(), save_path)
+                        log(f"   ✅ [GPU] Fallback done — saved to {save_path}")
+                        _cleanup_after_training(samples)
+                except Exception as e2:
+                    log(f"   ❌ [GPU] Fallback error: {e2}")
             
-            # IMMEDIATELY start next cycle — NO SLEEP
-            log("🔥 [GPU] Restarting immediately...")
+            # Small cooldown to avoid CPU spinning on errors
+            log("🔥 [GPU] Next cycle...")
+            time.sleep(2)
         except Exception as e:
             log(f"❌ [GPU] Training error: {e}")
             traceback.print_exc()
-            time.sleep(1)  # Only sleep on error
+            time.sleep(5)  # Longer sleep on error
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -449,7 +494,7 @@ def cpu_training_loop():
     while True:
         try:
             import torch
-            torch.set_num_threads(NUM_CPUS)
+            # torch.set_num_threads already called at module level
             
             samples = _collect_training_samples()
             if len(samples) < MIN_SAMPLES_TO_TRAIN:

@@ -43,7 +43,7 @@ def get_gpu_info():
 
 
 def get_cpu_info():
-    """Get per-core CPU usage and temp."""
+    """Get per-core CPU usage and temp — INSTANTANEOUS readings."""
     cores = os.cpu_count() or 1
     usage_per_core = []
     avg_usage = 0
@@ -51,7 +51,7 @@ def get_cpu_info():
 
     if IS_LINUX:
         try:
-            # Per-core usage
+            # Use mpstat for REAL instantaneous per-core usage
             result = subprocess.run(
                 ["mpstat", "-P", "ALL", "1", "1"],
                 capture_output=True, text=True, timeout=5
@@ -59,36 +59,45 @@ def get_cpu_info():
             if result.returncode == 0:
                 for line in result.stdout.split("\n"):
                     line = line.strip()
-                    if line and line[0].isdigit() and "Average" not in line:
-                        parts = line.split()
-                        if len(parts) > 3 and parts[2].replace(".", "").isdigit():
-                            pass  # Skip header-like
-                    if "Average:" in line and "all" in line:
-                        parts = line.split()
+                    if "Average:" not in line:
+                        continue
+                    parts = line.split()
+                    if len(parts) >= 12:
+                        core_id = parts[1]
                         idle = float(parts[-1])
-                        avg_usage = round(100 - idle, 1)
-                # Per-core from /proc/stat
-                with open("/proc/stat") as f:
-                    for line in f:
-                        if line.startswith("cpu") and line[3] != " ":
-                            parts = line.split()
-                            total = sum(int(x) for x in parts[1:])
-                            idle = int(parts[4])
-                            usage = round((1 - idle/max(total, 1)) * 100, 1)
+                        usage = round(100 - idle, 1)
+                        if core_id == "all":
+                            avg_usage = usage
+                        elif core_id.isdigit():
                             usage_per_core.append(usage)
         except Exception:
             pass
 
-        # CPU temp
+        # CPU temp — try hwmon first (more accurate than thermal_zone)
         try:
-            for zone in sorted(Path("/sys/class/thermal/").glob("thermal_zone*")):
-                temp_file = zone / "temp"
-                if temp_file.exists():
-                    t = int(temp_file.read_text().strip()) / 1000
-                    if t > temp_c:
-                        temp_c = t
+            for hwmon in sorted(Path("/sys/class/hwmon/").glob("hwmon*")):
+                name_file = hwmon / "name"
+                if name_file.exists():
+                    name = name_file.read_text().strip()
+                    if name in ("coretemp", "k10temp", "zenpower"):
+                        for temp_input in sorted(hwmon.glob("temp*_input")):
+                            t = int(temp_input.read_text().strip()) / 1000
+                            if t > temp_c and t < 120:  # Sanity check
+                                temp_c = t
         except Exception:
             pass
+
+        # Fallback to thermal_zone if no hwmon
+        if temp_c == 0:
+            try:
+                for zone in sorted(Path("/sys/class/thermal/").glob("thermal_zone*")):
+                    temp_file = zone / "temp"
+                    if temp_file.exists():
+                        t = int(temp_file.read_text().strip()) / 1000
+                        if t > temp_c and t < 120:
+                            temp_c = t
+            except Exception:
+                pass
 
     return {
         "cores": cores,
