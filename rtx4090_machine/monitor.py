@@ -108,14 +108,20 @@ def get_cpu_info():
 
 
 def get_training_status():
-    """Read training log tail."""
+    """Read training log tail — filtered to remove HTTP noise."""
     logs = []
+    # Patterns to EXCLUDE (raw HTTP request logs from datasets library)
+    noise = ["HTTP Request:", "HTTP/1.1", "Partial Content", "X-Amz-", "Key-Pair-Id",
+             "huggingface.co/api", "xethub.hf.co", "cas-bridge", "Signature=", "Policy=",
+             "response-content-disposition", "WARNING:"]
     for log_path in ["/tmp/auto_training.log", "C:/Users/BI/training.log"]:
         p = Path(log_path)
         if p.exists():
             try:
                 lines = p.read_text(encoding="utf-8", errors="replace").split("\n")
-                logs = [l for l in lines[-20:] if l.strip()]
+                # Filter: keep only meaningful lines
+                filtered = [l for l in lines[-100:] if l.strip() and not any(n in l for n in noise)]
+                logs = filtered[-20:]  # Last 20 clean lines
             except Exception:
                 pass
     return logs
