@@ -37,8 +37,8 @@ MODELS_DIR = TRAINING_DIR / "models" / "finetuned"
 CHECKPOINT_DIR = TRAINING_DIR / "data" / "checkpoints"
 PROJECT_ROOT = Path("/home/bi/bi-ide-v8")
 
-# Timing — CONTINUOUS MODE
-TRAIN_INTERVAL_MINUTES = 15  # Train every 15 minutes
+# Timing — NON-STOP CONTINUOUS MODE
+TRAIN_INTERVAL_SECONDS = 5  # Near-continuous: 5sec between cycles
 DOWNLOAD_INTERVAL_SECONDS = 10  # Near-continuous downloads
 MIN_SAMPLES_TO_TRAIN = 5  # Start training with just 5 samples
 MAX_SAMPLES_PER_RUN = 1000  # Process more per run
@@ -465,8 +465,8 @@ def training_loop():
             _state["errors"].append({"time": datetime.now().isoformat(), "error": str(e)})
         
         # Wait before next training cycle
-        log(f"💤 Next training in {TRAIN_INTERVAL_MINUTES} minutes...")
-        time.sleep(TRAIN_INTERVAL_MINUTES * 60)
+        log(f"🔄 Next training in {TRAIN_INTERVAL_SECONDS}s...")
+        time.sleep(TRAIN_INTERVAL_SECONDS)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -556,7 +556,7 @@ def main():
     log(f"   Training Dir: {TRAINING_DIR}")
     log(f"   Download Dir: {DOWNLOAD_DIR}")
     log(f"   Models Dir: {MODELS_DIR}")
-    log(f"   Train Interval: {TRAIN_INTERVAL_MINUTES} min")
+    log(f"   Train Interval: {TRAIN_INTERVAL_SECONDS}s (NON-STOP)")
     log(f"   Download Interval: {DOWNLOAD_INTERVAL_SECONDS}s")
     log(f"   Min Samples: {MIN_SAMPLES_TO_TRAIN}")
     log("=" * 60)
