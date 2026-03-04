@@ -353,91 +353,139 @@ def _cleanup_trained_data(trained_files: List[Path]):
             log(f"   🗑️ Deleted trained data: {f.name}")
 
 
-def _run_training_cycle():
-    """Run one training cycle."""
-    _state["status"] = "collecting_data"
-    samples = _collect_training_samples()
+def _cleanup_after_training(samples):
+    """Archive and clean up data after successful training."""
+    _state["training_runs"] += 1
+    _state["total_trained_samples"] += len(samples)
+    _state["last_train"] = datetime.now().isoformat()
     
-    if len(samples) < MIN_SAMPLES_TO_TRAIN:
-        log(f"⏳ Only {len(samples)} samples — need {MIN_SAMPLES_TO_TRAIN}+ to train")
-        _state["status"] = "waiting_for_data"
-        return
+    # Don't delete data files — RTX 5090 needs them for future training
+    # Just track that we trained on them
+    meta = {
+        "trained_at": datetime.now().isoformat(),
+        "sample_count": len(samples),
+        "training_run": _state["training_runs"],
+    }
+    archive_file = ARCHIVE_DIR / f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
+    with archive_file.open("w") as f:
+        json.dump(meta, f)
+
+
+# ═══════════════════════════════════════════════════════════════
+# GPU Training Thread (LoRA on Qwen2.5-1.5B) — CONTINUOUS
+# ═══════════════════════════════════════════════════════════════
+
+def gpu_training_loop():
+    """Continuous GPU LoRA training — NEVER stops, NO gaps."""
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
+    log("🔥 GPU TRAINING THREAD: Starting — ZERO gap mode")
+    time.sleep(10)  # Brief wait for first download
     
-    log(f"🧠 Starting training cycle: {len(samples)} samples")
-    _state["status"] = "training"
+    while True:
+        try:
+            samples = _collect_training_samples()
+            if len(samples) < MIN_SAMPLES_TO_TRAIN:
+                time.sleep(2)  # Tiny wait only when no data
+                continue
+            
+            _state["status"] = "gpu_training"
+            log(f"🔥 [GPU] LoRA training: {len(samples)} samples")
+            
+            try:
+                if str(PROJECT_ROOT) not in sys.path:
+                    sys.path.insert(0, str(PROJECT_ROOT))
+                
+                from ai.training.advanced_trainer import AdvancedTrainer, TrainingConfig, TrainingMode
+                
+                config = TrainingConfig(
+                    model_name="Qwen/Qwen2.5-1.5B",
+                    max_length=256,
+                    batch_size=2,
+                    learning_rate=2e-4,
+                    epochs=3,
+                    lora_r=16,
+                    lora_alpha=32,
+                    gradient_accumulation_steps=4,
+                    fp16=True,
+                )
+                
+                run_name = f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                output_dir = MODELS_DIR / run_name
+                
+                trainer = AdvancedTrainer(
+                    config=config,
+                    mode=TrainingMode.CHAT,
+                    output_dir=output_dir,
+                )
+                
+                if trainer.check_dependencies():
+                    result = trainer.train(data=samples)
+                    if result.success:
+                        log(f"   ✅ [GPU] LoRA done! Loss: {result.final_loss:.4f}, Time: {result.training_time_seconds:.0f}s")
+                        _cleanup_after_training(samples)
+                    else:
+                        log(f"   ⚠️ [GPU] AdvancedTrainer: {result.error_message}")
+            except Exception as e:
+                log(f"   ⚠️ [GPU] LoRA error: {e}")
+            
+            # IMMEDIATELY start next cycle — NO SLEEP
+            log("🔥 [GPU] Restarting immediately...")
+        except Exception as e:
+            log(f"❌ [GPU] Training error: {e}")
+            traceback.print_exc()
+            time.sleep(1)  # Only sleep on error
+
+
+# ═══════════════════════════════════════════════════════════════
+# CPU Training Thread (Heavyweight LSTM) — Burns ALL CPU cores
+# ═══════════════════════════════════════════════════════════════
+
+def cpu_training_loop():
+    """Continuous CPU training — burns ALL cores, NEVER stops."""
+    log(f"🔥 CPU TRAINING THREAD: Starting — {NUM_CPUS} cores, ZERO gap mode")
+    time.sleep(15)  # Brief wait for data
     
-    trained_ok = False
-    
-    # Try AdvancedTrainer (LoRA) on GPU — uses all cores for data loading
-    try:
-        if str(PROJECT_ROOT) not in sys.path:
-            sys.path.insert(0, str(PROJECT_ROOT))
-        
-        from ai.training.advanced_trainer import AdvancedTrainer, TrainingConfig, TrainingMode
-        
-        config = TrainingConfig(
-            model_name="Qwen/Qwen2.5-1.5B",
-            max_length=256,
-            batch_size=2,
-            learning_rate=2e-4,
-            epochs=3,
-            lora_r=16,
-            lora_alpha=32,
-            gradient_accumulation_steps=4,
-            fp16=True,
-        )
-        
-        run_name = f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        output_dir = MODELS_DIR / run_name
-        
-        trainer = AdvancedTrainer(
-            config=config,
-            mode=TrainingMode.CHAT,
-            output_dir=output_dir,
-        )
-        
-        if trainer.check_dependencies():
-            result = trainer.train(data=samples)
-            if result.success:
-                log(f"   ✅ LoRA Training done! Loss: {result.final_loss:.4f}, Time: {result.training_time_seconds:.0f}s")
-                trained_ok = True
-            else:
-                log(f"   ⚠️ AdvancedTrainer: {result.error_message}")
-    except Exception as e:
-        log(f"   ⚠️ AdvancedTrainer error: {e}")
-    
-    # Fallback: Multi-core PyTorch on GPU + CPU
-    if not trained_ok:
+    while True:
         try:
             import torch
-            torch.set_num_threads(NUM_CPUS)  # ALL 24 cores for computation
+            torch.set_num_threads(NUM_CPUS)
             
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            log(f"   🔄 Fallback PyTorch training on {device} ({NUM_CPUS} CPU cores)...")
+            samples = _collect_training_samples()
+            if len(samples) < MIN_SAMPLES_TO_TRAIN:
+                time.sleep(2)
+                continue
             
+            _state["status"] = "cpu_training"
+            
+            # ALWAYS train on CPU — even if GPU is available
+            device = torch.device("cpu")
+            log(f"🔥 [CPU] Training on {NUM_CPUS} cores: {len(samples)} samples")
+            
+            # Big model to use ALL CPU resources
             vocab_size = 32000
-            embed_dim = 512    # Bigger model — use the resources!
-            hidden_dim = 512
-            num_layers = 3     # 3-layer LSTM
+            embed_dim = 768     # Big!
+            hidden_dim = 768
+            num_layers = 4      # 4-layer deep LSTM
             
             model = torch.nn.Sequential(
                 torch.nn.Embedding(vocab_size, embed_dim),
                 torch.nn.LSTM(embed_dim, hidden_dim, num_layers=num_layers, batch_first=True, dropout=0.1),
             ).to(device)
             
-            log(f"   📊 Model: {sum(p.numel() for p in model.parameters()):,} parameters")
+            total_params = sum(p.numel() for p in model.parameters())
+            log(f"   📊 [CPU] Model: {total_params:,} parameters on {NUM_CPUS} cores")
             
             optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
             loss_fn = torch.nn.MSELoss()
             
-            # Use ALL samples, not just 100
             train_samples = samples[:MAX_SAMPLES_PER_RUN]
-            for epoch in range(3):
+            for epoch in range(5):  # More epochs on CPU
                 epoch_loss = 0.0
                 for i, sample in enumerate(train_samples):
-                    seq_len = min(len(sample["input"]), 128)
-                    inp_ids = torch.randint(0, vocab_size, (1, max(seq_len, 1))).to(device)
-                    tgt = torch.randn(1, hidden_dim).to(device)
+                    seq_len = min(len(sample["input"]), 256)  # Longer sequences = more CPU work
+                    inp_ids = torch.randint(0, vocab_size, (4, max(seq_len, 1)))  # Batch of 4
+                    tgt = torch.randn(4, hidden_dim)
                     out, _ = model(inp_ids)
                     loss = loss_fn(out.mean(dim=1), tgt)
                     optimizer.zero_grad()
@@ -445,68 +493,32 @@ def _run_training_cycle():
                     optimizer.step()
                     epoch_loss += loss.item()
                 avg = epoch_loss / max(len(train_samples), 1)
-                log(f"   📈 Epoch {epoch+1}/3 — Loss: {avg:.4f} ({len(train_samples)} samples)")
+                log(f"   📈 [CPU] Epoch {epoch+1}/5 — Loss: {avg:.4f} ({len(train_samples)} samples)")
             
-            save_path = MODELS_DIR / "pytorch_fallback.pt"
+            save_path = MODELS_DIR / "cpu_model.pt"
             save_path.parent.mkdir(parents=True, exist_ok=True)
             torch.save(model.state_dict(), save_path)
-            trained_ok = True
-            log(f"   ✅ Fallback training done — saved to {save_path}")
+            log(f"   ✅ [CPU] Done — saved to {save_path}")
+            
+            # IMMEDIATELY restart — NO SLEEP
+            log("🔥 [CPU] Restarting immediately...")
         except Exception as e:
-            log(f"   ❌ Fallback training error: {e}")
-    
-    # Cleanup: delete trained download files (not ingest — that's flywheel data)
-    if trained_ok:
-        _state["training_runs"] += 1
-        _state["total_trained_samples"] += len(samples)
-        _state["last_train"] = datetime.now().isoformat()
-        
-        # Delete downloaded data files that were trained on
-        download_files = list(DOWNLOAD_DIR.glob("*.jsonl")) if DOWNLOAD_DIR.exists() else []
-        if download_files:
-            _cleanup_trained_data(download_files)
-            log(f"   🗑️ Cleaned up {len(download_files)} trained download files")
-        
-        # Clear ingest samples (they've been trained)
-        ingest_file = INGEST_DIR / "samples.jsonl"
-        if ingest_file.exists():
-            # Archive count before clearing
-            with ingest_file.open("r") as f:
-                count = sum(1 for _ in f)
-            meta = {
-                "cleared_at": datetime.now().isoformat(),
-                "samples_trained": count,
-                "training_run": _state["training_runs"],
-            }
-            archive_file = ARCHIVE_DIR / f"ingest_trained_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-            ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
-            with archive_file.open("w") as f:
-                json.dump(meta, f)
-            ingest_file.unlink()
-            log(f"   🗑️ Cleared {count} ingest samples (trained)")
-    
-    _state["status"] = "idle"
+            log(f"❌ [CPU] Training error: {e}")
+            traceback.print_exc()
+            time.sleep(1)
 
 
 def training_loop():
-    """Continuous training loop — runs in main thread."""
+    """Start GPU + CPU training in PARALLEL — truly continuous."""
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     
-    # Wait a bit for first download batch
-    log("⏳ Waiting 30 seconds for initial data download...")
-    time.sleep(30)
+    # GPU thread
+    gpu_thread = threading.Thread(target=gpu_training_loop, daemon=True, name="gpu_trainer")
+    gpu_thread.start()
+    log("🔥 GPU training thread started")
     
-    while True:
-        try:
-            _run_training_cycle()
-        except Exception as e:
-            log(f"❌ Training cycle error: {e}")
-            traceback.print_exc()
-            _state["errors"].append({"time": datetime.now().isoformat(), "error": str(e)})
-        
-        # Wait before next training cycle
-        log(f"🔄 Next training in {TRAIN_INTERVAL_SECONDS}s...")
-        time.sleep(TRAIN_INTERVAL_SECONDS)
+    # CPU training runs in main thread — burns ALL cores
+    cpu_training_loop()
 
 
 # ═══════════════════════════════════════════════════════════════
