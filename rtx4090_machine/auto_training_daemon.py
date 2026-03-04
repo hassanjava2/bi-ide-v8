@@ -707,10 +707,11 @@ def cpu_training_loop():
 
 
 def training_loop():
-    """ALTERNATING GPU/CPU training — one at a time, with cooling breaks."""
+    """GPU-ONLY training — LoRA on RTX 5090. Scout handles data downloads on CPU separately."""
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     
-    log("🧠 Training mode: ALTERNATING (GPU → cool → CPU → cool)")
+    log("🧠 Training mode: GPU-ONLY (LoRA on RTX 5090)")
+    log("📥 Data downloads: knowledge_scout.py (separate process, CPU I/O only)")
     log(f"   Thermal limits: warn={CPU_TEMP_WARNING}°C, throttle={CPU_TEMP_THROTTLE}°C, emergency={CPU_TEMP_LIMIT}°C")
     time.sleep(10)  # Wait for data
     
@@ -736,8 +737,8 @@ def training_loop():
             
             cycle += 1
             
-            # ═══ PHASE 1: GPU Training (LoRA or fallback) ═══
-            log(f"━━━ Cycle {cycle} Phase 1: GPU Training ({temp:.0f}°C) ━━━")
+            # ═══ GPU Training (LoRA or PyTorch CUDA fallback) ═══
+            log(f"━━━ Cycle {cycle}: GPU Training ({temp:.0f}°C) — {len(samples)} samples ━━━")
             _state["status"] = "gpu_training"
             
             if not lora_failed:
@@ -759,10 +760,10 @@ def training_loop():
                             _cleanup_after_training(samples)
                 except Exception as e:
                     log(f"   ⚠️ [GPU] LoRA failed: {e}")
-                    log("   🔄 Switching to GPU PyTorch for this session")
+                    log("   🔄 Switching to GPU PyTorch permanently")
                     lora_failed = True
             
-            # GPU PyTorch fallback
+            # GPU PyTorch fallback (CUDA only, no CPU)
             if lora_failed:
                 try:
                     import torch
@@ -792,63 +793,14 @@ def training_loop():
                         torch.save(model.state_dict(), MODELS_DIR / "gpu_model.pt")
                         log(f"   ✅ [GPU] Done")
                         _cleanup_after_training(samples)
+                    else:
+                        log("   ⚠️ No CUDA GPU available — skipping (scout handles data)")
                 except Exception as e:
                     log(f"   ❌ [GPU] Error: {e}")
             
-            # ═══ COOLING BREAK ═══
-            temp = get_cpu_temp()
-            if temp > CPU_TEMP_WARNING:
-                log(f"🌡️ Cooling break: {temp:.0f}°C → waiting for {CPU_TEMP_RESUME}°C...")
-                while temp > CPU_TEMP_RESUME:
-                    time.sleep(5)
-                    temp = get_cpu_temp()
-                log(f"✅ Cooled to {temp:.0f}°C — starting CPU phase")
-            
-            # ═══ PHASE 2: CPU Training ═══
-            temp = get_cpu_temp()
-            log(f"━━━ Cycle {cycle} Phase 2: CPU Training ({temp:.0f}°C) ━━━")
-            _state["status"] = "cpu_training"
-            
-            try:
-                import torch
-                device = torch.device("cpu")
-                vocab_size, embed_dim, hidden_dim, num_layers = 32000, 512, 512, 3
-                model = torch.nn.Sequential(
-                    torch.nn.Embedding(vocab_size, embed_dim),
-                    torch.nn.LSTM(embed_dim, hidden_dim, num_layers=num_layers, batch_first=True, dropout=0.1),
-                ).to(device)
-                log(f"   📊 [CPU] Model: {sum(p.numel() for p in model.parameters()):,} params, {NUM_TRAIN_THREADS} threads")
-                optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
-                loss_fn = torch.nn.MSELoss()
-                
-                train_samples = samples[:MAX_SAMPLES_PER_RUN]
-                for epoch in range(3):
-                    # Check temp each epoch
-                    temp = get_cpu_temp()
-                    if temp > CPU_TEMP_THROTTLE:
-                        log(f"🌡️ [CPU] Hot {temp:.0f}°C — stopping CPU phase early")
-                        break
-                    
-                    epoch_loss = 0.0
-                    for i, s in enumerate(train_samples):
-                        seq_len = min(len(s["input"]), 128)
-                        inp = torch.randint(0, vocab_size, (2, max(seq_len, 1)))
-                        tgt = torch.randn(2, hidden_dim)
-                        out, _ = model(inp)
-                        loss = loss_fn(out.mean(dim=1), tgt)
-                        optimizer.zero_grad()
-                        loss.backward()
-                        optimizer.step()
-                        epoch_loss += loss.item()
-                    log(f"   📈 [CPU] Epoch {epoch+1}/3 — Loss: {epoch_loss/max(len(train_samples),1):.4f}")
-                
-                torch.save(model.state_dict(), MODELS_DIR / "cpu_model.pt")
-                log(f"   ✅ [CPU] Done")
-            except Exception as e:
-                log(f"   ❌ [CPU] Error: {e}")
-            
             _state["status"] = "idle"
-            log(f"🔄 Cycle {cycle} complete — next cycle after cooling...")
+            log(f"🔄 Cycle {cycle} complete — waiting 30s before next cycle...")
+            time.sleep(30)  # Brief rest between cycles
             
         except Exception as e:
             log(f"❌ Training error: {e}")
