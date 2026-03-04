@@ -346,12 +346,14 @@ def _run_training_cycle():
         
         config = TrainingConfig(
             model_name="Qwen/Qwen2.5-1.5B",
-            max_length=512,
-            batch_size=4,
+            max_length=256,
+            batch_size=2,
             learning_rate=2e-4,
             epochs=3,
             lora_r=16,
             lora_alpha=32,
+            gradient_accumulation_steps=4,
+            fp16=True,
         )
         
         run_name = f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
