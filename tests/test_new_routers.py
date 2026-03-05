@@ -5,6 +5,7 @@ Tests for new routers (RTX5090, Network, Brain)
 import pytest
 
 
+@pytest.mark.timeout(60)
 class TestRTX5090Router:
     """Testing RTX 5090 management endpoints"""
 
