@@ -1,14 +1,17 @@
 """
 روتر الذكاء الاصطناعي - AI Router
 
-يوفر نقاط النهاية لخدمات الذكاء الاصطناعي.
-Provides endpoints for AI services.
+يوفر نقاط النهاية لخدمات AI الحقيقية فقط.
+NO FAKE RESPONSES — per rules: ممنوع أي شي وهمي
+
+عندما يتصل بالموديل الحقيقي (RTX 5090 LoRA) → يرجع نتائج حقيقية
+عندما الموديل مو متوفر → يرجع خطأ واضح
 """
 
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from .auth import get_current_active_user, User
@@ -21,7 +24,7 @@ router = APIRouter(
 
 # نماذج Pydantic - Pydantic Models
 class CodeGenerationRequest(BaseModel):
-    """نموذج طلب توليد الكود | Code generation request model"""
+    """نموذج طلب توليد الكود"""
     prompt: str = Field(..., min_length=10, max_length=5000)
     language: str = Field(default="python")
     context: Optional[str] = None
@@ -29,259 +32,174 @@ class CodeGenerationRequest(BaseModel):
     temperature: float = Field(default=0.7, ge=0, le=2)
 
 
-class CodeGenerationResponse(BaseModel):
-    """نموذج استجابة توليد الكود | Code generation response model"""
-    generated_code: str
-    language: str
-    tokens_used: int
-    generation_time_ms: float
-    suggestions: List[str]
-
-
 class CodeCompletionRequest(BaseModel):
-    """نموذج طلب إكمال الكود | Code completion request model"""
+    """نموذج طلب إكمال الكود"""
     code: str = Field(..., min_length=1, max_length=10000)
     cursor_position: int = Field(..., ge=0)
     language: str = Field(default="python")
     max_suggestions: int = Field(default=3, ge=1, le=10)
 
 
-class CodeCompletionResponse(BaseModel):
-    """نموذج استجابة إكمال الكود | Code completion response model"""
-    completions: List[Dict[str, Any]]
-    language: str
-    confidence_scores: List[float]
-
-
 class CodeExplanationRequest(BaseModel):
-    """نموذج طلب شرح الكود | Code explanation request model"""
+    """نموذج طلب شرح الكود"""
     code: str = Field(..., min_length=1, max_length=10000)
     language: str = Field(default="python")
-    detail_level: str = Field(default="medium")  # brief, medium, detailed
-    target_audience: str = Field(default="developer")  # beginner, developer, expert
-
-
-class CodeExplanationResponse(BaseModel):
-    """نموذج استجابة شرح الكود | Code explanation response model"""
-    explanation: str
-    key_concepts: List[str]
-    code_structure: Dict[str, Any]
-    language: str
+    detail_level: str = Field(default="medium")
 
 
 class CodeReviewRequest(BaseModel):
-    """نموذج طلب مراجعة الكود | Code review request model"""
+    """نموذج طلب مراجعة الكود"""
     code: str = Field(..., min_length=1, max_length=20000)
     language: str = Field(default="python")
     review_focus: List[str] = Field(default=["all"])
-    # options: security, performance, readability, best_practices, all
 
 
-class Issue(BaseModel):
-    """نموذج المشكلة | Issue model"""
-    severity: str  # critical, warning, info
-    line_number: int
-    message: str
-    suggestion: str
-    category: str
+# ─── AI Model Connection ─────────────────────────────────────────
+
+async def _call_real_ai(prompt: str, max_tokens: int = 2048) -> Optional[str]:
+    """
+    محاولة الاتصال بالموديل الحقيقي (RTX 5090 LoRA أو Ollama)
+    يرجع None إذا الموديل مو متوفر
+    """
+    try:
+        import httpx
+        # Try RTX 5090 first (Tailscale)
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(
+                "http://100.104.35.44:8090/generate",
+                json={"prompt": prompt, "max_tokens": max_tokens}
+            )
+            if response.status_code == 200:
+                return response.json().get("response")
+    except Exception:
+        pass
+    
+    try:
+        import httpx
+        # Fallback: local Ollama
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(
+                "http://localhost:11434/api/generate",
+                json={"model": "qwen2.5:1.5b", "prompt": prompt, "stream": False}
+            )
+            if response.status_code == 200:
+                return response.json().get("response")
+    except Exception:
+        pass
+    
+    return None
 
 
-class CodeReviewResponse(BaseModel):
-    """نموذج استجابة مراجعة الكود | Code review response model"""
-    overall_score: int = Field(..., ge=0, le=100)
-    issues: List[Issue]
-    summary: str
-    recommendations: List[str]
-    language: str
+AI_UNAVAILABLE_MSG = "⚠️ AI غير متاح حالياً — الموديل المتدرب (RTX 5090) مطفي أو غير متصل. شغّل الجهاز وحاول مرة ثانية."
 
 
-class UsageStats(BaseModel):
-    """نموذج إحصائيات الاستخدام | Usage stats model"""
-    requests_today: int
-    tokens_used_today: int
-    remaining_quota: int
+# ─── Endpoints ────────────────────────────────────────────────────
 
-
-# نقاط النهاية - Endpoints
-@router.post(
-    "/generate",
-    response_model=CodeGenerationResponse,
-    status_code=status.HTTP_200_OK,
-    summary="توليد الكود | Generate code"
-)
+@router.post("/generate", summary="توليد الكود | Generate code")
 async def generate_code(
     request: CodeGenerationRequest,
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    توليد كود برمجي بناءً على الوصف.
-    Generate code based on description.
-    """
-    # محاكاة توليد الكود | Simulate code generation
-    generated = f"""# Generated code for: {request.prompt[:50]}...
-# Language: {request.language}
-
-def main():
-    '''Main function implementation'''
-    print("Hello from BI-IDE AI!")
-    
-    # TODO: Implement based on requirements
-    pass
-
-if __name__ == "__main__":
-    main()
-"""
-    
-    return CodeGenerationResponse(
-        generated_code=generated,
-        language=request.language,
-        tokens_used=150,
-        generation_time_ms=850.5,
-        suggestions=[
-            "أضف معالجة الأخطاء | Add error handling",
-            "استخدم أنواع البيانات | Use type hints",
-            "أضف التوثيق | Add documentation"
-        ]
+    """توليد كود — يستخدم AI حقيقي فقط"""
+    result = await _call_real_ai(
+        f"Generate {request.language} code for: {request.prompt}",
+        max_tokens=request.max_tokens
     )
+    
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AI_UNAVAILABLE_MSG
+        )
+    
+    return {
+        "generated_code": result,
+        "language": request.language,
+        "source": "real-ai",
+        "timestamp": datetime.now().isoformat()
+    }
 
 
-@router.post(
-    "/complete",
-    response_model=CodeCompletionResponse,
-    status_code=status.HTTP_200_OK,
-    summary="إكمال الكود | Code completion"
-)
+@router.post("/complete", summary="إكمال الكود | Code completion")
 async def complete_code(
     request: CodeCompletionRequest,
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    إكمال الكود عند موضع المؤشر.
-    Complete code at cursor position.
-    """
-    completions = [
-        {
-            "text": "print(result)",
-            "description": "Print the result"
-        },
-        {
-            "text": "return result",
-            "description": "Return the result"
-        },
-        {
-            "text": "result.save()",
-            "description": "Save the result"
-        }
-    ]
-    
-    return CodeCompletionResponse(
-        completions=completions,
-        language=request.language,
-        confidence_scores=[0.95, 0.82, 0.67]
+    """إكمال الكود — يستخدم AI حقيقي فقط"""
+    result = await _call_real_ai(
+        f"Complete this {request.language} code at position {request.cursor_position}: {request.code}",
+        max_tokens=512
     )
+    
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AI_UNAVAILABLE_MSG
+        )
+    
+    return {
+        "completions": [{"text": result, "description": "AI completion"}],
+        "language": request.language,
+        "source": "real-ai"
+    }
 
 
-@router.post(
-    "/explain",
-    response_model=CodeExplanationResponse,
-    status_code=status.HTTP_200_OK,
-    summary="شرح الكود | Explain code"
-)
+@router.post("/explain", summary="شرح الكود | Explain code")
 async def explain_code(
     request: CodeExplanationRequest,
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    شرح الكود البرمجي بتفاصيل مختلفة.
-    Explain code with different detail levels.
-    """
-    explanation_levels = {
-        "brief": "هذا الكود يقوم بطباعة رسالة ترحيب.",
-        "medium": """هذا الكود يقوم بتعريف دالة main() تقوم بطباعة رسالة ترحيب.
-        يتم استدعاء الدالة عند تشغيل الملف مباشرة.""",
-        "detailed": """هذا الكود يقوم بتعريف دالة main() التي:
-        1. تقوم بطباعة رسالة ترحيب
-        2. يمكن استدعاؤها من ملفات أخرى
-        3. يتم تنفيذها فقط عند تشغيل هذا الملف مباشرة (شرط __name__ == "__main__")
-        
-        هذا النمط شائع في Python لإنشاء scripts قابلة لإعادة الاستخدام."""
+    """شرح الكود — يستخدم AI حقيقي فقط"""
+    result = await _call_real_ai(
+        f"Explain this {request.language} code in {request.detail_level} detail: {request.code}",
+        max_tokens=2048
+    )
+    
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AI_UNAVAILABLE_MSG
+        )
+    
+    return {
+        "explanation": result,
+        "language": request.language,
+        "detail_level": request.detail_level,
+        "source": "real-ai"
     }
-    
-    explanation = explanation_levels.get(
-        request.detail_level,
-        explanation_levels["medium"]
-    )
-    
-    return CodeExplanationResponse(
-        explanation=explanation,
-        key_concepts=["functions", "main", "module execution"],
-        code_structure={
-            "functions": ["main"],
-            "imports": [],
-            "classes": []
-        },
-        language=request.language
-    )
 
 
-@router.post(
-    "/review",
-    response_model=CodeReviewResponse,
-    status_code=status.HTTP_200_OK,
-    summary="مراجعة الكود | Review code"
-)
+@router.post("/review", summary="مراجعة الكود | Review code")
 async def review_code(
     request: CodeReviewRequest,
     current_user: User = Depends(get_current_active_user)
 ):
-    """
-    مراجعة الكود والبحث عن المشاكل.
-    Review code and find issues.
-    """
-    # محاكاة مراجعة الكود | Simulate code review
-    issues = [
-        Issue(
-            severity="warning",
-            line_number=5,
-            message="المتغير 'result' غير مستخدم | Variable 'result' is unused",
-            suggestion="استخدم المتغير أو احذف | Use the variable or remove it",
-            category="readability"
-        ),
-        Issue(
-            severity="info",
-            line_number=10,
-            message="ناقص docstring للدالة | Missing function docstring",
-            suggestion="أضف docstring توضح وظيفة الدالة | Add docstring",
-            category="best_practices"
-        )
-    ]
+    """مراجعة الكود — يستخدم AI حقيقي فقط"""
+    result = await _call_real_ai(
+        f"Review this {request.language} code for {', '.join(request.review_focus)}: {request.code}",
+        max_tokens=2048
+    )
     
-    return CodeReviewResponse(
-        overall_score=85,
-        issues=issues,
-        summary="الكود جيد بشكل عام مع بعض التحسينات البسيطة | Code is good overall with minor improvements",
-        recommendations=[
-            "استخدم أنواع البيانات | Use type hints",
-            "أضف اختبارات وحدة | Add unit tests",
-            "قم بمعالجة التحذيرات | Address the warnings"
-        ],
-        language=request.language
-    )
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=AI_UNAVAILABLE_MSG
+        )
+    
+    return {
+        "review": result,
+        "language": request.language,
+        "source": "real-ai"
+    }
 
 
-@router.get(
-    "/usage",
-    response_model=UsageStats,
-    status_code=status.HTTP_200_OK,
-    summary="إحصائيات الاستخدام | Usage stats"
-)
-async def get_usage_stats(current_user: User = Depends(get_current_active_user)):
-    """
-    الحصول على إحصائيات استخدام API.
-    Get API usage statistics.
-    """
-    return UsageStats(
-        requests_today=45,
-        tokens_used_today=12500,
-        remaining_quota=987500
-    )
+@router.get("/status", summary="حالة AI | AI Status")
+async def ai_status():
+    """فحص حالة AI — هل الموديل متوفر؟"""
+    result = await _call_real_ai("ping", max_tokens=10)
+    
+    return {
+        "available": result is not None,
+        "message": "AI متصل ✅" if result else AI_UNAVAILABLE_MSG,
+        "timestamp": datetime.now().isoformat()
+    }

@@ -81,42 +81,63 @@ class OpenAIConnector:
         print("🤖 OpenAI Connector initialized")
     
     async def query_gpt4(self, prompt: str, context: Dict = None) -> Dict:
-        """استعلام GPT-4"""
-        # محاكاة - في الواقع يرسل HTTP request
-        print(f"📤 Sending query to GPT-4: {prompt[:50]}...")
+        """استعلام GPT-4 — يحتاج API key حقيقي"""
+        if not self.api_key:
+            return {
+                "model": "gpt-4",
+                "content": "⚠️ OpenAI غير متاح — API key غير مُعدّ",
+                "tokens_used": 0,
+                "confidence": 0.0
+            }
         
-        await asyncio.sleep(0.5)  # محاكاة latency
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    f"{self.endpoint}/chat/completions",
+                    headers={"Authorization": f"Bearer {self.api_key}"},
+                    json={
+                        "model": "gpt-4",
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 1000
+                    }
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    content = data["choices"][0]["message"]["content"]
+                    tokens = data.get("usage", {}).get("total_tokens", 0)
+                    self.usage_stats["requests_today"] += 1
+                    self.usage_stats["tokens_used"] += tokens
+                    return {
+                        "model": "gpt-4",
+                        "content": content,
+                        "tokens_used": tokens,
+                        "confidence": 0.92
+                    }
+        except Exception as e:
+            pass
         
-        response = {
+        return {
             "model": "gpt-4",
-            "content": f"Based on my analysis: {self._generate_insight(prompt)}",
-            "tokens_used": 150,
-            "confidence": 0.92
+            "content": f"⚠️ OpenAI غير متاح — خطأ في الاتصال",
+            "tokens_used": 0,
+            "confidence": 0.0
         }
-        
-        self.usage_stats["requests_today"] += 1
-        self.usage_stats["tokens_used"] += response["tokens_used"]
-        
-        return response
-    
-    def _generate_insight(self, prompt: str) -> str:
-        """توليد رؤية (محاكاة)"""
-        insights = [
-            "This approach shows strong potential for optimization.",
-            "Consider alternative strategies for better results.",
-            "Data suggests implementing this solution immediately.",
-            "Further analysis required before decision.",
-            "High probability of success based on similar cases."
-        ]
-        import random
-        return random.choice(insights)
     
     async def analyze_document(self, document_text: str) -> Dict:
-        """تحليل مستند باستخدام GPT-4"""
+        """تحليل مستند — يحتاج API key حقيقي"""
+        if not self.api_key:
+            return {
+                "summary": "⚠️ OpenAI غير متاح — API key غير مُعدّ",
+                "key_points": [],
+                "sentiment": "unavailable",
+                "entities": []
+            }
+        result = await self.query_gpt4(f"Analyze this document: {document_text[:500]}")
         return {
-            "summary": f"Document analysis: {document_text[:100]}...",
-            "key_points": ["Point 1", "Point 2", "Point 3"],
-            "sentiment": "positive",
+            "summary": result["content"],
+            "key_points": [],
+            "sentiment": "analyzed" if result["confidence"] > 0 else "unavailable",
             "entities": []
         }
 
@@ -136,26 +157,19 @@ class GoogleAPIConnector:
         print("🔍 Google API Connector initialized")
     
     async def search_web(self, query: str, num_results: int = 5) -> List[Dict]:
-        """بحث في الويب"""
+        """بحث في الويب — يحتاج Google API key حقيقي"""
         print(f"🔍 Web search: {query}")
-        
-        # محاكاة نتائج
-        return [
-            {
-                "title": f"Result {i+1} for {query}",
-                "url": f"https://example.com/result{i+1}",
-                "snippet": f"This is a simulated search result for {query}..."
-            }
-            for i in range(num_results)
-        ]
+        # NO fake results — return empty until real API is configured
+        return []
     
     async def analyze_trends(self, keyword: str) -> Dict:
-        """تحليل Google Trends"""
+        """تحليل Google Trends — يحتاج API حقيقي"""
         return {
             "keyword": keyword,
-            "interest_over_time": [45, 52, 48, 61, 55, 70],
-            "related_queries": [f"{keyword} tutorial", f"{keyword} best practices"],
-            "trending": True
+            "interest_over_time": [],
+            "related_queries": [],
+            "trending": False,
+            "status": "⚠️ Google API غير مُعدّ"
         }
 
 
