@@ -20,17 +20,19 @@ router = APIRouter(prefix="/api/v1/updates", tags=["updates"])
 
 # ─── Version configuration ─────────────────────────────────────
 # Update this when releasing a new version
-LATEST_VERSION = "8.0.1"
+LATEST_VERSION = "8.0.5"
 RELEASE_NOTES = """
-## v8.0.1 — أول إصدار رسمي
-- ✅ دردشة AI عبر Rust invoke (بدون مشاكل CSP)
-- ✅ نظام كشافة حقيقي (GitHub, HackerNews, npm)
-- ✅ نقل تدريب تلقائي للـ RTX 5090
-- ✅ نظام تحديث تلقائي
+## v8.0.5
+- ✅ إصلاح الشاشة الزرقاء (visible:true)
+- ✅ فصل AI Assistant عن المجلس (الحكماء بالمجلس فقط)
+- ✅ نظام تحديث أوتوماتيكي مفعّل
+- ✅ 4 routers جديدة (RTX, Network, Brain, Notifications)
+- ✅ LoRA training model (17MB)
+- ✅ 51 test passing
 """
-DOWNLOAD_URL = "https://github.com/hassanjava2/bi-ide-v8/releases/latest"
+DOWNLOAD_URL = "https://bi-iq.com/releases/installers/BI-IDE%20Desktop_8.0.5_aarch64.dmg"
 CRITICAL = False
-SIZE_MB = 45.0
+SIZE_MB = 13.0
 
 
 # ─── Update log ─────────────────────────────────────────────────
