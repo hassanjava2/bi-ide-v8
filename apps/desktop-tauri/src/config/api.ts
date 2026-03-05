@@ -173,16 +173,15 @@ async function fetchWithTimeout(
   return Promise.race([fetchPromise, timeoutPromise]);
 }
 
-// ─── Smart Council Message (via Rust backend) ───────────────────
+// ─── Smart Council Message (via Rust backend — for Council Panel) ──
 
 export async function sendCouncilMessage(
   message: string,
   context?: CouncilMessageRequest['context']
 ): Promise<CouncilMessageResponse> {
-  console.log('[AI Routing] Using Rust invoke (bypasses WebKit)');
+  console.log('[AI Routing] Council Panel → Rust invoke');
 
   try {
-    // Call Rust command — HTTP done in Rust via reqwest, bypasses all frontend restrictions
     const result = await invoke<{
       response: string;
       source: string;
@@ -191,7 +190,7 @@ export async function sendCouncilMessage(
       processing_time_ms: number;
     }>('send_council_message', {
       message,
-      sessionId: context?.session_id || 'desktop-app',
+      sessionId: context?.session_id || 'council-panel',
     });
 
     return {
@@ -213,6 +212,68 @@ export async function sendCouncilMessage(
       evidence: ['invoke-error'],
       response_source: 'local-fallback',
       wise_man: 'النظام',
+      processing_time_ms: 0,
+      timestamp: new Date().toISOString(),
+    };
+  }
+}
+
+// ─── AI Chat Message (for AI Assistant tab — NOT council) ────────
+
+export interface AIChatResponse {
+  response: string;
+  source: string;
+  confidence: number;
+  processing_time_ms: number;
+  timestamp: string;
+}
+
+export async function sendAIChatMessage(
+  message: string,
+  context?: { session_id?: string; previous_messages?: Array<{ role: string; content: string }> }
+): Promise<CouncilMessageResponse> {
+  console.log('[AI Routing] AI Assistant → direct chat (no council sages)');
+
+  try {
+    // Use same Rust invoke but with AI-assistant mode
+    const result = await invoke<{
+      response: string;
+      source: string;
+      confidence: number;
+      wise_man: string;
+      processing_time_ms: number;
+    }>('send_council_message', {
+      message,
+      sessionId: context?.session_id || 'ai-assistant',
+    });
+
+    // Strip sage prefixes from response for AI Assistant tab
+    let cleanResponse = result.response;
+    // Remove sage name patterns like "حكيم الهوية: ... | حكيم الاستراتيجية: ..."
+    cleanResponse = cleanResponse.replace(/حكيم [^:]+:\s*/g, '');
+    // Remove pipe separators between sage responses
+    cleanResponse = cleanResponse.replace(/\s*\|\s*/g, '\n\n');
+    cleanResponse = cleanResponse.trim();
+
+    return {
+      response: cleanResponse,
+      source: result.source as CouncilMessageResponse['source'],
+      confidence: result.confidence,
+      evidence: [],
+      response_source: result.source,
+      wise_man: 'AI مساعد',  // Always show as "AI Assistant", not individual sages
+      processing_time_ms: result.processing_time_ms,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (err: any) {
+    console.error('[AI Routing] AI Chat failed:', err);
+    return {
+      response: `⚡ AI غير متاح حالياً: ${err.message || err}\n\nجرّب لاحقاً أو استخدم المجلس.`,
+      source: 'local-fallback',
+      confidence: 0,
+      evidence: ['ai-chat-error'],
+      response_source: 'local-fallback',
+      wise_man: 'AI مساعد',
       processing_time_ms: 0,
       timestamp: new Date().toISOString(),
     };

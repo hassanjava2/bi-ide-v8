@@ -1,8 +1,9 @@
 /**
- * AI Chat - دردشة AI
+ * BI-IDE Desktop — AI Chat Component
  * 
- * Unified chat interface connecting to real API.
- * NO mock responses - all messages go through /api/v1/council/message
+ * AI Assistant chat interface with direct AI responses.
+ * Council sages respond ONLY in the Council Panel tab.
+ * This tab uses sendAIChatMessage() which strips sage formatting.
  */
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -23,7 +24,7 @@ import {
   AlertCircle,
   Cpu
 } from "lucide-react";
-import { sendCouncilMessage, CouncilMessageResponse } from "../../config/api";
+import { sendAIChatMessage, CouncilMessageResponse } from "../../config/api";
 
 // Types
 interface Message {
@@ -325,8 +326,8 @@ export function AIChat() {
     }]);
 
     try {
-      // Call real API - NO mock responses
-      const response = await sendCouncilMessage(userMessage.content, {
+      // AI Assistant — direct AI response (NOT council sages)
+      const response = await sendAIChatMessage(userMessage.content, {
         session_id: "ai-assistant",
         previous_messages: messages.map(m => ({
           role: m.role === 'error' ? 'system' : m.role,
@@ -367,7 +368,7 @@ export function AIChat() {
           return {
             ...msg,
             role: "error",
-            content: `عذراً، لم أتمكن من الاتصال بالمجلس. ${errorMessage}`,
+            content: `عذراً، AI غير متاح حالياً. ${errorMessage}`,
             isStreaming: false,
           };
         }
