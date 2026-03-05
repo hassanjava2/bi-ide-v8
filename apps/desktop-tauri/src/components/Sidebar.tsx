@@ -18,6 +18,12 @@ import { CouncilPanel } from "./CouncilPanel";
 import { HierarchyPanel } from "./HierarchyPanel";
 import { listen } from "@tauri-apps/api/event";
 
+const AIChat = lazy(() =>
+  import("./chat/AIChat").then((module) => ({
+    default: module.AIChat,
+  }))
+);
+
 const GitPanel = lazy(() =>
   import("./git/GitPanel").then((module) => ({
     default: module.GitPanel,
@@ -619,62 +625,9 @@ export function Sidebar() {
         )}
 
         {activeTab === "ai" && (
-          <div className="h-full flex flex-col p-3 gap-3">
-            <div className="flex items-center gap-2 text-dark-300 text-sm font-medium">
-              <Bot className="w-4 h-4 text-primary-400" />
-              AI Assistant
-            </div>
-
-            <div className="bg-dark-800 rounded-lg p-2 text-xs text-dark-400 space-y-2">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeFileContext}
-                  onChange={(e) => setIncludeFileContext(e.target.checked)}
-                />
-                Include current file context
-              </label>
-              <div>
-                Active file: <span className="text-dark-300">{activeFile?.path || "None"}</span>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-auto bg-dark-800 rounded-lg p-2 space-y-2">
-              {chatMessages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`text-xs p-2 rounded ${message.role === "user"
-                    ? "bg-primary-700/40 text-primary-100"
-                    : "bg-dark-700 text-dark-200"
-                    }`}
-                >
-                  {message.content}
-                </div>
-              ))}
-            </div>
-
-            <div className="flex gap-2">
-              <input
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSendChat();
-                  }
-                }}
-                placeholder="اكتب سؤالك..."
-                className="flex-1 px-3 py-2 bg-dark-800 border border-dark-700 rounded text-sm text-dark-100 placeholder-dark-500 focus:outline-none focus:border-primary-500"
-              />
-              <button
-                onClick={handleSendChat}
-                disabled={isSendingChat}
-                className="px-3 py-2 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 rounded text-white"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+          <Suspense fallback={panelFallback}>
+            <AIChat />
+          </Suspense>
         )}
 
         {activeTab === "search" && (
