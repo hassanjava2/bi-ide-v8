@@ -706,29 +706,38 @@ async def monitor_dashboard():
 
 
 # --- Include new routers from api/routers ---
+import sys as _sys
+_project_root = "/home/bi/bi-ide-v8"
+if _project_root not in _sys.path:
+    _sys.path.insert(0, _project_root)
+
 try:
     from api.routers.rtx5090 import router as rtx5090_router
     app.include_router(rtx5090_router, prefix="/api/v1", tags=["RTX 5090"])
-except Exception:
-    pass
+    print("✅ RTX5090 router loaded")
+except Exception as _e:
+    print(f"⚠️ RTX5090 router failed: {_e}")
 
 try:
     from api.routers.network import router as network_router
     app.include_router(network_router, prefix="/api/v1", tags=["Network"])
-except Exception:
-    pass
+    print("✅ Network router loaded")
+except Exception as _e:
+    print(f"⚠️ Network router failed: {_e}")
 
 try:
     from api.routers.brain import router as brain_router
     app.include_router(brain_router, prefix="/api/v1", tags=["Brain"])
-except Exception:
-    pass
+    print("✅ Brain router loaded")
+except Exception as _e:
+    print(f"⚠️ Brain router failed: {_e}")
 
 try:
     from api.routers.notifications import router as notifications_router
     app.include_router(notifications_router, prefix="/api/v1", tags=["Notifications"])
-except Exception:
-    pass
+    print("✅ Notifications router loaded")
+except Exception as _e:
+    print(f"⚠️ Notifications router failed: {_e}")
 
 
 if __name__ == "__main__":
