@@ -22,7 +22,7 @@ function App() {
   const [deviceId, setDeviceId] = useState<string>("");
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [quickOpenOpen, setQuickOpenOpen] = useState(false);
-  
+
   const {
     currentWorkspace,
     setCurrentWorkspace,
@@ -42,23 +42,29 @@ function App() {
         console.log("BI-IDE Desktop v" + info.app_version);
         console.log("Device ID:", info.device_id);
         console.log("Platform:", info.platform, info.arch);
+      } catch (error) {
+        console.error("System info error (non-fatal):", error);
+        setDeviceId("local-" + Date.now());
+        setStoreDeviceId("local-" + Date.now());
+      }
 
-        // Check for saved workspace
+      // Check for saved workspace (separate try/catch)
+      try {
         const savedWorkspace = localStorage.getItem("bi-ide-last-workspace");
         if (savedWorkspace) {
-          try {
-            const ws = await workspace.open(savedWorkspace);
-            setCurrentWorkspace({
-              id: ws.id,
-              path: ws.path,
-              name: ws.name,
-            });
-          } catch (e) {
-            console.error("Failed to restore workspace:", e);
-          }
+          const ws = await workspace.open(savedWorkspace);
+          setCurrentWorkspace({
+            id: ws.id,
+            path: ws.path,
+            name: ws.name,
+          });
         }
+      } catch (e) {
+        console.error("Workspace restore error (non-fatal):", e);
+      }
 
-        // Get sync status
+      // Get sync status (separate try/catch)
+      try {
         const syncStatus = await sync.getStatus();
         setSyncStatus({
           isEnabled: syncStatus.enabled,
@@ -66,25 +72,30 @@ function App() {
           lastSync: syncStatus.last_sync,
           pendingCount: syncStatus.pending_count,
         });
+      } catch (e) {
+        console.error("Sync status error (non-fatal):", e);
+      }
 
-        // Get training status
+      // Get training status (separate try/catch)
+      try {
         const trainingStatus = await training.getStatus();
         setTrainingStatus({
           isEnabled: trainingStatus.enabled,
           currentJob: trainingStatus.current_job
             ? {
-                id: trainingStatus.current_job.job_id,
-                type: trainingStatus.current_job.job_type,
-                progress: trainingStatus.current_job.progress_percent,
-                status: trainingStatus.current_job.status,
-              }
+              id: trainingStatus.current_job.job_id,
+              type: trainingStatus.current_job.job_type,
+              progress: trainingStatus.current_job.progress_percent,
+              status: trainingStatus.current_job.status,
+            }
             : undefined,
         });
-      } catch (error) {
-        console.error("Initialization error:", error);
-      } finally {
-        setIsLoading(false);
+      } catch (e) {
+        console.error("Training status error (non-fatal):", e);
       }
+
+      // Always finish loading
+      setIsLoading(false);
     };
 
     init();
