@@ -39,6 +39,7 @@ from api.routers import (
     network_router,
     brain_router,
 )
+from api.routers.notifications import router as notifications_router
 from api.middleware import (
     LoggingMiddleware,
     RateLimitMiddleware,
@@ -144,6 +145,10 @@ app.include_router(admin_router, prefix="/api/v1", tags=["Admin"])
 app.include_router(rtx5090_router, prefix="/api/v1", tags=["RTX 5090"])
 app.include_router(network_router, prefix="/api/v1", tags=["Network"])
 app.include_router(brain_router, prefix="/api/v1", tags=["Brain"])
+# WebSocket notifications
+app.include_router(
+    notifications_router, prefix="/api/v1", tags=["Notifications"]
+)
 
 
 def create_app() -> FastAPI:

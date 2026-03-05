@@ -101,6 +101,32 @@ export const API_ENDPOINTS = {
     metrics: '/monitoring/metrics',
     alerts: '/monitoring/alerts',
   },
+  // New routers
+  rtx5090: {
+    health: '/rtx5090/health',
+    status: '/rtx5090/status',
+    inference: '/rtx5090/inference',
+    models: '/rtx5090/models',
+    config: '/rtx5090/config',
+  },
+  network: {
+    status: '/network/status',
+    ping: '/network/ping',
+    topology: '/network/topology',
+  },
+  brain: {
+    status: '/brain/status',
+    jobs: '/brain/jobs',
+    evaluate: '/brain/evaluate',
+    evaluations: '/brain/evaluations',
+    consult: '/brain/consult-hierarchy',
+  },
+  notifications: {
+    ws: '/ws/notifications',
+    list: '/notifications',
+    unread: '/notifications/unread-count',
+    markRead: '/notifications/mark-read',
+  },
 };
 
 // ─── Types ───────────────────────────────────────────────────────
