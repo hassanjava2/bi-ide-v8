@@ -79,6 +79,25 @@
 - **ملفات التنصيب:** لازم تبنيها (Windows .exe / Mac .dmg / Linux .deb) وترفعها بالموقع `bi-iq.com`
 - يشمل: ملفات، كلاسات، فنكشنات، services، APIs، كلشي
 
+### 🔄 التحديث الأوتوماتيكي (Auto-Update)
+- **النظام موجود ومفعّل** — التطبيق يفحص كل 5 دقائق:
+  1. التطبيق يسأل `bi-iq.com/api/v1/updates/manifest?current_version=X.X.X`
+  2. VPS يجاوب: `has_update: true/false` + `download_url` + `release_notes`
+  3. التطبيق يكتشف → يظهر إشعار "تحديث جديد!" → ينزّل → يتحدث
+
+- **خطوات نشر تحديث جديد:**
+  1. عدّل الكود المطلوب
+  2. زيد رقم النسخة بـ 3 ملفات: `package.json`, `Cargo.toml`, `tauri.conf.json`
+  3. حدّث `api/routes/updates.py` → `LATEST_VERSION`, `RELEASE_NOTES`, `DOWNLOAD_URL`
+  4. `npm run tauri -- build` → ينتج `.app` + `.dmg`
+  5. `git push origin main`
+  6. VPS: `git pull` + `systemctl restart bi-ide-api`
+  7. DMG يترفع لـ VPS: `scp ... root@bi-iq.com:/opt/bi-iq-app/releases/installers/`
+  8. كل نسخة قديمة تكتشف التحديث أوتوماتيكياً ✅
+
+- **ما يحتاج تحذف وتنصب يدوي مرة ثانية! 🎊**
+- الملفات: `api/routes/updates.py`, `useAutoUpdate.ts`, `UpdateManager.tsx`, `commands/updates.rs`
+
 ### 🔢 رقم النسخة (Auto Version Increment)
 - **كل تعديل على التطبيق → يصعد رقم النسخة**
   - مثال: `v8.0.1` → `v8.0.2` → `v8.0.3` ...

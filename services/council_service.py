@@ -317,59 +317,71 @@ class CouncilService:
         query: str,
         context: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
-        """توليد رأي العضو بناءً على دوره والسياق"""
-        query_lower = query.lower()
+        """
+        توليد رأي العضو — يستخدم AI حقيقي فقط
         
-        # Keywords analysis
-        is_technical = any(kw in query_lower for kw in ["code", "برمجة", "technical", "architecture"])
-        is_security = any(kw in query_lower for kw in ["security", "أمان", "hack", "encrypt"])
-        is_performance = any(kw in query_lower for kw in ["performance", "أداء", "speed", "slow"])
+        القاعدة: ممنوع أي شي وهمي — لا mock data, لا placeholder, لا hardcoded responses
+        إذا AI مو متوفر → "AI غير متاح حالياً"
+        """
+        # Try to get real AI response from the brain/LoRA model
+        try:
+            # Attempt to use the real AI model via hierarchy
+            real_response = await self._get_real_ai_response(member, query, context)
+            if real_response:
+                return real_response
+        except Exception as e:
+            logger.warning(f"فشل الاتصال بالدماغ الحقيقي لـ {member.name}: {e}")
         
-        # Role-based opinion generation
-        if "security" in member.role or is_security:
-            vote = "approve" if not any(kw in query_lower for kw in ["vulnerability", "unsafe"]) else "reject"
-            return {
-                "text": f"من منظور أمني: {'لا يوجد مخاطر واضحة' if vote == 'approve' else 'يحتاج مراجعة أمنية'}",
-                "reasoning": f"خبير الأمان يرى أن الطلب {'مقبول' if vote == 'approve' else 'يحتاج مراجعة'}",
-                "vote": vote,
-                "confidence": 0.85 if is_security else 0.6,
-            }
+        # NO fake responses — per rules, return clear unavailability
+        return {
+            "text": f"{member.name}: ⚠️ AI غير متاح حالياً — الدماغ يحتاج اتصال بالموديل المتدرب (RTX 5090)",
+            "reasoning": "لا يوجد اتصال بالموديل — لن يتم إنشاء ردود وهمية",
+            "vote": "abstain",
+            "confidence": 0.0,
+        }
+    
+    async def _get_real_ai_response(
+        self,
+        member: CouncilMember,
+        query: str,
+        context: Optional[Dict[str, Any]]
+    ) -> Optional[Dict[str, Any]]:
+        """
+        محاولة الحصول على رد حقيقي من الدماغ/LoRA
+        يرجع None إذا الموديل مو متوفر
+        """
+        try:
+            # Try council_ai_bridge for real model inference
+            from hierarchy.council_ai_bridge import council_bridge
+            if hasattr(council_bridge, 'get_sage_response'):
+                response = await council_bridge.get_sage_response(
+                    sage_name=member.name,
+                    sage_role=member.role,
+                    query=query,
+                    context=context
+                )
+                if response and response.get("text") and "غير متاح" not in response.get("text", ""):
+                    return response
+        except ImportError:
+            logger.debug("council_ai_bridge غير متوفر")
+        except Exception as e:
+            logger.debug(f"فشل council_ai_bridge: {e}")
         
-        elif "architect" in member.role or is_technical:
-            vote = "approve"
-            return {
-                "text": f"معمارياً: التصميم {'سليم' if vote == 'approve' else 'يحتاج تحسين'}",
-                "reasoning": "المعماري يرى أن الهيكل متوافق مع المبادئ المعمارية",
-                "vote": vote,
-                "confidence": 0.8 if is_technical else 0.65,
-            }
-        
-        elif "performance" in member.role or is_performance:
-            vote = "approve"
-            return {
-                "text": "من حيث الأداء: لا توقعات سلبية واضحة",
-                "reasoning": "خبير الأداء لا يرى اختناقات أداء متوقعة",
-                "vote": vote,
-                "confidence": 0.75,
-            }
-        
-        else:
-            # Default opinion
-            vote = "approve"
-            return {
-                "text": f"{member.name}: أرى أن هذا الاقتراح {'مقبول' if vote == 'approve' else 'يحتاج مراجعة'}",
-                "reasoning": f"رأي عام من {member.role}",
-                "vote": vote,
-                "confidence": 0.6,
-            }
+        return None
     
     def _aggregate_responses(self, responses: List[Dict[str, Any]]) -> str:
-        """تجميع آراء الأعضاء مع الأوزان"""
+        """تجميع آراء الأعضاء — يظهر ردود حقيقية فقط أو رسالة عدم التوفر"""
         if not responses:
-            return "لم يتم تلقي ردود"
+            return "⚠️ AI غير متاح حالياً — لم يتم تلقي ردود من الدماغ"
+        
+        # Check if all responses are unavailability messages
+        real_responses = [r for r in responses if r.get("confidence", 0) > 0]
+        
+        if not real_responses:
+            return "⚠️ AI غير متاح حالياً — الدماغ يحتاج اتصال بالموديل المتدرب على RTX 5090. شغّل الجهاز وحاول مرة ثانية."
         
         # Sort by weight (highest first)
-        sorted_responses = sorted(responses, key=lambda r: r.get("weight", 1), reverse=True)
+        sorted_responses = sorted(real_responses, key=lambda r: r.get("weight", 1), reverse=True)
         
         # Take top 3 weighted opinions
         top_opinions = sorted_responses[:3]
