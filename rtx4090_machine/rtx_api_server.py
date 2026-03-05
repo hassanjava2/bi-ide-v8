@@ -12,6 +12,11 @@ Endpoints:
 
 import sys
 import os
+
+# Ensure project root is in path for api.routers imports
+_project_root = os.path.dirname(os.path.abspath(__file__)).replace('/rtx4090_machine', '')
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
 import json
 import time
 import threading
@@ -706,10 +711,6 @@ async def monitor_dashboard():
 
 
 # --- Include new routers from api/routers ---
-import sys as _sys
-_project_root = "/home/bi/bi-ide-v8"
-if _project_root not in _sys.path:
-    _sys.path.insert(0, _project_root)
 
 try:
     from api.routers.rtx5090 import router as rtx5090_router
