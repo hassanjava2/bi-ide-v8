@@ -55,6 +55,10 @@ const VPS_API = "https://bi-iq.com/api/v1/machines";
 const LAN_API_RTX = "http://192.168.1.164:8090/api/v1/monitor";
 const TAILSCALE_API_RTX = "http://100.104.35.44:8090/api/v1/monitor";
 
+// New router endpoints for enriched data
+const RTX_BRAIN_API = "http://100.104.35.44:8090/api/v1/brain/status";
+const RTX_HEALTH_API = "http://100.104.35.44:8090/api/v1/rtx5090/health";
+
 async function fetchWithTimeout(url: string, timeout = 5000): Promise<Response> {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);

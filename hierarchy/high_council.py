@@ -6,6 +6,7 @@ Fixed:
 - Duplicate ID S002 corrected
 - get_status() uses safe attribute access
 - wise_men_count is dynamic
+- Integrated with RTX5090 for real AI opinions
 """
 
 from enum import Enum
@@ -14,6 +15,9 @@ from datetime import datetime, timezone
 from typing import List, Optional, Dict
 import asyncio
 from collections import deque
+
+# Import AI Bridge for real opinions
+from .council_ai_bridge import get_ai_bridge, SageOpinion
 
 
 class SageRole(Enum):
@@ -238,22 +242,23 @@ class HighCouncil:
         return min(weight, 3.0)  # الحد الأقصى للوزن
     
     async def _get_sage_opinion(self, sage: Sage, topic: str) -> str:
-        """جلب رأي حكيم مع تحليل ذكي للموضوع"""
-        topic_lower = topic.lower()
+        """
+        جلب رأي حكيم - الآن حقيقي من RTX5090 أو fallback محسّن
+        """
+        # استخدام الجسر للحصول على رأي حقيقي
+        bridge = get_ai_bridge()
+        opinion_obj = await bridge.get_sage_opinion(
+            sage_id=sage.id,
+            sage_name=sage.name,
+            sage_role=sage.role.value,
+            topic=topic
+        )
         
-        # آراء مخصصة حسب الدور والموضوع
-        opinions = {
-            SageRole.IDENTITY: self._analyze_identity(topic_lower),
-            SageRole.STRATEGY: self._analyze_strategy(topic_lower),
-            SageRole.ETHICS: self._analyze_ethics(topic_lower),
-            SageRole.BALANCE: self._analyze_balance(topic_lower),
-            SageRole.KNOWLEDGE: self._analyze_knowledge(topic_lower),
-            SageRole.RELATIONS: self._analyze_relations(topic_lower),
-            SageRole.INNOVATION: self._analyze_innovation(topic_lower),
-            SageRole.PROTECTION: self._analyze_protection(topic_lower),
-        }
+        # تخزين مستوى الثقة للاستخدام لاحقاً في حساب التوافق
+        sage._last_confidence = opinion_obj.confidence
+        sage._last_source = opinion_obj.source
         
-        return opinions.get(sage.role, "محايد")
+        return opinion_obj.opinion
     
     def _analyze_identity(self, topic: str) -> str:
         if any(kw in topic for kw in ["هوية", "identity", "brand", "value"]):

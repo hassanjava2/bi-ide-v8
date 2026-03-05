@@ -242,12 +242,14 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if not self.secret_key or self.secret_key in {
             "your-secret-key-change-in-production",
             "your-super-secret-jwt-key-change-this-in-production",
+            "dev-insecure-key-change-me",
             "",
         }:
-            if os.getenv("ENVIRONMENT", "development") == "production":
-                raise RuntimeError("JWT secret_key is required in production")
-            self.secret_key = "dev-insecure-key-change-me"
-            warnings.warn("Using insecure default secret_key in AuthMiddleware")
+            raise RuntimeError(
+                "JWT SECRET_KEY is not configured. "
+                "Set a secure SECRET_KEY in your .env file. "
+                "Generate one with: openssl rand -hex 32"
+            )
         self.logger = logging.getLogger("api.auth")
     
     def _is_excluded(self, path: str) -> bool:

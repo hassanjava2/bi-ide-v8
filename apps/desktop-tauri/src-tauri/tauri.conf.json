@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "BI-IDE Desktop",
+        "title": "BI-IDE Desktop v8.0.3",
         "width": 1400,
         "height": 900,
         "minWidth": 800,

@@ -20,18 +20,22 @@ from core.database import get_db
 from core.user_service import UserService
 from core.config import get_settings
 
-# إعدادات JWT - JWT Configuration (من البيئة)
+# إعدادات JWT - JWT Configuration (من البيئة فقط - لا قيم افتراضية)
 _settings = get_settings()
 SECRET_KEY = _settings.SECRET_KEY
+
+# التحقق من وجود مفتاح آمن - لا قيم افتراضية في أي بيئة
 if not SECRET_KEY or SECRET_KEY in {
     "your-secret-key-change-in-production",
     "your-super-secret-jwt-key-change-this-in-production",
+    "dev-insecure-key-change-me",
     "",
 }:
-    if os.getenv("ENVIRONMENT", "development") == "production":
-        raise RuntimeError("SECRET_KEY must be set to a secure value in production")
-    SECRET_KEY = "dev-insecure-key-change-me"
-    warnings.warn("Using insecure default SECRET_KEY - CHANGE FOR PRODUCTION!")
+    raise RuntimeError(
+        "JWT SECRET_KEY is not configured. "
+        "Set a secure SECRET_KEY in your .env file. "
+        "Generate one with: openssl rand -hex 32"
+    )
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30

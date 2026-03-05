@@ -2,6 +2,7 @@
 Health & System Routes - نقاط النهاية للصحة والمراقبة
 """
 
+import asyncio
 from datetime import datetime
 
 from fastapi import APIRouter
@@ -10,125 +11,147 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 router = APIRouter(tags=["health"])
 
 
-@router.get("/health")
-async def health_check():
-    """Health check endpoint for Docker/K8s"""
+async def _check_database() -> tuple[bool, str, float]:
+    """فحص قاعدة البيانات فعلياً - يعيد (success, message, latency_ms)"""
+    import time
+    start = time.time()
+    
     try:
+        from core.database import db_manager
+        from sqlalchemy import text
+        
+        async with db_manager.get_session() as session:
+            result = await session.execute(text("SELECT 1"))
+            value = result.scalar()
+            
+            if value == 1:
+                latency = (time.time() - start) * 1000
+                return True, "connected", latency
+            else:
+                return False, "unexpected result", (time.time() - start) * 1000
+                
+    except Exception as e:
+        latency = (time.time() - start) * 1000
+        return False, str(e)[:100], latency
+
+
+async def _check_redis() -> tuple[bool, str, float]:
+    """فحص Redis فعلياً"""
+    import time
+    start = time.time()
+    
+    try:
+        import redis.asyncio as redis_lib
         from core.config import settings
-        from core.cache import cache_manager
-        core_available = True
-    except ImportError:
-        core_available = False
+        
+        r = redis_lib.from_url(settings.REDIS_URL)
+        await r.ping()
+        await r.close()
+        
+        latency = (time.time() - start) * 1000
+        return True, "connected", latency
+        
+    except Exception as e:
+        latency = (time.time() - start) * 1000
+        return False, str(e)[:100], latency
 
-    # Check optional services
-    services = {"api": "ok"}
 
-    # Check AI Hierarchy
+async def _check_ai_hierarchy() -> tuple[bool, str, float]:
+    """فحص AI Hierarchy"""
+    import time
+    start = time.time()
+    
     try:
         from hierarchy import ai_hierarchy
-        services["ai_hierarchy"] = "available" if ai_hierarchy else "unavailable"
-    except Exception:
-        services["ai_hierarchy"] = "unavailable"
+        
+        if ai_hierarchy and hasattr(ai_hierarchy, 'council'):
+            latency = (time.time() - start) * 1000
+            return True, "active", latency
+        else:
+            latency = (time.time() - start) * 1000
+            return False, "not initialized", latency
+            
+    except Exception as e:
+        latency = (time.time() - start) * 1000
+        return False, str(e)[:100], latency
 
-    if core_available:
-        try:
-            cache_stats = await cache_manager.get_stats()
-            services["cache"] = "ok"
-        except Exception:
-            services["cache"] = "degraded"
 
+@router.get("/health")
+async def health_check():
+    """
+    Health check endpoint with REAL service verification.
+    
+    Checks:
+    - Database connectivity (CRITICAL)
+    - Redis/Cache connectivity (CRITICAL)
+    - AI Hierarchy availability
+    """
+    # فحص الخدمات فعلياً بشكل متوازي
+    db_ok, db_msg, db_latency = await _check_database()
+    redis_ok, redis_msg, redis_latency = await _check_redis()
+    hierarchy_ok, hierarchy_msg, hierarchy_latency = await _check_ai_hierarchy()
+    
+    services = {
+        "api": {"status": "ok", "latency_ms": 0},
+        "database": {
+            "status": "ok" if db_ok else "down",
+            "message": db_msg,
+            "latency_ms": round(db_latency, 2)
+        },
+        "redis": {
+            "status": "ok" if redis_ok else "down",
+            "message": redis_msg,
+            "latency_ms": round(redis_latency, 2)
+        },
+        "ai_hierarchy": {
+            "status": "ok" if hierarchy_ok else "degraded",
+            "message": hierarchy_msg,
+            "latency_ms": round(hierarchy_latency, 2)
+        },
+    }
+    
+    # الخدمات الحرجة: DB + Redis
+    critical_services_ok = db_ok and redis_ok
+    
     health_status = {
-        "status": "healthy",
+        "status": "healthy" if critical_services_ok else "unhealthy",
         "timestamp": datetime.now().isoformat(),
         "version": "8.0.0",
         "services": services,
     }
-
-    # Only consider critical services for health status
-    # ai_hierarchy is the new system, smart_council is legacy (optional)
-    critical_services = ["api", "ai_hierarchy", "cache"]
-    all_ok = all(
-        services.get(svc) in ("ok", "available") 
-        for svc in critical_services 
-        if svc in services
-    )
     
-    if not all_ok:
-        health_status["status"] = "degraded"
-        return JSONResponse(content=health_status, status_code=503)
-
-    return health_status
+    status_code = 200 if critical_services_ok else 503
+    
+    return JSONResponse(content=health_status, status_code=status_code)
 
 
 @router.get("/ready")
 async def readiness_check():
     """
-    Readiness check for Kubernetes with service initialization verification.
+    Readiness check for Kubernetes.
     Returns 200 when critical services are initialized.
-    Some services (cache, ide, erp) are optional and don't block readiness.
     """
-    from fastapi.responses import JSONResponse
-    
     checks = {
+        "api": True,
         "database": False,
-        "cache": False,
+        "redis": False,
         "ai_hierarchy": False,
-        "ide_service": False,
-        "erp_service": False,
     }
     
     # Check Database - Critical
-    try:
-        from core.database import db_manager
-        # Check if database is initialized (engine exists)
-        if db_manager.async_engine is not None:
-            checks["database"] = True
-        elif db_manager.database_url:  # Database URL configured but not initialized yet
-            # Try to initialize
-            try:
-                await db_manager.initialize()
-                checks["database"] = True
-            except Exception:
-                pass
-    except Exception:
-        pass
+    db_ok, _, _ = await _check_database()
+    checks["database"] = db_ok
     
-    # Check Cache - Optional (doesn't block readiness)
-    try:
-        from core.cache import cache_manager
-        if cache_manager.redis_client:
-            checks["cache"] = True
-    except Exception:
-        pass
+    # Check Redis - Critical
+    redis_ok, _, _ = await _check_redis()
+    checks["redis"] = redis_ok
     
-    # Check AI Hierarchy - Critical (but can work without explicit initialization)
-    try:
-        from hierarchy import ai_hierarchy
-        if ai_hierarchy:
-            # Hierarchy is available even if not explicitly initialized
-            checks["ai_hierarchy"] = True
-    except Exception:
-        pass
+    # Check AI Hierarchy
+    hierarchy_ok, _, _ = await _check_ai_hierarchy()
+    checks["ai_hierarchy"] = hierarchy_ok
     
-    # Check IDE Service - Optional
-    try:
-        from api.routes.ide import get_ide_service
-        ide_svc = get_ide_service()
-        checks["ide_service"] = ide_svc is not None
-    except Exception:
-        pass
-    
-    # Check ERP Service - Optional
-    try:
-        from api.routes.erp import get_erp_service
-        erp_svc = get_erp_service()
-        checks["erp_service"] = erp_svc is not None
-    except Exception:
-        pass
-    
-    # Only database and ai_hierarchy are critical for basic operation
-    critical_services = ["database", "ai_hierarchy"]
-    all_ready = all(checks[svc] for svc in critical_services)
+    # DB + Redis are critical
+    all_ready = db_ok and redis_ok
     
     response = {
         "ready": all_ready,
