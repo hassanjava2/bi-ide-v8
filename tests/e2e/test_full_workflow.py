@@ -13,6 +13,25 @@ from fastapi.testclient import TestClient
 from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timedelta
 
+# Skip all E2E tests if database is not available
+try:
+    from core.database import db_manager
+    import asyncio
+    
+    async def _check_db():
+        async with db_manager.get_session() as session:
+            await session.execute("SELECT 1")
+    
+    asyncio.get_event_loop().run_until_complete(_check_db())
+    DB_AVAILABLE = True
+except Exception:
+    DB_AVAILABLE = False
+
+pytestmark = pytest.mark.skipif(
+    not DB_AVAILABLE,
+    reason="⚠️ PostgreSQL غير متاح — E2E tests تحتاج قاعدة بيانات حقيقية"
+)
+
 from api.app import app
 
 

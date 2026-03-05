@@ -98,6 +98,24 @@
 - **ما يحتاج تحذف وتنصب يدوي مرة ثانية! 🎊**
 - الملفات: `api/routes/updates.py`, `useAutoUpdate.ts`, `UpdateManager.tsx`, `commands/updates.rs`
 
+### 🔄 النسخ المتماثل (Data Replication)
+- **RTX 5090 = المصدر** → **VPS = المخزن الدائم** → **Mac/Windows = يسحبون**
+- مسارات البيانات:
+  - RTX: `/home/bi/training_data/` (models/finetuned, data, ingest)
+  - VPS: `/opt/bi-iq-app/shared_data/` (models, data, ingest, metadata)
+  - Mac: `~/training_data/`
+  - Windows: `C:/Users/BI/training_data/`
+
+- **السكربتات (`scripts/sync/`):**
+  - `sync_rtx_to_vps.sh` — على RTX: يرفع للـ VPS (rsync)
+  - `sync_vps_to_local.sh` — على Mac/Windows: يسحب من VPS
+  - `sync_watcher.py` — daemon على RTX: يراقب ويرفع تلقائياً
+  - `setup_sync.sh` — تنصيب مرة وحدة على كل جهاز
+  - `bi-sync-watcher.service` — systemd service للـ RTX
+
+- **القاعدة:** كل ما ينتج LoRA model جديد → يتنسخ لكل الأجهزة تلقائياً
+- **Mac تطول شحن** (بطارية) — لذلك Mac هو آخر نسخة احتياطية
+
 ### 🔢 رقم النسخة (Auto Version Increment)
 - **كل تعديل على التطبيق → يصعد رقم النسخة**
   - مثال: `v8.0.1` → `v8.0.2` → `v8.0.3` ...

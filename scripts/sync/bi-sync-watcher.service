@@ -1,0 +1,21 @@
+[Unit]
+Description=BI-IDE Training Data Sync Watcher
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bi
+Group=bi
+WorkingDirectory=/home/bi/bi-ide-v8/scripts/sync
+ExecStart=/usr/bin/python3 /home/bi/bi-ide-v8/scripts/sync/sync_watcher.py
+Restart=always
+RestartSec=30
+StandardOutput=append:/var/log/bi-sync-watcher.log
+StandardError=append:/var/log/bi-sync-watcher.log
+
+# Env
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
