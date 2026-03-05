@@ -14,9 +14,8 @@ import sys
 import os
 
 # Ensure project root is in path for api.routers imports
-_project_root = os.path.dirname(os.path.abspath(__file__)).replace('/rtx4090_machine', '')
-if _project_root not in sys.path:
-    sys.path.insert(0, _project_root)
+if "/home/bi/bi-ide-v8" not in sys.path:
+    sys.path.insert(0, "/home/bi/bi-ide-v8")
 import json
 import time
 import threading
