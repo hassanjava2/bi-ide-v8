@@ -705,9 +705,35 @@ async def monitor_dashboard():
         return HTMLResponse(content=f"<h1>Error: {e}</h1>")
 
 
+# --- Include new routers from api/routers ---
+try:
+    from api.routers.rtx5090 import router as rtx5090_router
+    app.include_router(rtx5090_router, prefix="/api/v1", tags=["RTX 5090"])
+except Exception:
+    pass
+
+try:
+    from api.routers.network import router as network_router
+    app.include_router(network_router, prefix="/api/v1", tags=["Network"])
+except Exception:
+    pass
+
+try:
+    from api.routers.brain import router as brain_router
+    app.include_router(brain_router, prefix="/api/v1", tags=["Brain"])
+except Exception:
+    pass
+
+try:
+    from api.routers.notifications import router as notifications_router
+    app.include_router(notifications_router, prefix="/api/v1", tags=["Notifications"])
+except Exception:
+    pass
+
+
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 Starting RTX AI API Server v8.0.1 on 0.0.0.0:8090")
+    print("🚀 Starting RTX AI API Server v8.0.3 on 0.0.0.0:8090")
     print(f"📦 Training data dir: {TRAINING_DIR}")
     print(f"🎯 Auto-train threshold: {AUTO_TRAIN_THRESHOLD} samples")
     uvicorn.run(app, host="0.0.0.0", port=8090, log_level="info")
