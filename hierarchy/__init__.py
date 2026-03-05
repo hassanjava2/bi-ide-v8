@@ -57,6 +57,12 @@ from .ux_excellence_layer import UXExcellenceLayer, ux_excellence_layer
 from .integration_layer import IntegrationLayer, integration_layer
 from .regeneration_layer import RegenerationLayer, regeneration_layer
 
+# Device Control & Training Data
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from device_control import DeviceController, device_controller
+from ai.training_data_sync import TrainingDataSync, get_training_sync
+
 
 # Standardized RTX Configuration - يقرأ RTX5090_* أولاً مع fallback للقديم
 RTX_HOST = os.getenv("RTX5090_HOST", os.getenv("RTX4090_HOST", "192.168.1.164"))
@@ -94,6 +100,10 @@ class AIHierarchy:
         self.ux_excellence = ux_excellence_layer
         self.integration = integration_layer
         self.regeneration = regeneration_layer
+        
+        # Device Control & Training Data
+        self.device_control = device_controller
+        self.training_sync = get_training_sync()
         
         # الحالة
         self.is_initialized = False
@@ -511,14 +521,49 @@ class AIHierarchy:
         }
 
     def discuss(self, topic: str):
-        """Synchronous discuss() used by council endpoints."""
+        """Synchronous discuss() used by council endpoints — uses real sage expertise."""
+        from .autonomous_council import autonomous_council
+        
         discussion = []
-        for item in self.get_all_wise_men():
+        sages = self.get_all_wise_men()
+        
+        # Find the most relevant sages for this topic
+        topic_lower = topic.lower()
+        relevance_keywords = {
+            "strategy": ["خطة", "استراتيج", "plan", "strategy", "هدف"],
+            "security": ["أمان", "حماية", "security", "hack", "ثغر"],
+            "performance": ["أداء", "سرعة", "performance", "optimize"],
+            "knowledge": ["معلومات", "شرح", "explain", "what", "كيف"],
+            "ethics": ["أخلاق", "صح", "غلط", "ethics", "moral"],
+            "engineering": ["بناء", "build", "code", "engineer", "design"],
+            "economics": ["اقتصاد", "موارد", "economy", "resource", "cost"],
+        }
+        
+        # Score each sage for relevance
+        for item in sages:
+            sage_name = item.get("name", "")
+            sage_role = item.get("role", "")
+            
+            # Use autonomous council member if available
+            member = None
+            for m in autonomous_council.members.values():
+                if m.name == sage_name:
+                    member = m
+                    break
+            
+            if member:
+                # Generate real opinion using the enhanced generate_opinion
+                opinion = member.generate_opinion(topic, {"role": sage_role})
+            else:
+                # Fallback with role-based framing
+                opinion = f"بخصوص '{topic}': أنصح بالتحليل العميق والتخطيط المدروس قبل اتخاذ أي قرار."
+            
             discussion.append({
-                "wise_man": item.get("name"),
-                "role": item.get("role"),
-                "opinion": f"رأي مبدئي حول: {topic}",
+                "wise_man": sage_name,
+                "role": sage_role,
+                "opinion": opinion,
             })
+        
         return discussion
     
     # ==================== Meta Layers ====================

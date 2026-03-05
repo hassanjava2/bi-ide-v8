@@ -41,7 +41,8 @@ class AutoProgrammingPipeline:
     def __init__(self, hierarchy=None):
         self.hierarchy = hierarchy
         self.projects: List[Dict] = []
-        self.ollama_url = "http://localhost:11434"
+        # RTX5090 URL for code generation (NO Ollama for inference)
+        self.rtx_url = os.getenv("RTX5090_URL", "http://192.168.1.164:8090")
     
     async def execute(self, command: str, output_dir: str = "/tmp/gen_projects") -> Dict[str, Any]:
         """
@@ -279,23 +280,60 @@ class AutoProgrammingPipeline:
         }
     
     async def _ask_ai(self, prompt: str) -> str:
-        """سؤال AI عبر Ollama — بدون أجوبة وهمية"""
-        models = ["qwen2.5:1.5b", "llama3.2:latest", "codellama:7b"]
+        """
+        سؤال AI عبر RTX5090 → Ollama fallback
         
-        for model in models:
-            try:
-                import requests
-                resp = requests.post(
-                    f"{self.ollama_url}/api/generate",
-                    json={"model": model, "prompt": prompt, "stream": False},
-                    timeout=60,
-                )
-                if resp.status_code == 200:
-                    return resp.json().get("response", "")
-            except Exception:
-                continue
+        Chain:
+        1. RTX5090 (LoRA inference — preferred)
+        2. Ollama (codellama — local fallback)
+        3. Honest unavailable message
+        """
+        import aiohttp
         
-        return "// AI غير متاح حالياً"
+        # 1. Try RTX5090
+        rtx_url = os.getenv("RTX5090_URL", "http://192.168.1.164:8090")
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{rtx_url}/council/message",
+                    json={
+                        "message": prompt,
+                        "context": {"mode": "code_generation", "language": "python"}
+                    },
+                    timeout=aiohttp.ClientTimeout(total=30)
+                ) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        ai_response = data.get("response", "")
+                        if ai_response and len(ai_response) > 10:
+                            return ai_response
+        except Exception as e:
+            print(f"⚠️ RTX5090 code generation error: {e}")
+        
+        # 2. Try Ollama (local)
+        ollama_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    f"{ollama_url}/api/generate",
+                    json={
+                        "model": os.getenv("OLLAMA_CODE_MODEL", "codellama:7b"),
+                        "prompt": prompt,
+                        "stream": False,
+                    },
+                    timeout=aiohttp.ClientTimeout(total=60)
+                ) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        ai_response = data.get("response", "")
+                        if ai_response and len(ai_response) > 10:
+                            return ai_response
+        except Exception as e:
+            print(f"⚠️ Ollama code generation error: {e}")
+        
+        # 3. No AI available — honest message
+        return "// AI code generation unavailable - RTX5090 and Ollama not responding"
     
     def get_status(self) -> Dict:
         return {

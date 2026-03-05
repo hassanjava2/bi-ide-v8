@@ -49,7 +49,47 @@ class BIBrain:
         # Register scheduler callbacks
         self.scheduler.register_callback(self._on_job_event)
         
+        # Hierarchy connection for coordinated decisions
+        self._hierarchy = None
+        
         logger.info("BI Brain initialized")
+    
+    @property
+    def hierarchy(self):
+        """Lazy-load hierarchy to avoid circular imports"""
+        if self._hierarchy is None:
+            try:
+                from hierarchy import ai_hierarchy
+                self._hierarchy = ai_hierarchy
+            except ImportError:
+                logger.warning("Hierarchy not available")
+        return self._hierarchy
+    
+    async def consult_hierarchy(self, question: str) -> Dict[str, Any]:
+        """
+        استشارة النظام الهرمي لاتخاذ قرار
+        
+        Args:
+            question: السؤال أو الأمر
+            
+        Returns:
+            Dict: نتيجة التشاور
+        """
+        if not self.hierarchy:
+            return {"status": "hierarchy_unavailable", "answer": None}
+        
+        try:
+            result = self.hierarchy.ask(question)
+            return {
+                "status": "success",
+                "answer": result.get("response"),
+                "wise_man": result.get("wise_man"),
+                "confidence": result.get("confidence", 0.0),
+                "source": result.get("response_source")
+            }
+        except Exception as e:
+            logger.error(f"Hierarchy consultation failed: {e}")
+            return {"status": "error", "error": str(e)}
     
     async def start(self):
         """بدء الدماغ"""
@@ -186,16 +226,47 @@ class BIBrain:
         logger.info("Idle training monitor stopped")
     
     async def _get_current_cpu(self) -> float:
-        """الحصول على استخدام CPU الحالي"""
-        # In real implementation, use psutil
-        # For now, return a simulated value
-        return 25.0  # 25% usage
+        """الحصول على استخدام CPU الحالي باستخدام psutil"""
+        try:
+            import psutil
+            return psutil.cpu_percent(interval=0.1)
+        except ImportError:
+            # Fallback: read from /proc/stat on Linux
+            try:
+                with open('/proc/stat', 'r') as f:
+                    line = f.readline()
+                    fields = line.strip().split()
+                    idle = int(fields[4])
+                    total = sum(int(x) for x in fields[1:])
+                    return round((1.0 - idle / total) * 100, 1) if total > 0 else 0.0
+            except (FileNotFoundError, Exception):
+                return 0.0  # Cannot determine
     
     async def _get_current_gpu(self) -> float:
-        """الحصول على استخدام GPU الحالي"""
-        # In real implementation, use nvidia-smi
-        # For now, return a simulated value
-        return 10.0  # 10% usage
+        """الحصول على استخدام GPU الحالي باستخدام nvidia-smi"""
+        try:
+            import subprocess
+            result = subprocess.run(
+                ['nvidia-smi', '--query-gpu=utilization.gpu', '--format=csv,noheader,nounits'],
+                capture_output=True, text=True, timeout=5
+            )
+            if result.returncode == 0 and result.stdout.strip():
+                # May have multiple GPUs, take the max
+                values = [float(v.strip()) for v in result.stdout.strip().split('\n') if v.strip()]
+                return max(values) if values else 0.0
+        except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
+            pass
+        
+        # Fallback: try pynvml
+        try:
+            import pynvml
+            pynvml.nvmlInit()
+            handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+            util = pynvml.nvmlDeviceGetUtilizationRates(handle)
+            pynvml.nvmlShutdown()
+            return float(util.gpu)
+        except Exception:
+            return 0.0  # No GPU available
     
     def _on_job_event(self, event: str, job):
         """معالجة أحداث المهام"""

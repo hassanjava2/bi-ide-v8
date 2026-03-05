@@ -57,48 +57,151 @@ class CouncilMember:
     voice_color: str  # For UI display
     
     def generate_opinion(self, topic: str, context: Dict) -> str:
-        """توليد رأي حسب الشخصية"""
-        templates = {
-            "optimist": [
-                "This is a tremendous opportunity! {detail}",
-                "I see great potential here. {detail}",
-                "We can achieve excellence if we {action}."
-            ],
-            "pessimist": [
-                "We must be cautious. {risk}",
-                "I see significant risks: {risk}",
-                "This could fail if we don't address {concern}."
-            ],
-            "pragmatic": [
-                "Let's focus on practical steps: {action}",
-                "The most efficient approach is {action}.",
-                "We should prioritize {priority}."
-            ],
-            "visionary": [
-                "This aligns with our long-term vision. {future}",
-                "Imagine the possibilities: {future}",
-                "In 50 years, this will {impact}."
-            ],
-            "cautious": [
-                "We need more data before deciding. {question}",
-                "Have we considered {question}?",
-                "Let's verify {question} first."
-            ]
+        """توليد رأي حسب الشخصية والاختصاص والموضوع"""
+        topic_lower = topic.lower()
+        
+        # Domain-specific knowledge bases for contextual opinions
+        domain_insights = {
+            "medicine": {
+                "observations": [
+                    "From a biological systems perspective, resilience requires redundancy",
+                    "The diagnostic approach applies here: identify root cause before treatment",
+                    "Like the human body, complex systems need homeostatic mechanisms",
+                ],
+                "recommendations": [
+                    "systematic triage of priorities", "preventive measures over reactive fixes",
+                    "building immune-like defense layers"
+                ]
+            },
+            "mathematics": {
+                "observations": [
+                    "The optimization function here has multiple local minima we must navigate",
+                    "Algorithmically, we should decompose this into smaller sub-problems",
+                    "The computational complexity suggests we need a more efficient approach",
+                ],
+                "recommendations": [
+                    "applying divide-and-conquer strategies", "formal verification of critical paths",
+                    "reducing O(n²) bottlenecks to O(n log n)"
+                ]
+            },
+            "philosophy": {
+                "observations": [
+                    "This raises fundamental questions about our purpose and methodology",
+                    "We must balance pragmatism with our ethical obligations",
+                    "The dialectical tension here can be productive if managed well",
+                ],
+                "recommendations": [
+                    "examining our underlying assumptions", "seeking synthesis between opposing views",
+                    "grounding decisions in first principles"
+                ]
+            },
+            "physics": {
+                "observations": [
+                    "The energy dynamics of this system need careful calibration",
+                    "Like thermodynamics, we must account for entropy in our processes",
+                    "The measurement methodology must be precise before we proceed",
+                ],
+                "recommendations": [
+                    "establishing measurable benchmarks", "empirical validation at each stage",
+                    "energy-efficient implementation paths"
+                ]
+            },
+            "engineering": {
+                "observations": [
+                    "The architecture needs robust failure modes and graceful degradation",
+                    "Manufacturing principles suggest modular design with standardized interfaces",
+                    "We should prototype before committing to full implementation",
+                ],
+                "recommendations": [
+                    "building with maintainability as a core requirement",
+                    "stress-testing under adversarial conditions",
+                    "implementing redundancy at critical junctions"
+                ]
+            },
+            "economics": {
+                "observations": [
+                    "Resource allocation follows opportunity cost principles here",
+                    "Historical patterns suggest cyclical challenges we must prepare for",
+                    "The incentive structures need alignment to avoid perverse outcomes",
+                ],
+                "recommendations": [
+                    "diversifying our resource portfolio", "building strategic reserves",
+                    "modeling worst-case economic scenarios"
+                ]
+            },
+            "history": {
+                "observations": [
+                    "Historical precedent suggests caution — similar initiatives have faced unexpected challenges",
+                    "Civilizations that prioritized knowledge preservation thrived longest",
+                    "The patterns of rise and decline teach us about sustainable growth",
+                ],
+                "recommendations": [
+                    "learning from documented failures", "preserving institutional memory",
+                    "building for multi-generational sustainability"
+                ]
+            },
+            "education": {
+                "observations": [
+                    "Knowledge transfer is the foundation of any sustainable system",
+                    "Structured learning pipelines accelerate capability development",
+                    "Accessibility and documentation determine long-term adoption",
+                ],
+                "recommendations": [
+                    "investing in comprehensive documentation", "building training curricula",
+                    "establishing mentorship frameworks"
+                ]
+            },
         }
         
-        template = random.choice(templates.get(self.personality, templates["pragmatic"]))
+        # Find matching expertise
+        matched_domains = []
+        for exp in self.expertise:
+            exp_lower = exp.lower()
+            if exp_lower in domain_insights:
+                matched_domains.append(exp_lower)
+            # Check if topic relates to expertise
+            if exp_lower in topic_lower or any(kw in topic_lower for kw in exp_lower.split()):
+                matched_domains.insert(0, exp_lower)  # Prioritize direct matches
         
-        # Fill in context (simplified)
-        opinion = template.format(
-            detail="The data supports this direction.",
-            risk="Resource constraints and timeline pressures.",
-            action="implement incremental improvements.",
-            future="transform how we operate entirely.",
-            impact="be seen as a pivotal moment",
-            priority="stability and reliability.",
-            concern="the unknown variables",
-            question="all potential failure modes"
-        )
+        # Build contextual opinion
+        if matched_domains:
+            domain = matched_domains[0]
+            insights = domain_insights.get(domain, domain_insights.get("philosophy"))
+            observation = random.choice(insights["observations"])
+            recommendation = random.choice(insights["recommendations"])
+        else:
+            observation = f"From my perspective as {self.title}, this merits careful analysis"
+            recommendation = "thorough evaluation before commitment"
+        
+        # Personality-driven framing
+        personality_frames = {
+            "optimist": (
+                f"I see strong alignment with our goals. {observation}. "
+                f"I recommend {recommendation} — the potential upside is significant."
+            ),
+            "pessimist": (
+                f"We must acknowledge the risks here. {observation}. "
+                f"Before proceeding, we need {recommendation} — failure would be costly."
+            ),
+            "pragmatic": (
+                f"{observation}. The practical path forward: {recommendation}. "
+                f"Let's focus on what delivers results within our constraints."
+            ),
+            "visionary": (
+                f"{observation}. Looking at the bigger picture, {recommendation} "
+                f"will position us for transformative outcomes in the long term."
+            ),
+            "cautious": (
+                f"Before committing, consider: {observation}. "
+                f"I urge {recommendation} — we need more data to reduce uncertainty."
+            ),
+        }
+        
+        opinion = personality_frames.get(self.personality, personality_frames["pragmatic"])
+        
+        # Add topic-specific suffix if expertise directly matches
+        if any(exp.lower() in topic_lower for exp in self.expertise):
+            opinion += f" As your {self.title}, I speak with conviction on this matter."
         
         return opinion
 
@@ -273,28 +376,63 @@ class AutonomousCouncil:
             DiscussionTopic.TECHNOLOGY: [
                 "What technology should we prioritize for training?",
                 "How can we improve our code generation capabilities?",
-                "Should we develop our own operating system?"
+                "Should we develop our own operating system?",
+                "What emerging technology will have the most impact in 5 years?",
             ],
             DiscussionTopic.SCIENCE: [
                 "What scientific domain needs more training data?",
-                "How should we balance breadth vs depth in scientific knowledge?"
+                "How should we balance breadth vs depth in scientific knowledge?",
+                "Which scientific breakthroughs are most critical for post-catastrophe rebuilding?",
+                "How can computational methods accelerate fundamental research?",
+            ],
+            DiscussionTopic.ECONOMY: [
+                "How should we allocate computational resources across training tasks?",
+                "What is the optimal trade-off between training quality and speed?",
+                "How do we build an economic model for sustainable knowledge generation?",
+                "What resource management patterns from economics apply to our infrastructure?",
+            ],
+            DiscussionTopic.SOCIETY: [
+                "How should AI systems integrate with human communities?",
+                "What social structures are most resilient to catastrophic disruption?",
+                "How do we preserve cultural knowledge alongside technical knowledge?",
+                "What role should AI play in education and knowledge dissemination?",
+            ],
+            DiscussionTopic.PHILOSOPHY: [
+                "What defines consciousness in an AI system?",
+                "How do we balance autonomy with responsibility in our decisions?",
+                "What ethical framework should guide our autonomous operations?",
+                "Is our approach to knowledge preservation aligned with our core values?",
             ],
             DiscussionTopic.STRATEGY: [
                 "What is our priority for the next phase?",
-                "How should we allocate our computational resources?"
+                "How should we allocate our computational resources?",
+                "Should we specialize deeply or maintain broad capability?",
+                "What is our competitive advantage against alternative systems?",
             ],
             DiscussionTopic.POST_CATASTROPHE: [
                 "What knowledge is most critical for rebuilding?",
-                "How should we organize information for post-catastrophe access?"
+                "How should we organize information for post-catastrophe access?",
+                "What industrial processes must be preserved for civilization restart?",
+                "How do we build redundancy into our knowledge preservation system?",
             ],
             DiscussionTopic.SELF_IMPROVEMENT: [
                 "How can we improve our own architecture?",
-                "What capabilities are we missing?"
+                "What capabilities are we missing?",
+                "Which of our modules has the most room for improvement?",
+                "How should we measure our own progress toward intelligence goals?",
             ],
             DiscussionTopic.RESOURCE_MANAGEMENT: [
                 "Are we using our training data efficiently?",
-                "Should we expand to more hardware?"
-            ]
+                "Should we expand to more hardware?",
+                "How do we optimize GPU utilization during off-peak hours?",
+                "What data cleanup strategies would improve training quality?",
+            ],
+            DiscussionTopic.TRAINING: [
+                "What training methodology produces the best results?",
+                "Should we prioritize LoRA fine-tuning or full model training?",
+                "How do we evaluate training data quality before ingestion?",
+                "What feedback loops can improve our training pipeline?",
+            ],
         }
         
         return prompts.get(topic, ["What should we focus on?"])

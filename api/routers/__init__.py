@@ -8,6 +8,9 @@ from .erp import router as erp_router
 from .monitoring import router as monitoring_router
 from .community import router as community_router
 from .admin import router as admin_router
+from .rtx5090 import router as rtx5090_router
+from .network import router as network_router
+from .brain import router as brain_router
 
 __all__ = [
     'auth_router',
@@ -18,5 +21,9 @@ __all__ = [
     'erp_router',
     'monitoring_router',
     'community_router',
-    'admin_router'
+    'admin_router',
+    'rtx5090_router',
+    'network_router',
+    'brain_router',
 ]
+

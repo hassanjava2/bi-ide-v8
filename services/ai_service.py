@@ -254,6 +254,53 @@ Based on: {prompt}
 """
 
 
+class OllamaProvider(ProviderAdapter):
+    """موفر Ollama (LLM محلي)"""
+    
+    def __init__(self):
+        super().__init__(ProviderType.CLOUD)  # Reuse CLOUD enum for Ollama
+        self.base_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
+        self.model = os.getenv("OLLAMA_CODE_MODEL", "codellama:7b")
+        self.timeout = 60
+    
+    async def generate(
+        self,
+        prompt: str,
+        context: str = "",
+        language: str = "python"
+    ) -> Optional[Dict[str, Any]]:
+        """توليد عبر Ollama"""
+        try:
+            full_prompt = prompt
+            if context:
+                full_prompt = f"Context:\n{context}\n\nRequest:\n{prompt}"
+            
+            response = requests.post(
+                f"{self.base_url}/api/generate",
+                json={
+                    "model": self.model,
+                    "prompt": full_prompt,
+                    "stream": False,
+                },
+                timeout=self.timeout
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                content = data.get("response", "")
+                if content and len(content) > 10:
+                    return {
+                        "content": content,
+                        "tokens_used": data.get("eval_count", len(content.split())),
+                        "confidence": 0.8,
+                        "model": f"ollama-{self.model}"
+                    }
+        except Exception as e:
+            logger.warning(f"Ollama generation failed: {e}")
+        
+        return None
+
+
 class AIService:
     """
     خدمة الذكاء الاصطناعي V2
@@ -272,14 +319,16 @@ class AIService:
         self._rate_limit_per_minute = rate_limit_per_minute
         self._context_lock = asyncio.Lock()
         
-        # Initialize providers
+        # Initialize providers (RTX → Ollama → Local templates)
         self._providers: Dict[ProviderType, ProviderAdapter] = {
             ProviderType.RTX: RTXProvider(),
+            ProviderType.CLOUD: OllamaProvider(),
             ProviderType.LOCAL: LocalProvider(),
         }
         
         self._provider_order = [
             ProviderType.RTX,
+            ProviderType.CLOUD,   # Ollama fallback
             ProviderType.LOCAL,
         ]
         

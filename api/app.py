@@ -4,7 +4,6 @@ BI-IDE API Main Application
 """
 
 import os
-import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime
 
@@ -35,7 +34,10 @@ from api.routers import (
     erp_router,
     monitoring_router,
     community_router,
-    admin_router
+    admin_router,
+    rtx5090_router,
+    network_router,
+    brain_router,
 )
 from api.middleware import (
     LoggingMiddleware,
@@ -54,34 +56,53 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Application lifespan — startup & shutdown"""
+    """Application lifespan — startup & shutdown with real initialization"""
     logger.info("🚀 BI-IDE API starting up...")
     
-    # 1. Initialize AI Hierarchy
-    bg_tasks = []
+    # Initialize AI Hierarchy
     try:
         from hierarchy import ai_hierarchy
         await ai_hierarchy.initialize()
         logger.info("✅ AI Hierarchy initialized")
-        
-        # 2. Start continuous operations in background
-        task = asyncio.create_task(ai_hierarchy.start_continuous_operations())
-        bg_tasks.append(task)
-        logger.info("🔄 Continuous operations started (council + scouts + meta)")
     except Exception as e:
-        logger.warning(f"⚠️ Hierarchy init failed (non-fatal): {e}")
+        logger.warning(f"⚠️ AI Hierarchy init failed (non-fatal): {e}")
+    
+    # Start Autonomous Council (24/7 background)
+    try:
+        from hierarchy.autonomous_council import autonomous_council
+        await autonomous_council.start()
+        logger.info("✅ Autonomous Council started")
+    except Exception as e:
+        logger.warning(f"⚠️ Autonomous Council start failed: {e}")
+    
+    # Initialize Brain
+    try:
+        from brain.bi_brain import brain
+        await brain.start()
+        logger.info("✅ BI Brain started")
+    except Exception as e:
+        logger.warning(f"⚠️ BI Brain start failed: {e}")
+    
+    logger.info("🏛️ BI-IDE API fully operational")
     
     yield
     
-    # Shutdown
+    # Shutdown cleanup
     logger.info("🛑 BI-IDE API shutting down...")
-    for task in bg_tasks:
-        task.cancel()
-        try:
-            await task
-        except asyncio.CancelledError:
-            pass
-    logger.info("✅ All background tasks stopped")
+    
+    try:
+        from hierarchy.autonomous_council import autonomous_council
+        await autonomous_council.stop()
+    except Exception:
+        pass
+    
+    try:
+        from brain.bi_brain import brain
+        brain.stop()
+    except Exception:
+        pass
+    
+    logger.info("✅ BI-IDE API shutdown complete")
 
 
 # Create FastAPI app
@@ -120,6 +141,9 @@ app.include_router(erp_router, prefix="/api/v2", tags=["ERP"])
 app.include_router(monitoring_router, prefix="/api/v1", tags=["Monitoring"])
 app.include_router(community_router, prefix="/api/v1", tags=["Community"])
 app.include_router(admin_router, prefix="/api/v1", tags=["Admin"])
+app.include_router(rtx5090_router, prefix="/api/v1", tags=["RTX 5090"])
+app.include_router(network_router, prefix="/api/v1", tags=["Network"])
+app.include_router(brain_router, prefix="/api/v1", tags=["Brain"])
 
 
 def create_app() -> FastAPI:
