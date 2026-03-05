@@ -79,6 +79,16 @@
 - **ملفات التنصيب:** لازم تبنيها (Windows .exe / Mac .dmg / Linux .deb) وترفعها بالموقع `bi-iq.com`
 - يشمل: ملفات، كلاسات، فنكشنات، services، APIs، كلشي
 
+### 🔢 رقم النسخة (Auto Version Increment)
+- **كل تعديل على التطبيق → يصعد رقم النسخة**
+  - مثال: `v8.0.1` → `v8.0.2` → `v8.0.3` ...
+- **الرقم لازم يطلع بالواجهة** (Title Bar) حتى المستخدم يعرف أي نسخة مشغّل
+- **يتحدث بـ 4 أماكن:**
+  1. `apps/desktop-tauri/package.json` → `version`
+  2. `apps/desktop-tauri/src-tauri/Cargo.toml` → `version`
+  3. `apps/desktop-tauri/src-tauri/tauri.conf.json` → `version`
+  4. Title Bar بالواجهة → `BI-IDE Desktop v8.0.X`
+
 ### ✅ حدّث النسختين دائماً
 - `hierarchy/__init__.py` موجود بـ `/home/bi/bi-ide-v8/` **و** `/home/bi/.bi-ide-worker/`
 - لازم تحدّث الثنتين من أي ملف تعدّله (Shadow Module Trap)

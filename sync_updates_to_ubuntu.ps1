@@ -1,6 +1,6 @@
 param(
     [string]$UbuntuUser = "bi",
-    [string]$UbuntuHost = "192.168.68.125",
+    [string]$UbuntuHost = "192.168.1.164",
     [string]$RemoteProjectPath = "~/bi-ide-v8"
 )
 

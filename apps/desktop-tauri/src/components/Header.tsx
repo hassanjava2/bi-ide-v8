@@ -1,8 +1,8 @@
-import { 
-  Menu, 
-  Sidebar, 
-  Terminal, 
-  RefreshCw, 
+import {
+  Menu,
+  Sidebar,
+  Terminal,
+  RefreshCw,
   Settings,
   Minus,
   Square,
@@ -17,11 +17,11 @@ interface HeaderProps {
 }
 
 export function Header({ deviceId }: HeaderProps) {
-  const { 
-    currentWorkspace, 
-    sidebarVisible, 
-    terminalVisible, 
-    toggleSidebar, 
+  const {
+    currentWorkspace,
+    sidebarVisible,
+    terminalVisible,
+    toggleSidebar,
     toggleTerminal,
     gitState,
     syncStatus,
@@ -51,14 +51,14 @@ export function Header({ deviceId }: HeaderProps) {
         <div className="w-6 h-6 bg-primary-600 rounded flex items-center justify-center">
           <span className="text-xs font-bold text-white">BI</span>
         </div>
-        
+
         <button className="p-1.5 hover:bg-dark-700 rounded transition-colors">
           <Menu className="w-4 h-4 text-dark-300" />
         </button>
 
         <div className="h-4 w-px bg-dark-600 mx-1" />
 
-        <button 
+        <button
           onClick={toggleSidebar}
           className={`p-1.5 rounded transition-colors ${sidebarVisible ? "bg-dark-700 text-primary-400" : "hover:bg-dark-700 text-dark-400"}`}
           title="Toggle Sidebar"
@@ -66,7 +66,7 @@ export function Header({ deviceId }: HeaderProps) {
           <Sidebar className="w-4 h-4" />
         </button>
 
-        <button 
+        <button
           onClick={toggleTerminal}
           className={`p-1.5 rounded transition-colors ${terminalVisible ? "bg-dark-700 text-primary-400" : "hover:bg-dark-700 text-dark-400"}`}
           title="Toggle Terminal"
@@ -79,10 +79,13 @@ export function Header({ deviceId }: HeaderProps) {
         </button>
       </div>
 
-      {/* Center - Title */}
+      {/* Center - Title + Version */}
       <div className="flex-1 text-center">
         <div className="text-sm text-dark-200 font-medium">
           {currentWorkspace?.name || "BI-IDE Desktop"}
+          <span className="ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary-600/30 text-primary-300">
+            v8.0.3
+          </span>
         </div>
         {gitState && (
           <div className="text-xs text-dark-500 flex items-center justify-center gap-2">
@@ -102,9 +105,8 @@ export function Header({ deviceId }: HeaderProps) {
         {/* Sync Status */}
         {syncStatus.isEnabled && (
           <div className="flex items-center gap-2 mr-4">
-            <div className={`w-2 h-2 rounded-full ${
-              syncStatus.isConnected ? "status-online" : "status-offline"
-            }`} />
+            <div className={`w-2 h-2 rounded-full ${syncStatus.isConnected ? "status-online" : "status-offline"
+              }`} />
             <span className="text-xs text-dark-400">
               {syncStatus.isConnected ? "Synced" : "Offline"}
             </span>
@@ -118,21 +120,21 @@ export function Header({ deviceId }: HeaderProps) {
         <div className="h-4 w-px bg-dark-600 mx-1" />
 
         {/* Window Controls */}
-        <button 
+        <button
           onClick={handleMinimize}
           className="p-1.5 hover:bg-dark-700 rounded transition-colors text-dark-400"
         >
           <Minus className="w-4 h-4" />
         </button>
-        
-        <button 
+
+        <button
           onClick={handleMaximize}
           className="p-1.5 hover:bg-dark-700 rounded transition-colors text-dark-400"
         >
           <Square className="w-4 h-4" />
         </button>
-        
-        <button 
+
+        <button
           onClick={handleClose}
           className="p-1.5 hover:bg-red-600 rounded transition-colors text-dark-400 hover:text-white"
         >

@@ -13,12 +13,13 @@ description: Deploy BI-IDE v8 to all machines (VPS, RTX 5090, Windows, Domain)
 - **Branch:** `main`
 
 ### 2. VPS Server (bi-iq.com)
-- **Host:** `root@bi-iq.com`
-- **SSH:** يحتاج كلمة مرور (حتى يتم تشغيل `setup_ssh_keys.sh`)
-- **المسار على السيرفر:** `/root/bi-ide-v8` (يحتاج تأكيد من المستخدم)
+- **Host:** `root@76.13.154.123` (= `root@bi-iq.com`)
+- **SSH Port:** `22`
+- **Password:** `Bb97-@hhbb353631`
+- **المسار على السيرفر:** `/root/bi-ide-v8`
 - **الدومين:** `bi-iq.com`
-- **الخدمات:** `systemctl restart bi-ide-api` (يحتاج تأكيد)
-- **ملفات الويب:** `/var/www/bi-iq.com/` (يحتاج تأكيد)
+- **الخدمات:** `systemctl restart bi-ide-api`
+- **ملفات الويب:** `/var/www/bi-iq.com/`
 - **ملاحظة:** GitHub Push Protection تمنع `sk_live_*` — استخدم `sk_test_*` بالاختبارات
 - **ملاحظة:** PAT ما عنده `workflow` scope — لا تعدل `.github/workflows/*.yml` بالـ commit
 

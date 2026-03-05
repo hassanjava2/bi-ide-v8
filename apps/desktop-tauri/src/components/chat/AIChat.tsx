@@ -6,9 +6,9 @@
  */
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { 
-  Send, 
-  Sparkles, 
+import {
+  Send,
+  Sparkles,
   Code,
   Copy,
   Check,
@@ -132,10 +132,10 @@ function CodeBlockComponent({ code, language }: { code: string; language: string
           )}
         </button>
       </div>
-      
+
       <div className="p-4 overflow-x-auto">
         <pre className="text-sm font-mono leading-relaxed">
-          <code 
+          <code
             dangerouslySetInnerHTML={{ __html: highlightCode(code, language) }}
           />
         </pre>
@@ -149,7 +149,7 @@ function ChatMessage({ message }: { message: Message }) {
   const isUser = message.role === "user";
   const isAssistant = message.role === "assistant";
   const isError = message.role === "error";
-  
+
   const renderContent = () => {
     if (!message.codeBlocks || message.codeBlocks.length === 0) {
       return <p className="whitespace-pre-wrap">{message.content}</p>;
@@ -168,7 +168,7 @@ function ChatMessage({ message }: { message: Message }) {
       }
 
       parts.push(
-        <CodeBlockComponent 
+        <CodeBlockComponent
           key={`code-${idx}`}
           code={block.code}
           language={block.language}
@@ -192,15 +192,14 @@ function ChatMessage({ message }: { message: Message }) {
   return (
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""} animate-fade-in`}>
       {/* Avatar */}
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-        isUser 
-          ? "bg-primary-600" 
-          : isError
-            ? "bg-red-500"
-            : isAssistant 
-              ? "bg-gradient-to-br from-purple-500 to-pink-500"
-              : "bg-dark-700"
-      }`}>
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isUser
+        ? "bg-primary-600"
+        : isError
+          ? "bg-red-500"
+          : isAssistant
+            ? "bg-gradient-to-br from-purple-500 to-pink-500"
+            : "bg-dark-700"
+        }`}>
         {isUser ? (
           <span className="text-sm font-bold text-white">أنت</span>
         ) : isError ? (
@@ -213,13 +212,12 @@ function ChatMessage({ message }: { message: Message }) {
       </div>
 
       {/* Content */}
-      <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${
-        isUser 
-          ? "bg-primary-600 text-white rounded-br-sm"
-          : isError
-            ? "bg-red-500/20 text-red-200 border border-red-500/30 rounded-bl-sm"
-            : "bg-dark-800 text-dark-100 rounded-bl-sm"
-      }`}>
+      <div className={`max-w-[85%] rounded-2xl px-4 py-3 ${isUser
+        ? "bg-primary-600 text-white rounded-br-sm"
+        : isError
+          ? "bg-red-500/20 text-red-200 border border-red-500/30 rounded-bl-sm"
+          : "bg-dark-800 text-dark-100 rounded-bl-sm"
+        }`}>
         {message.isStreaming && (
           <span className="inline-flex gap-1 mr-1">
             <span className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
@@ -230,15 +228,15 @@ function ChatMessage({ message }: { message: Message }) {
         <div className={`text-sm leading-relaxed ${isUser ? "" : "text-dark-200"}`}>
           {renderContent()}
         </div>
-        
+
         {/* Source indicator for assistant messages */}
         {isAssistant && message.source && (
           <div className="flex items-center gap-2 mt-2 pt-2 border-t border-dark-700/50">
             <Cpu className="w-3 h-3 text-dark-500" />
             <span className="text-xs text-dark-500">
-              {message.source === 'rtx4090' ? 'RTX 4090' : 
-               message.source === 'local-fallback' ? 'نظام محلي' : 
-               message.wiseMan || 'المجلس'}
+              {message.source?.includes('lora') ? '🧠 LoRA GPU' :
+                message.source?.includes('base') ? '📦 Base Model' :
+                  message.source || 'AI'}
             </span>
             {message.confidence !== undefined && (
               <span className="text-xs text-dark-500">
@@ -247,7 +245,7 @@ function ChatMessage({ message }: { message: Message }) {
             )}
           </div>
         )}
-        
+
         <div className={`text-xs mt-2 ${isUser ? "text-primary-200" : "text-dark-500"}`}>
           {new Date(message.timestamp).toLocaleTimeString('ar-SA')}
         </div>
@@ -258,16 +256,7 @@ function ChatMessage({ message }: { message: Message }) {
 
 // Main component
 export function AIChat() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content: "هلا! أنا مساعد BI-IDE الذكي. كيف يمكنني مساعدتك اليوم؟\n\nأستطيع:\n• توليد وإكمال الكود\n• شرح الكود\n• إصلاح الأخطاء\n• الإجابة على أسئلتك البرمجية",
-      timestamp: Date.now(),
-      source: "system",
-      confidence: 1.0,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -277,7 +266,7 @@ export function AIChat() {
     retryCount: 0,
     isRetrying: false,
   });
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -338,10 +327,10 @@ export function AIChat() {
     try {
       // Call real API - NO mock responses
       const response = await sendCouncilMessage(userMessage.content, {
-        session_id: "desktop-session",
-        previous_messages: messages.map(m => ({ 
-          role: m.role === 'error' ? 'system' : m.role, 
-          content: m.content 
+        session_id: "ai-assistant",
+        previous_messages: messages.map(m => ({
+          role: m.role === 'error' ? 'system' : m.role,
+          content: m.content
         })),
       });
 
@@ -361,18 +350,18 @@ export function AIChat() {
         return msg;
       }));
 
-      setChatState(prev => ({ 
-        ...prev, 
-        isOnline: true, 
+      setChatState(prev => ({
+        ...prev,
+        isOnline: true,
         retryCount: 0,
         lastError: null,
       }));
 
     } catch (error) {
       console.error("Failed to get response:", error);
-      
+
       const errorMessage = error instanceof Error ? error.message : "حدث خطأ غير معروف";
-      
+
       setMessages(prev => prev.map(msg => {
         if (msg.id === assistantMessageId) {
           return {
@@ -385,9 +374,9 @@ export function AIChat() {
         return msg;
       }));
 
-      setChatState(prev => ({ 
-        ...prev, 
-        isOnline: false, 
+      setChatState(prev => ({
+        ...prev,
+        isOnline: false,
         lastError: errorMessage,
         retryCount: prev.retryCount + 1,
       }));
@@ -408,7 +397,7 @@ export function AIChat() {
       setChatState(prev => ({ ...prev, retryCount: 0 }));
       return;
     }
-    
+
     setChatState(prev => ({ ...prev, isRetrying: true }));
     handleSend();
   }, [chatState.retryCount, handleSend]);
@@ -453,11 +442,10 @@ export function AIChat() {
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="font-semibold text-dark-100">مساعد BI-IDE AI</h2>
+            <h2 className="font-semibold text-dark-100">AI Assistant</h2>
             <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${
-                chatState.isOnline ? "bg-green-500 animate-pulse" : "bg-red-500"
-              }`} />
+              <span className={`w-2 h-2 rounded-full ${chatState.isOnline ? "bg-green-500 animate-pulse" : "bg-red-500"
+                }`} />
               <span className="text-xs text-dark-400">
                 {chatState.isOnline ? "متصل" : "غير متصل"}
               </span>
@@ -473,7 +461,7 @@ export function AIChat() {
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <button
             onClick={handleClear}
@@ -533,33 +521,32 @@ export function AIChat() {
           >
             <ImageIcon className="w-5 h-5" />
           </button>
-          
+
           <textarea
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={chatState.isOnline 
-              ? "اكتب رسالتك هنا... (Shift+Enter لسطر جديد)" 
-              : "غير متصل - انتظر إعادة الاتصال..."
+            placeholder={chatState.isOnline
+              ? "اكتب سؤالك..."
+              : "غير متصل..."
             }
             className="flex-1 bg-transparent text-dark-100 placeholder-dark-500 resize-none max-h-32 py-2 outline-none"
             rows={1}
             style={{ minHeight: "24px" }}
             disabled={!chatState.isOnline && chatState.retryCount === 0}
           />
-          
+
           <button
             onClick={() => setIsRecording(!isRecording)}
-            className={`p-2 rounded-xl transition-colors ${
-              isRecording 
-                ? "text-red-400 bg-red-500/10" 
-                : "text-dark-400 hover:text-dark-200 hover:bg-dark-700"
-            }`}
+            className={`p-2 rounded-xl transition-colors ${isRecording
+              ? "text-red-400 bg-red-500/10"
+              : "text-dark-400 hover:text-dark-200 hover:bg-dark-700"
+              }`}
           >
             {isRecording ? <StopCircle className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           </button>
-          
+
           <button
             onClick={handleSend}
             disabled={!input.trim() || isStreaming || (!chatState.isOnline && chatState.retryCount === 0)}

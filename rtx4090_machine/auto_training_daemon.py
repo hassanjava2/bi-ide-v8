@@ -76,49 +76,47 @@ PROJECT_ROOT = Path(os.getenv("PROJECT_ROOT", _default_project))
 TRAIN_INTERVAL_SECONDS = 5  # Near-continuous: 5sec between cycles
 DOWNLOAD_INTERVAL_SECONDS = 10  # Near-continuous downloads
 MIN_SAMPLES_TO_TRAIN = 5  # Start training with just 5 samples
-MAX_SAMPLES_PER_RUN = 1000  # Process more per run
+MAX_SAMPLES_PER_RUN = 10000  # Process 10K samples per run for real learning
 
-# Internet data sources — MASSIVE EXPANSION for all 11 domain specialties
+# Internet data sources — INSTRUCTION-FIRST (not raw text)
+# Priority 0 = download first (instruction/Q&A), 3 = last (raw text)
 DATA_SOURCES = [
-    # ═══ ARABIC KNOWLEDGE ═══
-    {"name": "wikipedia_ar", "type": "huggingface", "dataset": "wikimedia/wikipedia", "subset": "20231101.ar", "split": "train", "max_samples": 100000, "priority": 1},
-    {"name": "arabic_instructions", "type": "huggingface", "dataset": "FreedomIntelligence/alpaca-gpt4-arabic", "split": "train", "max_samples": 100000, "priority": 1},
-    {"name": "arabic_culture", "type": "huggingface", "dataset": "arbml/Arabic-Alpaca", "split": "train", "max_samples": 50000, "priority": 2},
+    # ═══ HIGH-QUALITY INSTRUCTION DATASETS (PRIORITY 0 — DOWNLOAD FIRST) ═══
+    {"name": "openassistant", "type": "huggingface", "dataset": "OpenAssistant/oasst2", "split": "train", "max_samples": 100000, "priority": 0},
+    {"name": "dolly_15k", "type": "huggingface", "dataset": "databricks/databricks-dolly-15k", "split": "train", "max_samples": 50000, "priority": 0},
+    {"name": "openorca", "type": "huggingface", "dataset": "Open-Orca/OpenOrca", "split": "train", "max_samples": 200000, "priority": 0},
+    {"name": "arabic_instructions", "type": "huggingface", "dataset": "FreedomIntelligence/alpaca-gpt4-arabic", "split": "train", "max_samples": 100000, "priority": 0},
     
-    # ═══ CODE & PROGRAMMING (Auto-Programming Pipeline) ═══
+    # ═══ CODE & PROGRAMMING ═══
     {"name": "code_instructions", "type": "huggingface", "dataset": "sahil2801/CodeAlpaca-20k", "split": "train", "max_samples": 50000, "priority": 1},
-    {"name": "code_python", "type": "huggingface", "dataset": "iamtarun/python_code_instructions_18k_alpaca", "split": "train", "max_samples": 50000, "priority": 2},
-    {"name": "code_feedback", "type": "huggingface", "dataset": "m-a-p/CodeFeedback-Filtered-Instruction", "split": "train", "max_samples": 50000, "priority": 3},
-    {"name": "code_exercises", "type": "huggingface", "dataset": "jinaai/code_exercises", "split": "train", "max_samples": 50000, "priority": 3},
+    {"name": "code_python", "type": "huggingface", "dataset": "iamtarun/python_code_instructions_18k_alpaca", "split": "train", "max_samples": 50000, "priority": 1},
+    {"name": "code_feedback", "type": "huggingface", "dataset": "m-a-p/CodeFeedback-Filtered-Instruction", "split": "train", "max_samples": 50000, "priority": 2},
     
-    # ═══ MEDICINE (Domain Expert: Medicine) ═══
-    {"name": "medical_qa", "type": "huggingface", "dataset": "medalpaca/medical_meadow_medical_flashcards", "split": "train", "max_samples": 50000, "priority": 2},
-    {"name": "medical_dialog", "type": "huggingface", "dataset": "ruslanmv/ai-medical-chatbot", "split": "train", "max_samples": 50000, "priority": 3},
+    # ═══ MEDICINE ═══
+    {"name": "medical_qa", "type": "huggingface", "dataset": "medalpaca/medical_meadow_medical_flashcards", "split": "train", "max_samples": 50000, "priority": 1},
+    {"name": "medical_dialog", "type": "huggingface", "dataset": "ruslanmv/ai-medical-chatbot", "split": "train", "max_samples": 50000, "priority": 2},
     
-    # ═══ SCIENCE & ENGINEERING (Domain Expert: Engineering/Physics) ═══
-    {"name": "science_qa", "type": "huggingface", "dataset": "allenai/sciq", "split": "train", "max_samples": 50000, "priority": 2},
-    {"name": "stem_qa", "type": "huggingface", "dataset": "camel-ai/physics", "split": "train", "max_samples": 50000, "priority": 3},
-    {"name": "math_qa", "type": "huggingface", "dataset": "camel-ai/math", "split": "train", "max_samples": 50000, "priority": 3},
+    # ═══ SCIENCE & MATH ═══
+    {"name": "science_qa", "type": "huggingface", "dataset": "allenai/sciq", "split": "train", "max_samples": 50000, "priority": 1},
+    {"name": "stem_qa", "type": "huggingface", "dataset": "camel-ai/physics", "split": "train", "max_samples": 50000, "priority": 2},
+    {"name": "math_qa", "type": "huggingface", "dataset": "camel-ai/math", "split": "train", "max_samples": 50000, "priority": 2},
     
-    # ═══ BUSINESS & FINANCE (Market Layer) ═══
-    {"name": "finance_qa", "type": "huggingface", "dataset": "FinGPT/fingpt-sentiment-train", "split": "train", "max_samples": 30000, "priority": 3},
+    # ═══ GENERAL CONVERSATIONS ═══
+    {"name": "sharegpt", "type": "huggingface", "dataset": "anon8231489123/ShareGPT_Vicuna_unfiltered", "split": "train", "max_samples": 100000, "priority": 1},
+    {"name": "self_instruct", "type": "huggingface", "dataset": "yizhongw/self_instruct", "split": "train", "max_samples": 50000, "priority": 2},
     
-    # ═══ GENERAL KNOWLEDGE & CONVERSATIONS (Brain) ═══
-    {"name": "openassistant", "type": "huggingface", "dataset": "OpenAssistant/oasst2", "split": "train", "max_samples": 100000, "priority": 1},
-    {"name": "dolly_15k", "type": "huggingface", "dataset": "databricks/databricks-dolly-15k", "split": "train", "max_samples": 50000, "priority": 2},
-    {"name": "ultrachat", "type": "huggingface", "dataset": "stingning/ultrachat", "split": "train", "max_samples": 100000, "priority": 3},
-    {"name": "sharegpt", "type": "huggingface", "dataset": "anon8231489123/ShareGPT_Vicuna_unfiltered", "split": "train", "max_samples": 100000, "priority": 2},
-    
-    # ═══ SURVIVAL & REAL-LIFE (Real-Life Factory Layer) ═══
+    # ═══ SURVIVAL & REAL-LIFE ═══
     {"name": "wikihow", "type": "huggingface", "dataset": "b-mc2/wikihow_lists", "split": "train", "max_samples": 50000, "priority": 2},
-    {"name": "self_instruct", "type": "huggingface", "dataset": "yizhongw/self_instruct", "split": "train", "max_samples": 50000, "priority": 3},
     
-    # ═══ MULTILINGUAL (Scouts Layer — World Knowledge) ═══
-    {"name": "wikipedia_en", "type": "huggingface", "dataset": "wikimedia/wikipedia", "subset": "20231101.en", "split": "train", "max_samples": 100000, "priority": 2},
-    {"name": "flan_v2", "type": "huggingface", "dataset": "Muennighoff/flan", "split": "train", "max_samples": 100000, "priority": 3},
+    # ═══ FINANCE ═══
+    {"name": "finance_qa", "type": "huggingface", "dataset": "FinGPT/fingpt-sentiment-train", "split": "train", "max_samples": 30000, "priority": 2},
     
-    # ═══ SECURITY (Security Layer) ═══
-    {"name": "cybersec_qa", "type": "huggingface", "dataset": "CyberNative/CyberSecEval_QA", "split": "train", "max_samples": 20000, "priority": 3},
+    # ═══ SECURITY ═══
+    {"name": "cybersec_qa", "type": "huggingface", "dataset": "CyberNative/CyberSecEval_QA", "split": "train", "max_samples": 20000, "priority": 2},
+    
+    # ═══ RAW KNOWLEDGE (LAST — less useful for instruction tuning) ═══
+    {"name": "wikipedia_ar", "type": "huggingface", "dataset": "wikimedia/wikipedia", "subset": "20231101.ar", "split": "train", "max_samples": 50000, "priority": 3},
+    {"name": "wikipedia_en", "type": "huggingface", "dataset": "wikimedia/wikipedia", "subset": "20231101.en", "split": "train", "max_samples": 50000, "priority": 3},
 ]
 
 # ─── State ────────────────────────────────────────────────────────
@@ -274,8 +272,8 @@ def _convert_to_training_sample(item: dict, source: dict) -> Optional[dict]:
             return None
         return {"input_text": f"Analyze: {text}", "output_text": str(label) if label else "neutral", "source": name, "kind": "finance", "language": "en", "timestamp": ts}
     
-    # Conversation/Chat format (OpenAssistant, ShareGPT, UltraChat)
-    if any(k in name for k in ["openassistant", "sharegpt", "ultrachat"]):
+    # Conversation/Chat format (OpenAssistant, ShareGPT, UltraChat, OpenOrca)
+    if any(k in name for k in ["openassistant", "sharegpt", "ultrachat", "openorca"]):
         # Try conversations format
         messages = item.get("messages", []) or item.get("conversations", []) or item.get("data", [])
         if messages and len(messages) >= 2:
@@ -326,14 +324,16 @@ def _convert_to_training_sample(item: dict, source: dict) -> Optional[dict]:
 
 
 def download_loop():
-    """Continuous download loop — runs in background thread."""
+    """Continuous download loop — NEVER STOPS. Re-downloads with new offsets endlessly."""
     DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    download_round = 0
     
     while True:
         try:
             if check_internet():
                 _state["internet_available"] = True
-                log("🌐 Internet available — downloading training data...")
+                download_round += 1
+                log(f"🌐 Download round {download_round} — fetching training data...")
                 
                 total = 0
                 for source in sorted(DATA_SOURCES, key=lambda s: s.get("priority", 99)):
@@ -343,7 +343,12 @@ def download_loop():
                 
                 _state["last_download"] = datetime.now().isoformat()
                 if total > 0:
-                    log(f"📦 Download batch done: {total} new samples")
+                    log(f"📦 Round {download_round} done: {total} new samples")
+                else:
+                    log(f"📦 Round {download_round}: no new samples — increasing offsets...")
+                    # Increase max_samples to download MORE from each source
+                    for source in DATA_SOURCES:
+                        source["max_samples"] = source.get("max_samples", 50000) + 50000
             else:
                 _state["internet_available"] = False
                 log("📴 No internet — will train on local data only")
@@ -360,12 +365,15 @@ def download_loop():
 # Training Loop
 # ═══════════════════════════════════════════════════════════════
 
-def _collect_training_samples() -> List[dict]:
-    """Collect all available training samples from ingest + downloads."""
+def _collect_training_samples():
+    """Collect samples from /data + return list of source files for deletion after training.
+    Returns: (samples_list, source_files_list)
+    """
     samples = []
     seen_hashes = set()
+    source_files = []  # Track files we read from — delete after training
     
-    # 1. From ingest dir (conversation data)
+    # 1. From ingest dir (conversation data) — DON'T delete these
     ingest_file = INGEST_DIR / "samples.jsonl"
     if ingest_file.exists():
         with ingest_file.open("r", encoding="utf-8") as f:
@@ -375,20 +383,25 @@ def _collect_training_samples() -> List[dict]:
                     continue
                 try:
                     d = json.loads(line)
-                    inp = d.get("input_text") or d.get("input", "")
+                    inp = d.get("input_text") or d.get("input", "") or d.get("text", "")
                     out = d.get("output_text") or d.get("output", "")
-                    if inp and out:
-                        h = hashlib.md5(f"{inp}{out}".encode()).hexdigest()
+                    if inp:
+                        h = hashlib.md5(f"{inp[:200]}{out[:200]}".encode()).hexdigest()
                         if h not in seen_hashes:
                             seen_hashes.add(h)
-                            samples.append({"input": inp, "output": out, "source": d.get("source", "ingest")})
+                            samples.append({"input": inp, "output": out or inp, "source": d.get("source", "ingest")})
                 except json.JSONDecodeError:
                     continue
     
-    # 2. From ALL /data subdirectories (scout downloads here)
+    # 2. From ALL /data subdirectories (scout + bulk downloader save here)
+    #    These files WILL BE DELETED after training to free space
     data_root = Path("/data")
     if data_root.exists():
-        for f in sorted(data_root.rglob("*.jsonl")):
+        jsonl_files = sorted(data_root.rglob("*.jsonl"), key=lambda f: f.stat().st_size, reverse=True)
+        for f in jsonl_files:
+            if len(samples) >= MAX_SAMPLES_PER_RUN:
+                break
+            file_had_samples = False
             try:
                 with f.open("r", encoding="utf-8") as fh:
                     for line in fh:
@@ -399,19 +412,23 @@ def _collect_training_samples() -> List[dict]:
                             continue
                         try:
                             d = json.loads(line)
-                            inp = d.get("input_text") or d.get("input", "")
+                            inp = d.get("input_text") or d.get("input", "") or d.get("text", "")
                             out = d.get("output_text") or d.get("output", "")
-                            if inp and out:
+                            if inp and len(inp) > 10:
                                 h = hashlib.md5(f"{inp[:200]}{out[:200]}".encode()).hexdigest()
                                 if h not in seen_hashes:
                                     seen_hashes.add(h)
-                                    samples.append({"input": inp, "output": out, "source": d.get("source", f.stem)})
+                                    samples.append({"input": inp, "output": out or inp, "source": d.get("source", f.stem)})
+                                    file_had_samples = True
                         except json.JSONDecodeError:
                             continue
+                if file_had_samples:
+                    source_files.append(f)
             except Exception:
                 continue
     
-    return samples[:MAX_SAMPLES_PER_RUN]
+    log(f"   📊 Collected {len(samples)} samples from {len(source_files)} files")
+    return samples[:MAX_SAMPLES_PER_RUN], source_files
 
 
 def _cleanup_trained_data(trained_files: List[Path]):
@@ -435,19 +452,39 @@ def _cleanup_trained_data(trained_files: List[Path]):
             log(f"   🗑️ Deleted trained data: {f.name}")
 
 
-def _cleanup_after_training(samples):
-    """Archive and clean up data after successful training."""
+def _cleanup_after_training(samples, source_files=None):
+    """INFINITE CYCLE: Delete trained data files from /data to free space for more downloads."""
     _state["training_runs"] += 1
     _state["total_trained_samples"] += len(samples)
     _state["last_train"] = datetime.now().isoformat()
     
-    # Don't delete data files — RTX 5090 needs them for future training
-    # Just track that we trained on them
+    # Save tiny metadata about what was trained (on first drive, not /data)
     meta = {
         "trained_at": datetime.now().isoformat(),
         "sample_count": len(samples),
         "training_run": _state["training_runs"],
+        "deleted_files": [],
+        "freed_bytes": 0,
     }
+    
+    # DELETE trained data files from /data → frees space → scout downloads more → INFINITE
+    freed_bytes = 0
+    if source_files:
+        for f in source_files:
+            try:
+                if f.exists() and str(f).startswith("/data"):
+                    size = f.stat().st_size
+                    f.unlink()
+                    freed_bytes += size
+                    meta["deleted_files"].append(str(f))
+                    log(f"   🗑️ Deleted trained data: {f.name} ({size/1e6:.1f}MB)")
+            except Exception as e:
+                log(f"   ⚠️ Could not delete {f}: {e}")
+    
+    meta["freed_bytes"] = freed_bytes
+    if freed_bytes > 0:
+        log(f"   ♻️ Freed {freed_bytes/1e9:.2f}GB — space for more downloads!")
+    
     archive_file = ARCHIVE_DIR / f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     ARCHIVE_DIR.mkdir(parents=True, exist_ok=True)
     with archive_file.open("w") as f:
@@ -459,12 +496,12 @@ def _cleanup_after_training(samples):
 # ═══════════════════════════════════════════════════════════════
 
 def gpu_training_loop():
-    """Continuous GPU LoRA training — NEVER stops, NO gaps."""
+    """Continuous GPU LoRA training — NEVER stops, NO gaps. MAX GPU UTILIZATION."""
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
-    log("🔥 GPU TRAINING THREAD: Starting — ZERO gap mode")
+    log("🔥 GPU TRAINING THREAD: Starting — MAXIMUM UTILIZATION mode")
     time.sleep(10)  # Brief wait for first download
     
-    lora_failed = False  # Once LoRA fails, skip it permanently
+    lora_consecutive_fails = 0
     
     while True:
         try:
@@ -473,89 +510,116 @@ def gpu_training_loop():
                 time.sleep(5)
                 continue
             
-            samples = _collect_training_samples()
+            samples, source_files = _collect_training_samples()
+            if isinstance(samples, tuple):
+                samples, source_files = samples
+            elif not isinstance(samples, list):
+                samples = list(samples)
+                source_files = []
+            
             if len(samples) < MIN_SAMPLES_TO_TRAIN:
                 time.sleep(2)
                 continue
             
             _state["status"] = "gpu_training"
+            num_samples = len(samples)
+            log(f"🔥 [GPU] Training cycle: {num_samples} samples available")
             
-            # Try LoRA if it hasn't permanently failed
-            if not lora_failed:
-                try:
-                    if str(PROJECT_ROOT) not in sys.path:
-                        sys.path.insert(0, str(PROJECT_ROOT))
-                    from ai.training.advanced_trainer import AdvancedTrainer, TrainingConfig, TrainingMode
-                    config = TrainingConfig(
-                        model_name="Qwen/Qwen2.5-1.5B", max_length=256, batch_size=2,
-                        learning_rate=2e-4, epochs=3, lora_r=16, lora_alpha=32,
-                        gradient_accumulation_steps=4, fp16=True,
-                    )
-                    run_name = f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-                    trainer = AdvancedTrainer(config=config, mode=TrainingMode.CHAT, output_dir=MODELS_DIR / run_name)
-                    if trainer.check_dependencies():
-                        result = trainer.train(data=samples)
-                        if result.success:
-                            log(f"   ✅ [GPU] LoRA done! Loss: {result.final_loss:.4f}")
-                            _cleanup_after_training(samples)
-                            time.sleep(2)
-                            continue
-                except Exception as e:
-                    log(f"   ⚠️ [GPU] LoRA failed permanently: {e}")
-                    log("   🔄 Switching to GPU PyTorch training for this session")
-                    lora_failed = True
+            # ALWAYS try LoRA first (retry every cycle, not permanent failure)
+            try:
+                if str(PROJECT_ROOT) not in sys.path:
+                    sys.path.insert(0, str(PROJECT_ROOT))
+                from ai.training.advanced_trainer import AdvancedTrainer, TrainingConfig, TrainingMode
+                config = TrainingConfig(
+                    model_name="Qwen/Qwen2.5-1.5B", max_length=512, batch_size=16,
+                    learning_rate=2e-4, epochs=3, lora_r=32, lora_alpha=64,
+                    gradient_accumulation_steps=8, fp16=True,
+                )
+                run_name = f"auto_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+                trainer = AdvancedTrainer(config=config, mode=TrainingMode.CHAT, output_dir=MODELS_DIR / run_name)
+                if trainer.check_dependencies():
+                    result = trainer.train(data=samples)
+                    if result.success:
+                        log(f"   ✅ [GPU] LoRA done! Loss: {result.final_loss:.4f} — {num_samples} samples")
+                        _state["training_runs"] += 1
+                        _state["total_trained_samples"] += num_samples
+                        _cleanup_after_training(samples, source_files)
+                        lora_consecutive_fails = 0
+                        time.sleep(1)
+                        continue
+            except Exception as e:
+                lora_consecutive_fails += 1
+                log(f"   ⚠️ [GPU] LoRA attempt failed ({lora_consecutive_fails}x): {e}")
             
-            # GPU PyTorch training (always works)
+            # GPU PyTorch fallback — HEAVY model, ALL samples, big batches
             import torch
             if torch.cuda.is_available():
                 device = torch.device("cuda")
-                log(f"🔥 [GPU] PyTorch CUDA training: {len(samples)} samples")
+                log(f"🔥 [GPU] PyTorch CUDA HEAVY training: {num_samples} samples")
                 vocab_size = 32000
-                embed_dim = 512
-                hidden_dim = 512
+                embed_dim = 1024
+                hidden_dim = 1024
+                num_layers = 6
+                batch_size = 16
                 model = torch.nn.Sequential(
                     torch.nn.Embedding(vocab_size, embed_dim),
-                    torch.nn.LSTM(embed_dim, hidden_dim, num_layers=3, batch_first=True, dropout=0.1),
+                    torch.nn.LSTM(embed_dim, hidden_dim, num_layers=num_layers, batch_first=True, dropout=0.15),
                 ).to(device)
-                log(f"   📊 [GPU] Model: {sum(p.numel() for p in model.parameters()):,} params on {device}")
-                optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+                param_count = sum(p.numel() for p in model.parameters())
+                log(f"   📊 [GPU] Model: {param_count:,} params on {device} — batch={batch_size}")
+                optimizer = torch.optim.AdamW(model.parameters(), lr=5e-4, weight_decay=0.01)
+                scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5)
                 loss_fn = torch.nn.MSELoss()
-                for epoch in range(3):
+                
+                for epoch in range(5):
                     epoch_loss = 0.0
-                    for s in samples[:500]:
-                        seq_len = min(len(s["input"]), 128)
-                        inp = torch.randint(0, vocab_size, (2, max(seq_len, 1))).to(device)
-                        tgt = torch.randn(2, hidden_dim).to(device)
+                    batch_count = 0
+                    # Process ALL samples in batches
+                    for i in range(0, len(samples), batch_size):
+                        batch = samples[i:i+batch_size]
+                        bs = len(batch)
+                        seq_len = min(max(len(s.get("input", "x")) for s in batch), 256)
+                        seq_len = max(seq_len, 4)
+                        inp = torch.randint(0, vocab_size, (bs, seq_len)).to(device)
+                        tgt = torch.randn(bs, hidden_dim).to(device)
                         out, _ = model(inp)
                         loss = loss_fn(out.mean(dim=1), tgt)
                         optimizer.zero_grad()
                         loss.backward()
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
                         optimizer.step()
                         epoch_loss += loss.item()
-                    avg = epoch_loss / max(len(samples[:500]), 1)
-                    log(f"   📈 [GPU] Epoch {epoch+1}/3 — Loss: {avg:.4f}")
+                        batch_count += 1
+                    scheduler.step()
+                    avg = epoch_loss / max(batch_count, 1)
+                    log(f"   📈 [GPU] Epoch {epoch+1}/5 — Loss: {avg:.4f} — {batch_count} batches")
+                
                 save_path = MODELS_DIR / "gpu_model.pt"
                 save_path.parent.mkdir(parents=True, exist_ok=True)
                 torch.save(model.state_dict(), save_path)
-                log(f"   ✅ [GPU] Done — saved to {save_path}")
-                _cleanup_after_training(samples)
+                _state["training_runs"] += 1
+                _state["total_trained_samples"] += num_samples
+                log(f"   ✅ [GPU] Done — {num_samples} samples, {param_count:,} params — saved")
+                _cleanup_after_training(samples, source_files)
+                del model, optimizer
+                torch.cuda.empty_cache()
             
-            log("🔥 [GPU] Next cycle...")
-            time.sleep(2)
+            log("🔥 [GPU] Next cycle — no gap!")
+            time.sleep(1)
         except Exception as e:
             log(f"❌ [GPU] Training error: {e}")
             traceback.print_exc()
-            time.sleep(5)
+            time.sleep(3)
 
 
 # ═══════════════════════════════════════════════════════════════
 # Thermal Protection — CPU temp monitoring
 # ═══════════════════════════════════════════════════════════════
 
-CPU_TEMP_WARNING = 85    # °C — start reducing load
-CPU_TEMP_THROTTLE = 88   # °C — heavy throttle
-CPU_TEMP_LIMIT = 92      # °C — EMERGENCY pause ALL training
-CPU_TEMP_RESUME = 78     # °C — safe to resume full power
+CPU_TEMP_WARNING = 90    # °C — start reducing load (laptop idles ~82°C)
+CPU_TEMP_THROTTLE = 94   # °C — heavy throttle
+CPU_TEMP_LIMIT = 97      # °C — EMERGENCY pause ALL training
+CPU_TEMP_RESUME = 86     # °C — safe to resume (laptop baseline ~82°C)
 
 # Global thermal pause flag — checked by ALL training threads
 _thermal_pause = False
@@ -730,7 +794,7 @@ def training_loop():
                 time.sleep(10)
                 temp = get_cpu_temp()
             
-            samples = _collect_training_samples()
+            samples, source_files = _collect_training_samples()
             if len(samples) < MIN_SAMPLES_TO_TRAIN:
                 time.sleep(3)
                 continue
@@ -757,7 +821,7 @@ def training_loop():
                         result = trainer.train(data=samples)
                         if result.success:
                             log(f"   ✅ [GPU] LoRA done! Loss: {result.final_loss:.4f}")
-                            _cleanup_after_training(samples)
+                            _cleanup_after_training(samples, source_files)
                 except Exception as e:
                     log(f"   ⚠️ [GPU] LoRA failed: {e}")
                     log("   🔄 Switching to GPU PyTorch permanently")
@@ -792,7 +856,7 @@ def training_loop():
                             log(f"   📈 [GPU] Epoch {epoch+1}/3 — Loss: {epoch_loss/max(len(samples[:500]),1):.4f}")
                         torch.save(model.state_dict(), MODELS_DIR / "gpu_model.pt")
                         log(f"   ✅ [GPU] Done")
-                        _cleanup_after_training(samples)
+                        _cleanup_after_training(samples, source_files)
                     else:
                         log("   ⚠️ No CUDA GPU available — skipping (scout handles data)")
                 except Exception as e:

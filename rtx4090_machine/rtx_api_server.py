@@ -298,7 +298,7 @@ async def health():
     return {
         "status": "healthy",
         "service": "rtx-ai-server",
-        "version": "8.0.1",
+        "version": "8.0.3",
         "gpu": gpu_info,
         "hierarchy_loaded": h is not None,
         "training_samples": _count_samples(),
@@ -307,9 +307,78 @@ async def health():
     }
 
 
+@app.get("/council/sages")
+async def council_sages():
+    """Return all sages from the hierarchy with their status."""
+    hierarchy = get_hierarchy()
+    sages_list = []
+
+    if hierarchy:
+        try:
+            for sage_id, sage in hierarchy.council.sages.items():
+                sages_list.append({
+                    "id": sage_id,
+                    "name": getattr(sage, "name", sage_id),
+                    "role": getattr(sage, "role", "حكيم"),
+                    "specialization": getattr(sage, "specialization", "عام"),
+                    "status": getattr(sage, "status", "active"),
+                })
+        except Exception:
+            pass
+
+    # Fallback: built-in sage list when hierarchy empty
+    if not sages_list:
+        builtin = [
+            {"id": "president", "name": "رئيس المجلس", "role": "رئاسة", "specialization": "القرارات العليا", "status": "active"},
+            {"id": "identity", "name": "حكيم الهوية", "role": "حكيم", "specialization": "الهوية والثقافة", "status": "active"},
+            {"id": "strategy", "name": "حكيم الاستراتيجيا", "role": "حكيم", "specialization": "التخطيط الاستراتيجي", "status": "active"},
+            {"id": "security", "name": "حكيم الحماية", "role": "حارس", "specialization": "الأمن السيبراني", "status": "active"},
+            {"id": "knowledge", "name": "حكيم المعرفة", "role": "حكيم", "specialization": "العلوم والبحث", "status": "active"},
+            {"id": "code", "name": "حكيم البرمجة", "role": "مهندس", "specialization": "البرمجة والتطوير", "status": "active"},
+            {"id": "scout", "name": "حكيم الكشافة", "role": "كشاف", "specialization": "جمع المعلومات", "status": "active"},
+            {"id": "medicine", "name": "حكيم الطب", "role": "طبيب", "specialization": "الطب والصحة", "status": "active"},
+            {"id": "finance", "name": "حكيم المال", "role": "مستشار", "specialization": "المال والأعمال", "status": "active"},
+            {"id": "survival", "name": "حكيم البقاء", "role": "خبير", "specialization": "البقاء والطوارئ", "status": "active"},
+            {"id": "engineering", "name": "حكيم الهندسة", "role": "مهندس", "specialization": "الهندسة والفيزياء", "status": "active"},
+            {"id": "balance", "name": "حكيم التوازن", "role": "حكيم", "specialization": "التوازن والحكمة", "status": "active"},
+            {"id": "learning", "name": "حكيم التعلم", "role": "معلم", "specialization": "التعلم المستمر", "status": "active"},
+            {"id": "meta", "name": "حكيم الميتا", "role": "معماري", "specialization": "البعد السابع", "status": "active"},
+            {"id": "shadow", "name": "حكيم الظل", "role": "مراقب", "specialization": "المراقبة الخفية", "status": "active"},
+            {"id": "eternity", "name": "حكيم الأبدية", "role": "حكيم", "specialization": "الرؤية المستقبلية", "status": "active"},
+        ]
+        sages_list = builtin
+
+    # Add GPU and training info
+    gpu_info = {}
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "--query-gpu=temperature.gpu,utilization.gpu,memory.used,memory.total",
+             "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=3,
+        )
+        if result.returncode == 0:
+            parts = result.stdout.strip().split(", ")
+            gpu_info = {
+                "temperature": int(parts[0]),
+                "utilization": int(parts[1]),
+                "memory_used_mb": int(parts[2]),
+                "memory_total_mb": int(parts[3]),
+            }
+    except Exception:
+        pass
+
+    return {
+        "sages": sages_list,
+        "total": len(sages_list),
+        "gpu": gpu_info,
+        "training_active": _training_active,
+        "training_samples": _count_samples(),
+    }
+
+
 @app.post("/council/message", response_model=MessageResponse)
 async def council_message(request: MessageRequest):
-    """Send message to AI hierarchy — uses Ollama (real AI only, no fakes)."""
+    """Send message to AI hierarchy — uses TRAINED LoRA model (NOT Ollama for inference)."""
     start = time.time()
 
     # Pick wise man name from hierarchy
@@ -329,35 +398,33 @@ async def council_message(request: MessageRequest):
     source = "rtx5090-direct"
     evidence = []
 
-    # Try Ollama with multiple model fallbacks (REAL AI only)
-    models_to_try = ["qwen2.5:1.5b", "llama3.2:latest", "codellama:7b"]
-    for model_name in models_to_try:
-        try:
-            import requests as req
-            ollama_resp = req.post(
-                "http://localhost:11434/api/generate",
-                json={
-                    "model": model_name,
-                    "prompt": request.message,
-                    "system": f"أنت {wise_man_name} من مجلس حكماء BI-IDE. أجب باحترافية بالعربية.",
-                    "stream": False,
-                },
-                timeout=30,
-            )
-            if ollama_resp.status_code == 200:
-                data = ollama_resp.json()
-                response_text = data.get("response", "").strip()
-                if response_text:
-                    confidence = 0.9
-                    source = f"rtx5090-ollama-{model_name}"
-                    evidence = [f"ollama-{model_name}"]
-                    break
-        except Exception:
-            continue
+    # === ONLY: Trained LoRA model (الموديل المتدرب الخاص) ===
+    # Rules: ❌ لا تستخدم Ollama للاستنتاج — Ollama = تدريب فقط
+    # Rules: إذا AI مو متوفر → "AI غير متاح حالياً"
+    try:
+        response_text = await _inference_trained_model(request.message, wise_man_name)
+        if response_text:
+            confidence = 0.95
+            source = "rtx5090-lora-trained"
+            evidence = ["trained-lora-model"]
+    except Exception as e:
+        print(f"[Council] LoRA inference error: {e}")
 
-    # If ALL AI failed → honest "not available" (NO FAKE RESPONSES per rules)
+    # If trained model failed → try base Qwen on CPU (still our own model, not Ollama)
     if not response_text:
-        response_text = "عذراً، الذكاء الاصطناعي غير متاح حالياً. يرجى المحاولة لاحقاً."
+        try:
+            response_text = await _inference_base_model(request.message, wise_man_name)
+            if response_text:
+                confidence = 0.7
+                source = "rtx5090-base-model"
+                evidence = ["base-qwen-model"]
+        except Exception as e:
+            print(f"[Council] Base model error: {e}")
+
+    # NO OLLAMA FALLBACK — per rules: Ollama = training only
+    # If ALL AI failed → honest "not available"
+    if not response_text:
+        response_text = "AI غير متاح حالياً. الموديل المتدرب قيد التحميل أو التدريب مستمر."
         confidence = 0.0
         source = "rtx5090-unavailable"
 
@@ -377,6 +444,120 @@ async def council_message(request: MessageRequest):
         processing_time_ms=processing_time,
         timestamp=datetime.now().isoformat(),
     )
+
+
+# === Trained LoRA Model Inference (GPU — PyTorch cu128 supports Blackwell sm_120) ===
+_lora_model = None
+_lora_tokenizer = None
+
+async def _inference_trained_model(prompt: str, wise_man: str) -> str:
+    """Inference using the trained LoRA model on GPU (Blackwell sm_120 supported)."""
+    global _lora_model, _lora_tokenizer
+    import asyncio, pathlib
+
+    def _load_and_infer():
+        global _lora_model, _lora_tokenizer
+        models_dir = pathlib.Path("/home/bi/training_data/models/finetuned")
+
+        if _lora_model is None:
+            import torch
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+
+            # Find latest LoRA adapter (check both auto_* and run_* naming)
+            lora_dirs = sorted(
+                list(models_dir.glob("auto_*")) + list(models_dir.glob("run_*")),
+                key=lambda p: p.name, reverse=True
+            )
+            adapter_path = None
+            for d in lora_dirs:
+                if (d / "adapter_config.json").exists():
+                    adapter_path = d
+                    break
+                checkpoints = sorted(d.glob("checkpoint-*"), key=lambda p: p.name, reverse=True)
+                for cp in checkpoints:
+                    if (cp / "adapter_config.json").exists():
+                        adapter_path = cp
+                        break
+                if adapter_path:
+                    break
+
+            if adapter_path:
+                print(f"[Council] Loading LoRA from: {adapter_path}")
+                from peft import PeftModel
+                # GPU inference — PyTorch cu128 supports Blackwell sm_120
+                base_model = AutoModelForCausalLM.from_pretrained(
+                    "Qwen/Qwen2.5-1.5B",
+                    torch_dtype=torch.float16,
+                    device_map="auto",
+                    trust_remote_code=True,
+                )
+                _lora_model = PeftModel.from_pretrained(base_model, str(adapter_path))
+                _lora_model.eval()
+                _lora_tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-1.5B", trust_remote_code=True)
+                print(f"[Council] LoRA model loaded on GPU successfully")
+            else:
+                raise FileNotFoundError("No LoRA adapter found")
+
+        # Generate on GPU
+        import torch
+        system_prompt = f"أنت {wise_man} من مجلس حكماء BI-IDE. أجب باحترافية ودقة بالعربية."
+        full_prompt = f"<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n"
+
+        inputs = _lora_tokenizer(full_prompt, return_tensors="pt").to(_lora_model.device)
+        with torch.no_grad():
+            outputs = _lora_model.generate(
+                **inputs,
+                max_new_tokens=512,
+                temperature=0.7,
+                top_p=0.9,
+                repetition_penalty=1.3,
+                do_sample=True,
+                pad_token_id=_lora_tokenizer.eos_token_id,
+            )
+        response = _lora_tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+        return response.strip()
+
+    return await asyncio.get_event_loop().run_in_executor(None, _load_and_infer)
+
+
+async def _inference_base_model(prompt: str, wise_man: str) -> str:
+    """Fallback: base Qwen2.5-1.5B on GPU without LoRA."""
+    import asyncio
+
+    def _infer_base():
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        model = AutoModelForCausalLM.from_pretrained(
+            "Qwen/Qwen2.5-1.5B",
+            torch_dtype=torch.float16,
+            device_map="auto",
+            trust_remote_code=True,
+        )
+        tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-1.5B", trust_remote_code=True)
+
+        system_prompt = f"أنت {wise_man} من مجلس حكماء BI-IDE. أجب باحترافية ودقة بالعربية."
+        full_prompt = f"<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n"
+
+        inputs = tokenizer(full_prompt, return_tensors="pt").to(model.device)
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=512,
+                temperature=0.7,
+                top_p=0.9,
+                repetition_penalty=1.3,
+                do_sample=True,
+                pad_token_id=tokenizer.eos_token_id,
+            )
+        response = tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+
+        # Free VRAM
+        del model
+        torch.cuda.empty_cache()
+        return response.strip()
+
+    return await asyncio.get_event_loop().run_in_executor(None, _infer_base)
 
 
 @app.post("/api/v1/training-data/ingest")

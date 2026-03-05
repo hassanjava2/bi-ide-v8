@@ -42,6 +42,12 @@ const TrainingDashboard = lazy(() =>
   }))
 );
 
+const MonitorDashboard = lazy(() =>
+  import("./monitor/MonitorDashboard").then((module) => ({
+    default: module.MonitorDashboard,
+  }))
+);
+
 interface TreeNodeProps {
   node: FileNode;
   depth: number;
@@ -119,7 +125,7 @@ function TreeNode({ node, depth, workspaceRoot, onToggle, onSelect }: TreeNodePr
 }
 
 export function Sidebar() {
-  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "sync" | "ai" | "training" | "council" | "hierarchy">("explorer");
+  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "sync" | "ai" | "training" | "council" | "hierarchy" | "monitor">("explorer");
   const [isLoading, setIsLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [isSendingChat, setIsSendingChat] = useState(false);
@@ -131,7 +137,7 @@ export function Sidebar() {
     },
   ]);
   const [isTrainingAction, setIsTrainingAction] = useState(false);
-  
+
   // New file/folder state
   const [isCreatingNew, setIsCreatingNew] = useState<"file" | "folder" | null>(null);
   const [newItemName, setNewItemName] = useState("");
@@ -246,11 +252,11 @@ export function Sidebar() {
   // Handle creating new file/folder
   const handleCreateNew = async () => {
     if (!newItemName || !currentWorkspace) return;
-    
-    const fullPath = newItemPath 
-      ? `${newItemPath}/${newItemName}` 
+
+    const fullPath = newItemPath
+      ? `${newItemPath}/${newItemName}`
       : `${currentWorkspace.path}/${newItemName}`;
-    
+
     try {
       if (isCreatingNew === "file") {
         await fs.writeFile(fullPath, "");
@@ -422,8 +428,8 @@ export function Sidebar() {
         <button
           onClick={() => setActiveTab("explorer")}
           className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === "explorer"
-              ? "text-primary-400 border-b-2 border-primary-500"
-              : "text-dark-400 hover:text-dark-200"
+            ? "text-primary-400 border-b-2 border-primary-500"
+            : "text-dark-400 hover:text-dark-200"
             }`}
         >
           Explorer
@@ -431,8 +437,8 @@ export function Sidebar() {
         <button
           onClick={() => setActiveTab("search")}
           className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === "search"
-              ? "text-primary-400 border-b-2 border-primary-500"
-              : "text-dark-400 hover:text-dark-200"
+            ? "text-primary-400 border-b-2 border-primary-500"
+            : "text-dark-400 hover:text-dark-200"
             }`}
         >
           Search
@@ -440,8 +446,8 @@ export function Sidebar() {
         <button
           onClick={() => setActiveTab("git")}
           className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "git"
-              ? "text-primary-400 border-b-2 border-primary-500"
-              : "text-dark-400 hover:text-dark-200"
+            ? "text-primary-400 border-b-2 border-primary-500"
+            : "text-dark-400 hover:text-dark-200"
             }`}
         >
           Git
@@ -452,8 +458,8 @@ export function Sidebar() {
         <button
           onClick={() => setActiveTab("sync")}
           className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "sync"
-              ? "text-blue-400 border-b-2 border-blue-500"
-              : "text-dark-400 hover:text-dark-200"
+            ? "text-blue-400 border-b-2 border-blue-500"
+            : "text-dark-400 hover:text-dark-200"
             }`}
           title="المزامنة"
         >
@@ -462,8 +468,8 @@ export function Sidebar() {
         <button
           onClick={() => setActiveTab("training")}
           className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "training"
-              ? "text-green-400 border-b-2 border-green-500"
-              : "text-dark-400 hover:text-dark-200"
+            ? "text-green-400 border-b-2 border-green-500"
+            : "text-dark-400 hover:text-dark-200"
             }`}
           title="التدريب"
         >
@@ -472,8 +478,8 @@ export function Sidebar() {
         <button
           onClick={() => setActiveTab("ai")}
           className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "ai"
-              ? "text-primary-400 border-b-2 border-primary-500"
-              : "text-dark-400 hover:text-dark-200"
+            ? "text-primary-400 border-b-2 border-primary-500"
+            : "text-dark-400 hover:text-dark-200"
             }`}
         >
           AI
@@ -481,8 +487,8 @@ export function Sidebar() {
         <button
           onClick={() => setActiveTab("council")}
           className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "council"
-              ? "text-yellow-400 border-b-2 border-yellow-500"
-              : "text-dark-400 hover:text-dark-200"
+            ? "text-yellow-400 border-b-2 border-yellow-500"
+            : "text-dark-400 hover:text-dark-200"
             }`}
           title="مجلس الحكماء"
         >
@@ -491,12 +497,22 @@ export function Sidebar() {
         <button
           onClick={() => setActiveTab("hierarchy")}
           className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "hierarchy"
-              ? "text-cyan-400 border-b-2 border-cyan-500"
-              : "text-dark-400 hover:text-dark-200"
+            ? "text-cyan-400 border-b-2 border-cyan-500"
+            : "text-dark-400 hover:text-dark-200"
             }`}
           title="النظام الهرمي"
         >
           📊
+        </button>
+        <button
+          onClick={() => setActiveTab("monitor")}
+          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "monitor"
+            ? "text-emerald-400 border-b-2 border-emerald-500"
+            : "text-dark-400 hover:text-dark-200"
+            }`}
+          title="مراقبة الأجهزة"
+        >
+          📡
         </button>
       </div>
 
@@ -628,8 +644,8 @@ export function Sidebar() {
                 <div
                   key={index}
                   className={`text-xs p-2 rounded ${message.role === "user"
-                      ? "bg-primary-700/40 text-primary-100"
-                      : "bg-dark-700 text-dark-200"
+                    ? "bg-primary-700/40 text-primary-100"
+                    : "bg-dark-700 text-dark-200"
                     }`}
                 >
                   {message.content}
@@ -687,6 +703,12 @@ export function Sidebar() {
 
         {activeTab === "council" && <CouncilPanel />}
         {activeTab === "hierarchy" && <HierarchyPanel />}
+
+        {activeTab === "monitor" && (
+          <Suspense fallback={panelFallback}>
+            <MonitorDashboard />
+          </Suspense>
+        )}
       </div>
     </div>
   );

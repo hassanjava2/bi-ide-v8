@@ -1,6 +1,6 @@
 [package]
 name = "bi-ide-desktop"
-version = "8.0.1"
+version = "8.0.3"
 description = "BI-IDE Desktop - AI-Powered Development Environment"
 authors = ["BI-IDE Team"]
 license = "MIT"

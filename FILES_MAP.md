@@ -1,7 +1,7 @@
 # 🗺️ FILES MAP - BI-IDE v8
 ## فهرس كامل لكل ملفات المشروع
 
-**آخر تحديث:** 2026-03-05  
+**آخر تحديث:** 2026-03-05 (v8.0.3)
 **المجموع:** 180+ ملف Python | 108,000+ سطر
 
 > ⚠️ **أي ملف جديد أو تعديل لازم يتسجّل هنا**
@@ -157,9 +157,9 @@
 
 | الملف | السطور | الوصف |
 |-------|--------|-------|
-| `rtx_api_server.py` | 428 | **API Server** — port 8090 |
+| `rtx_api_server.py` | 710+ | **API Server** — port 8090, `/council/sages` + `/council/message` (LoRA GPU inference, no Ollama) |
 | `rtx4090_server.py` | 588 | سيرفر RTX قديم |
-| `auto_training_daemon.py` | 1036 | **Training Daemon** — تدريب أوتوماتيكي |
+| `auto_training_daemon.py` | 1071 | **Training Daemon** — instruction-first data, PyTorch cu128 Blackwell sm_120 |
 | `bulk_downloader.py` | 419 | **Bulk Downloader** — تنزيل بيانات |
 | `knowledge_scout.py` | 372 | **Knowledge Scout** — كشافة المعرفة |
 | `resource_manager.py` | 653 | إدارة موارد GPU/CPU |
