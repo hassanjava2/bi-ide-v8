@@ -229,15 +229,58 @@ class BrainDaemon:
         logger.info(f"🗑️ [{capsule_id}] Data wheel: deleted {deleted_count} files "
                     f"({mb:.1f}MB freed) — knowledge is in the model now")
 
-    def _find_capsules_needing_training(self) -> list[tuple]:
-        """كبسولات تحتاج تدريب (بيانات جديدة من الكشافة أو ما اتدربت)"""
-        needs_training = []
+    def _scout_for_capsule(self, capsule_id: str, capsule_dir: Path,
+                            samples: int = 50) -> int:
+        """كشافة لكبسولة واحدة فقط — FIFO"""
+        from brain.knowledge_scout import InternalScout
+
+        total = 0
+
+        # 1. كشافة داخلية (ملفات حقيقية)
+        internal = InternalScout(self.capsules_dir)
+        results = internal.scan_all()
+        total += results.get(capsule_id, 0)
+
+        # 2. كشافة خارجية (Ollama)
+        model = self.scout._get_model()
+        if model:
+            for _ in range(samples):
+                if self.scout.scout_one(capsule_id, model):
+                    total += 1
+
+        return total
+
+    def _count_data(self, capsule_dir: Path) -> int:
+        """عد عينات كبسولة"""
+        data_dir = capsule_dir / "data"
+        if not data_dir.exists():
+            return 0
+        total = 0
+        for f in data_dir.glob("*.jsonl"):
+            if f.name == "merged_train.jsonl":
+                continue
+            try:
+                total += sum(1 for _ in open(f))
+            except:
+                pass
+        return total
+
+    def run_cycle(self):
+        """
+        دورة FIFO — لكل كبسولة:
+          📡 كشافة → 🏋️ تدريب → 🗑️ حذف → التالية
+        الهارد ما يمتلي أبداً!
+        """
+        self.cycle += 1
+        logger.info(f"\n{'='*60}")
+        logger.info(f"🔄 CYCLE #{self.cycle} — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+        logger.info(f"{'='*60}")
+
+        # جمع كل الكبسولات النشطة
+        capsules = []
         for d in sorted(CAPSULES_DIR.iterdir()):
             if not d.is_dir():
                 continue
-            cid = d.name
-
-            # تخطي الأرشيف
             meta_path = d / "meta.json"
             if meta_path.exists():
                 try:
@@ -246,83 +289,59 @@ class BrainDaemon:
                         continue
                 except:
                     pass
+            capsules.append((d.name, d))
 
-            # عد العينات
-            data_dir = d / "data"
-            if not data_dir.exists():
+        logger.info(f"🎯 {len(capsules)} active capsules")
+
+        trained_this_cycle = 0
+        for cid, cdir in capsules:
+            # ═══ 1. كشافة لهاي الكبسولة بس ═══
+            existing = self._count_data(cdir)
+            new_data = self._scout_for_capsule(cid, cdir, SCOUT_SAMPLES_PER_CYCLE)
+            total_data = existing + new_data
+
+            if total_data < MIN_SAMPLES_TO_TRAIN:
                 continue
-            total = 0
-            for f in data_dir.glob("*.jsonl"):
-                if f.name == "merged_train.jsonl":
-                    continue
+
+            # شوف إذا يحتاج تدريب
+            result_path = cdir / "result.json"
+            needs_train = True
+            if result_path.exists():
                 try:
-                    total += sum(1 for _ in open(f))
+                    last = json.loads(result_path.read_text())
+                    if total_data <= last.get("samples", 0) * 1.2:
+                        needs_train = False  # ما زادت البيانات بما يكفي
                 except:
                     pass
 
-            if total < MIN_SAMPLES_TO_TRAIN:
+            if not needs_train:
                 continue
 
-            # شوف آخر تدريب
-            result_path = d / "result.json"
-            if result_path.exists():
-                try:
-                    result = json.loads(result_path.read_text())
-                    last_samples = result.get("samples", 0)
-                    # إعادة تدريب إذا البيانات زادت 20%+
-                    if total > last_samples * 1.2:
-                        needs_training.append((cid, d, total))
-                except:
-                    needs_training.append((cid, d, total))
-            else:
-                needs_training.append((cid, d, total))
+            # ═══ 2. تدريب فوري ═══
+            logger.info(f"\n🔄 FIFO [{cid}]: scout={new_data} + existing={existing} → train")
+            try:
+                self._train_capsule(cdir, cid)
+                trained_this_cycle += 1
+                # ═══ 3. الحذف صار أوتوماتيكي داخل _train_capsule ═══
+            except Exception as e:
+                logger.error(f"❌ {cid}: {e}")
 
-        return needs_training
-
-    def run_cycle(self):
-        """دورة واحدة: كشافة → تدريب → تطور"""
-        self.cycle += 1
-        logger.info(f"\n{'='*60}")
-        logger.info(f"🔄 CYCLE #{self.cycle} — {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-        logger.info(f"{'='*60}")
-
-        # ═══ الخطوة 1: الكشافة ═══
-        logger.info(f"\n📡 Step 1: Scout — gathering data...")
-        scout_results = self.scout.scout_cycle(SCOUT_SAMPLES_PER_CYCLE)
-        total_new = sum(scout_results.values()) if isinstance(scout_results, dict) else 0
-        logger.info(f"📡 Scout: +{total_new} new samples")
-
-        # ═══ الخطوة 2: تدريب ═══
-        logger.info(f"\n🏋️ Step 2: Train — checking capsules...")
-        needs = self._find_capsules_needing_training()
-        if needs:
-            logger.info(f"🏋️ {len(needs)} capsules need training")
-            for cid, cdir, samples in needs:
-                try:
-                    self._train_capsule(cdir, cid)
-                except Exception as e:
-                    logger.error(f"❌ Train {cid}: {e}")
-        else:
-            logger.info("🏋️ No capsules need training this cycle")
-
-        # ═══ الخطوة 3: تطور ═══
+        # ═══ تطور كل N دورات ═══
         if self.cycle % EVOLVE_EVERY_N_CYCLES == 0:
-            logger.info(f"\n🧬 Step 3: Evolve...")
+            logger.info(f"\n🧬 Evolve...")
             result = self.factory.evolve()
             self.total_evolved += len(result.get("created", []))
-            logger.info(f"🧬 Created: {result.get('created', [])}")
-            logger.info(f"🧬 Archived: {result.get('archived', [])}")
-
-        # ═══ الخطوة 4: حالة القرص ═══
-        disk_info = self._disk_status()
-        logger.info(f"\n💾 Disk: {disk_info}")
+            logger.info(f"🧬 +{len(result.get('created', []))} children, "
+                        f"-{len(result.get('archived', []))} archived")
 
         # ═══ ملخص ═══
+        disk_info = self._disk_status()
         status = self.factory.get_status()
-        logger.info(f"\n📊 Status: {status['total_capsules']} capsules, "
-                    f"{status['trained']} trained, "
-                    f"L{status['max_layer']} deep, "
-                    f"cycle #{self.cycle}")
+        logger.info(f"\n📊 Cycle #{self.cycle}: "
+                    f"trained={trained_this_cycle}, "
+                    f"total_capsules={status['total_capsules']}, "
+                    f"L{status['max_layer']} deep")
+        logger.info(f"💾 Disk: {disk_info}")
 
     def _disk_status(self) -> str:
         """حالة مساحة القرص"""
