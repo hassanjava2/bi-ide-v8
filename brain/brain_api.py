@@ -1,230 +1,253 @@
 #!/usr/bin/env python3
 """
-brain_api.py — جسر الدماغ ↔ IDE
+brain_api.py — API موحد لكل وحدات الدماغ 🧠🌐
 
-FastAPI Router يربط نظام الكبسولات بالتطبيق:
-  POST /brain/ask         → سؤال → الكبسولة الصح → جواب
-  POST /brain/ask-multi   → سؤال لأكثر من كبسولة
-  GET  /brain/status      → حالة النظام كاملة
-  GET  /brain/capsules    → قائمة كل الكبسولات
-  GET  /brain/tree        → شجرة التطور
-  GET  /brain/rankings    → ترتيب حسب القوة
-  POST /brain/eval        → امتحان كبسولة
-  POST /brain/council     → قرار المجلس
+سيرفر واحد يربط الـ IDE بكل شي:
+  Chat, Council, AutoProgrammer, Memory, MoE, Curriculum,
+  BI-OS, Real Life, Advanced Brain, File Learner
 
-يضاف إلى rtx_api_server.py:
-  app.include_router(brain_router)
+Port: 8400
 """
 
 import json
 import logging
-import time
 from pathlib import Path
-from typing import Optional, List, Dict, Any
 
 logger = logging.getLogger("brain_api")
+PROJECT_ROOT = Path(__file__).parent.parent
 
-# Lazy imports لتجنب circular
-_bus = None
-_factory = None
-_evaluator = None
-_council = None
-CAPSULES_DIR = Path(__file__).parent.parent / "capsules"
+import sys
+sys.path.insert(0, str(PROJECT_ROOT))
 
-
-def _get_bus():
-    global _bus
-    if _bus is None:
-        from brain.capsule_bus import CapsuleBus
-        _bus = CapsuleBus(CAPSULES_DIR)
-    return _bus
-
-
-def _get_factory():
-    global _factory
-    if _factory is None:
-        from brain.brain_factory import BrainFactory
-        _factory = BrainFactory(CAPSULES_DIR)
-    return _factory
+from brain.memory_system import memory
+from brain.chat_bridge import bridge as chat_bridge
+from brain.council_auto_debate import council
+from brain.auto_programmer import programmer
+from brain.moe_router import moe
+from brain.curriculum_learning import curriculum
+from brain.bi_os_kernel import kernel as bios_kernel
+from brain.real_life_layer import planner as factory_planner
+from brain.advanced_brain import brain as advanced_brain
+from brain.ide_file_learner import learner as file_learner
 
 
-def _get_evaluator():
-    global _evaluator
-    if _evaluator is None:
-        from brain.self_eval import SelfEval
-        _evaluator = SelfEval(CAPSULES_DIR)
-    return _evaluator
+def create_app():
+    try:
+        from fastapi import FastAPI
+        from fastapi.middleware.cors import CORSMiddleware
+        from pydantic import BaseModel
+    except ImportError:
+        print("❌ pip install fastapi uvicorn pydantic")
+        return None
 
+    app = FastAPI(title="BI-IDE Brain API", version="1.0.0")
+    app.add_middleware(CORSMiddleware, allow_origins=["*"],
+                       allow_methods=["*"], allow_headers=["*"])
 
-def _get_council():
-    global _council
-    if _council is None:
-        from brain.council_brain import CouncilBrain
-        _council = CouncilBrain(CAPSULES_DIR)
-    return _council
+    class ChatReq(BaseModel):
+        message: str
+        session_id: str = None
+        mode: str = "fast"
 
+    class CouncilReq(BaseModel):
+        topic: str
 
-def create_brain_router():
-    """إنشاء الـ router — يستدعى من rtx_api_server"""
-    from fastapi import APIRouter, HTTPException
-    from pydantic import BaseModel, Field
+    class SageReq(BaseModel):
+        sage_id: str
+        question: str
 
-    router = APIRouter(prefix="/brain", tags=["brain-capsules"])
+    class ProjectReq(BaseModel):
+        description: str
+        output_dir: str = None
+        mode: str = "fast"
 
-    # ─── Models ──────────────────────────────────────
+    class FactoryReq(BaseModel):
+        product: str
+        capacity: float = 50000
+        location: str = "Iraq"
 
-    class AskRequest(BaseModel):
-        question: str = Field(..., min_length=1, max_length=5000)
-        capsule_id: Optional[str] = None
-        max_tokens: int = 512
+    class FileLearnReq(BaseModel):
+        file_path: str
+        content: str = None
 
-    class AskMultiRequest(BaseModel):
-        question: str = Field(..., min_length=1, max_length=5000)
-        capsule_ids: Optional[List[str]] = None
-        top_n: int = 3
+    class EditLearnReq(BaseModel):
+        file_path: str
+        before: str
+        after: str
 
-    class EvalRequest(BaseModel):
+    class TrainingReq(BaseModel):
         capsule_id: str
+        samples: int
+        accuracy: float
+        cycle: int = 0
 
-    # ─── Endpoints ──────────────────────────────────
+    class ShellReq(BaseModel):
+        command: str
 
-    @router.post("/ask")
-    async def brain_ask(request: AskRequest):
-        """سؤال → الكبسولة المناسبة → جواب"""
-        t0 = time.time()
-        bus = _get_bus()
+    # ─── Chat ───
+    @app.post("/api/chat")
+    async def chat(r: ChatReq):
+        return chat_bridge.chat(r.message, r.session_id, r.mode)
 
-        result = bus.ask(request.question, request.capsule_id)
-        result["processing_ms"] = int((time.time() - t0) * 1000)
+    @app.get("/api/chat/history/{session_id}")
+    async def chat_history(session_id: str):
+        return {"messages": chat_bridge.get_history(session_id)}
 
-        return result
-
-    @router.post("/ask-multi")
-    async def brain_ask_multi(request: AskMultiRequest):
-        """سؤال لأكثر من كبسولة — جمع الآراء"""
-        t0 = time.time()
-        bus = _get_bus()
-
-        results = bus.ask_multi(
-            request.question,
-            request.capsule_ids,
-            request.top_n,
-        )
-
+    # ─── Council ───
+    @app.post("/api/council/debate")
+    async def council_debate(r: CouncilReq):
+        d = council.debate(r.topic)
         return {
-            "results": results,
-            "processing_ms": int((time.time() - t0) * 1000),
+            "topic": d.topic,
+            "opinions": [{"sage_id": o.sage_id, "sage_name": o.sage_name,
+                          "opinion": o.opinion, "vote": o.vote,
+                          "confidence": o.confidence, "icon": o.icon} for o in d.opinions],
+            "votes": d.votes, "decision": d.final_decision,
+            "formatted": council.format_debate(d),
         }
 
-    @router.get("/status")
-    async def brain_status():
-        """حالة النظام الكاملة"""
-        factory = _get_factory()
-        bus = _get_bus()
+    @app.get("/api/council/sages")
+    async def council_sages():
+        return council.get_all_sages()
 
-        status = factory.get_status()
-        bus_status = bus.get_status()
+    @app.post("/api/council/ask")
+    async def ask_sage(r: SageReq):
+        o = council.ask_sage(r.sage_id, r.question)
+        return {"sage_id": o.sage_id, "sage_name": o.sage_name,
+                "opinion": o.opinion, "vote": o.vote,
+                "confidence": o.confidence, "icon": o.icon}
 
+    # ─── AutoProgrammer ───
+    @app.post("/api/programmer/create")
+    async def create_project(r: ProjectReq):
+        p = programmer.create_project(r.description, r.output_dir, r.mode)
+        return {"name": p.name, "type": p.project_type,
+                "files": [{"path": t.file_path, "lang": t.language,
+                           "status": t.status} for t in p.tasks],
+                "output_dir": p.output_dir, "status": p.status}
+
+    @app.get("/api/programmer/status")
+    async def prog_status():
+        return programmer.get_status()
+
+    # ─── MoE ───
+    @app.post("/api/moe/route")
+    async def moe_route(r: ChatReq):
+        d = moe.route(r.message)
+        return {"expert": d.top_expert, "scores": d.all_scores,
+                "confidence": d.confidence, "response": d.response}
+
+    @app.get("/api/moe/status")
+    async def moe_st():
+        return moe.get_status()
+
+    # ─── Curriculum ───
+    @app.get("/api/curriculum/status")
+    async def curr_status():
+        return {"capsules": curriculum.get_all_status()}
+
+    @app.get("/api/curriculum/next/{capsule_id}")
+    async def curr_next(capsule_id: str):
+        return curriculum.get_next_training(capsule_id)
+
+    @app.post("/api/curriculum/report")
+    async def curr_report(r: TrainingReq):
+        curriculum.report_training(r.capsule_id, r.samples, r.accuracy, r.cycle)
+        return {"status": "ok"}
+
+    @app.get("/api/curriculum/class-report")
+    async def class_report():
+        return {"report": curriculum.get_class_report()}
+
+    # ─── Memory ───
+    @app.get("/api/memory/stats")
+    async def mem_stats():
+        return memory.get_stats()
+
+    @app.post("/api/memory/search")
+    async def mem_search(r: ChatReq):
+        return {"results": memory.search_knowledge(r.message)}
+
+    # ─── Factory ───
+    @app.post("/api/factory/plan")
+    async def factory_plan(r: FactoryReq):
+        p = factory_planner.plan_factory(r.product, r.capacity, r.location)
+        return {"product": p.product, "capacity": p.capacity_tons_per_year,
+                "timeline_months": p.timeline_months,
+                "chemistry": p.chemistry, "physics": p.physics,
+                "economics": p.economics, "recommendations": p.recommendations,
+                "formatted": factory_planner.format_plan(p)}
+
+    # ─── Brain ───
+    @app.get("/api/brain/think")
+    async def think():
+        return advanced_brain.think()
+
+    @app.get("/api/brain/imagine")
+    async def imagine():
+        return advanced_brain.imagination.imagine()
+
+    @app.get("/api/brain/awareness")
+    async def awareness():
+        return advanced_brain.awareness.assess()
+
+    @app.get("/api/brain/warnings")
+    async def warnings():
+        return {"warnings": advanced_brain.sixth_sense.scan_system()}
+
+    # ─── File Learner ───
+    @app.post("/api/learner/file")
+    async def learn_file(r: FileLearnReq):
+        return file_learner.learn_from_file(r.file_path, r.content)
+
+    @app.post("/api/learner/edit")
+    async def learn_edit(r: EditLearnReq):
+        return file_learner.learn_from_edit(r.file_path, r.before, r.after)
+
+    # ─── BI-OS ───
+    @app.post("/api/bios/shell")
+    async def shell(r: ShellReq):
+        return {"output": bios_kernel.shell(r.command)}
+
+    @app.get("/api/bios/status")
+    async def bios_st():
+        return bios_kernel.get_status()
+
+    @app.get("/api/bios/ps")
+    async def bios_ps():
+        return {"processes": bios_kernel.processes.list_processes()}
+
+    # ─── Master Status ───
+    @app.get("/api/status")
+    async def master():
         return {
-            **status,
-            "ready_capsules": bus_status["ready_capsules"],
-            "total_queries": bus_status["total_queries"],
-            "registry_size": bus_status["registry_size"],
+            "brain_api": "active",
+            "memory": memory.get_stats(),
+            "moe": {"experts": moe.get_status()["total_experts"],
+                    "with_models": moe.get_status()["experts_with_models"]},
+            "council": {"sages": len(council.get_all_sages())},
+            "bios": bios_kernel.get_status(),
         }
 
-    @router.get("/capsules")
-    async def brain_capsules():
-        """قائمة كل الكبسولات مع معلوماتها"""
-        factory = _get_factory()
-        capsules = factory.get_all_capsules()
-        return {"capsules": capsules, "total": len(capsules)}
-
-    @router.get("/tree")
-    async def brain_tree():
-        """شجرة التطور"""
-        factory = _get_factory()
-        return factory.get_tree()
-
-    @router.get("/rankings")
-    async def brain_rankings():
-        """ترتيب الكبسولات حسب القوة"""
-        evaluator = _get_evaluator()
-        return {"rankings": evaluator.get_rankings()}
-
-    @router.post("/eval")
-    async def brain_eval(request: EvalRequest):
-        """امتحان كبسولة"""
-        evaluator = _get_evaluator()
-        result = evaluator.evaluate_capsule(request.capsule_id)
-        return result
-
-    @router.post("/eval-all")
-    async def brain_eval_all():
-        """امتحان كل الكبسولات"""
-        evaluator = _get_evaluator()
-        results = evaluator.evaluate_all()
-        return {"results": results}
-
-    @router.post("/council")
-    async def brain_council():
-        """قرار المجلس"""
-        council = _get_council()
-        decisions = council.decide()
-        executed = council.execute_decisions(decisions)
-        return {
-            "decisions": decisions,
-            "executed": executed,
-        }
-
-    @router.get("/route")
-    async def brain_route(question: str):
-        """شوف أي كبسولة راح تجاوب (بدون جواب فعلي)"""
-        bus = _get_bus()
-        capsule_id = bus.route(question)
-        return {"question": question, "routed_to": capsule_id}
-
-    # ─── Projects (المنسق) ──────────────────────────
-
-    class ProjectRequest(BaseModel):
-        command: str = Field(..., min_length=1, max_length=5000)
-
-    @router.post("/project")
-    async def brain_project(request: ProjectRequest):
-        """أمر مشروع كامل → تحليل → تنفيذ → 100%"""
-        from brain.project_orchestrator import ProjectOrchestrator
-        orch = ProjectOrchestrator(CAPSULES_DIR)
-        return orch.execute_full(request.command)
-
-    @router.post("/project/analyze")
-    async def brain_project_analyze(request: ProjectRequest):
-        """تحليل أمر فقط (بدون تنفيذ) — شوف شنو راح يصير"""
-        from brain.project_orchestrator import ProjectOrchestrator
-        orch = ProjectOrchestrator(CAPSULES_DIR)
-        return orch.analyze(request.command)
-
-    @router.get("/project/{project_id}")
-    async def brain_project_status(project_id: str):
-        """حالة مشروع"""
-        from brain.project_orchestrator import ProjectOrchestrator
-        orch = ProjectOrchestrator(CAPSULES_DIR)
-        return orch.get_project(project_id)
-
-    @router.get("/projects")
-    async def brain_projects():
-        """كل المشاريع"""
-        from brain.project_orchestrator import ProjectOrchestrator
-        orch = ProjectOrchestrator(CAPSULES_DIR)
-        return {"projects": orch.list_projects()}
-
-    return router
+    return app
 
 
-# للاختبار المباشر
 if __name__ == "__main__":
-    import uvicorn
-    from fastapi import FastAPI
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=8400)
+    args = parser.parse_args()
 
-    app = FastAPI(title="Brain API", description="BI-IDE Brain System")
-    app.include_router(create_brain_router())
-
-    uvicorn.run(app, host="0.0.0.0", port=8091)
+    app = create_app()
+    if app:
+        import uvicorn
+        print(f"""
+🧠 BI-IDE Brain API v1.0 — http://localhost:{args.port}
+{'═' * 40}
+/api/chat          /api/council/debate
+/api/moe/route     /api/curriculum/status
+/api/factory/plan  /api/brain/think
+/api/bios/shell    /api/learner/file
+/api/status        /api/memory/stats
+{'═' * 40}""")
+        uvicorn.run(app, host="0.0.0.0", port=args.port)
