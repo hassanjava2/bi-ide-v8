@@ -1,0 +1,45 @@
+# BI-IDE Distributed Training Fleet
+# الحاسبات المتوفرة للتدريب الموزع
+
+workers:
+  # القيادة المركزية — تدريب + inference
+  - name: rtx-5090-local
+    host: 192.168.1.164
+    user: bi
+    gpus: 1
+    vram_gb: 24
+    model: RTX 5090
+    role: primary          # inference + training
+    ssh_key: ~/.ssh/id_rsa
+    workspace: ~/bi-ide-v8
+    venv: /home/bi/.bi-ide-worker/venv/bin/python3
+    max_concurrent: 2      # كبسولتين بنفس الوقت (24GB / 10GB each)
+
+# === أضف حاسبات هنا ===
+# مثال H200:
+#  - name: h200-cluster-1
+#    host: worker-1.example.com
+#    user: bi
+#    gpus: 8
+#    vram_gb: 141
+#    model: H200
+#    role: training         # training فقط
+#    ssh_key: ~/.ssh/id_rsa
+#    workspace: ~/bi-ide-v8
+#    venv: ~/venv/bin/python3
+#    max_concurrent: 12     # 141GB / 10GB = ~12 capsules per GPU
+
+# الموديل الأساسي
+base_model: Qwen/Qwen2.5-1.5B
+
+# إعدادات التدريب
+training:
+  min_samples: 20
+  max_steps_per_sample_ratio: 2    # max_steps = samples * ratio
+  max_steps_cap: 2000
+  batch_size: 1
+  gradient_accumulation: 16
+  learning_rate: 0.00005
+  max_seq_length: 256
+  bf16: true
+  save_steps: 500
