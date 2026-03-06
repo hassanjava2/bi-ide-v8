@@ -15,13 +15,15 @@ knowledge_scout.py — الكشّافة
 """
 
 import json
+import os
 import time
 import random
 import logging
 import hashlib
+import subprocess
 from pathlib import Path
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, List
 
 logger = logging.getLogger("scout")
 
@@ -613,6 +615,324 @@ class InternalScout:
         return total_results
 
 
-# Singleton
+# ═══════════════════════════════════════════════════════════
+# الكشّافة Offline — تستكشف بدون إنترنت 🔌🔍
+# ═══════════════════════════════════════════════════════════
+
+class OfflineScout:
+    """
+    كشّافة offline — تشتغل بدون إنترنت!
+
+    تستكشف:
+      1. الشبكة المحلية (LAN) — أجهزة متصلة
+      2. أجهزة USB/Bluetooth
+      3. ملفات مشاركة (SMB, NFS)
+      4. حزم الشبكة (packet sniffing)
+      5. أي مصدر بيانات محلي
+    """
+
+    def __init__(self):
+        self.discovered_devices: Dict[str, Dict] = {}
+        self.discovered_services: List[Dict] = []
+        self.scan_history: List[Dict] = []
+
+    def scan_lan(self, subnet: str = None) -> List[Dict]:
+        """
+        فحص الشبكة المحلية — يكتشف كل الأجهزة
+
+        يستخدم: arp, ping sweep
+        """
+        devices = []
+
+        # 1. ARP table — أجهزة معروفة
+        try:
+            result = subprocess.run(
+                ["arp", "-a"], capture_output=True, text=True, timeout=10
+            )
+            for line in result.stdout.splitlines():
+                parts = line.strip().split()
+                if len(parts) >= 4 and "." in parts[1]:
+                    ip = parts[1].strip("()")
+                    mac = parts[3] if len(parts) > 3 else "unknown"
+                    device = {
+                        "ip": ip, "mac": mac, "source": "arp",
+                        "timestamp": datetime.now().isoformat(),
+                    }
+                    devices.append(device)
+                    self.discovered_devices[ip] = device
+        except Exception as e:
+            logger.warning(f"ARP scan failed: {e}")
+
+        # 2. Ping sweep — subnet
+        if subnet:
+            try:
+                base = subnet.rsplit(".", 1)[0]
+                for i in range(1, 255):
+                    ip = f"{base}.{i}"
+                    result = subprocess.run(
+                        ["ping", "-c", "1", "-W", "1", ip],
+                        capture_output=True, timeout=2,
+                    )
+                    if result.returncode == 0 and ip not in self.discovered_devices:
+                        device = {"ip": ip, "source": "ping", "mac": "",
+                                 "timestamp": datetime.now().isoformat()}
+                        devices.append(device)
+                        self.discovered_devices[ip] = device
+            except Exception:
+                pass
+
+        self.scan_history.append({
+            "type": "lan_scan", "devices": len(devices),
+            "timestamp": datetime.now().isoformat(),
+        })
+
+        logger.info(f"🔌 LAN: {len(devices)} devices discovered")
+        return devices
+
+    def scan_ports(self, ip: str, ports: List[int] = None) -> List[Dict]:
+        """فحص ports مفتوحة — يكتشف خدمات"""
+        if not ports:
+            ports = [22, 80, 443, 445, 8080, 3306, 5432, 6379, 27017,
+                     11434, 8400, 554, 1883, 502]  # SSH, HTTP, SMB, DBs, Ollama, RTSP, MQTT, Modbus
+
+        services = []
+        import socket
+
+        for port in ports:
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(0.5)
+                result = sock.connect_ex((ip, port))
+                if result == 0:
+                    service_names = {
+                        22: "SSH", 80: "HTTP", 443: "HTTPS", 445: "SMB",
+                        8080: "HTTP-Alt", 3306: "MySQL", 5432: "PostgreSQL",
+                        6379: "Redis", 27017: "MongoDB", 11434: "Ollama",
+                        8400: "BrainAPI", 554: "RTSP-Camera", 1883: "MQTT",
+                        502: "Modbus",
+                    }
+                    svc = {
+                        "ip": ip, "port": port,
+                        "service": service_names.get(port, f"port-{port}"),
+                        "open": True,
+                    }
+                    services.append(svc)
+                    self.discovered_services.append(svc)
+                sock.close()
+            except Exception:
+                pass
+
+        logger.info(f"🔍 Ports {ip}: {len(services)} open")
+        return services
+
+    def discover_usb(self) -> List[Dict]:
+        """اكتشاف أجهزة USB متصلة"""
+        devices = []
+        try:
+            if _OS == "Darwin":
+                result = subprocess.run(
+                    ["system_profiler", "SPUSBDataType", "-json"],
+                    capture_output=True, text=True, timeout=10,
+                )
+                if result.returncode == 0:
+                    data = json.loads(result.stdout)
+                    for item in data.get("SPUSBDataType", []):
+                        devices.append({
+                            "name": item.get("_name", "Unknown USB"),
+                            "type": "usb", "source": "system_profiler",
+                        })
+            elif _OS == "Linux":
+                result = subprocess.run(
+                    ["lsusb"], capture_output=True, text=True, timeout=5,
+                )
+                for line in result.stdout.splitlines():
+                    devices.append({
+                        "name": line.strip(), "type": "usb", "source": "lsusb",
+                    })
+        except Exception as e:
+            logger.warning(f"USB scan: {e}")
+
+        logger.info(f"🔌 USB: {len(devices)} devices")
+        return devices
+
+    def discover_shared_files(self) -> List[Dict]:
+        """اكتشاف ملفات مشاركة (SMB/NFS/AirDrop)"""
+        shares = []
+
+        # SMB shares
+        for ip, device in self.discovered_devices.items():
+            try:
+                result = subprocess.run(
+                    ["smbclient", "-L", ip, "-N"],
+                    capture_output=True, text=True, timeout=5,
+                )
+                if result.returncode == 0:
+                    for line in result.stdout.splitlines():
+                        if "Disk" in line:
+                            share_name = line.split()[0]
+                            shares.append({
+                                "ip": ip, "name": share_name,
+                                "type": "smb", "path": f"//{ip}/{share_name}",
+                            })
+            except (FileNotFoundError, Exception):
+                pass
+
+        logger.info(f"📁 Shared: {len(shares)} shares found")
+        return shares
+
+    def collect_local_knowledge(self) -> Dict:
+        """جمع كل المعرفة المحلية المتاحة"""
+        knowledge = {
+            "lan_devices": len(self.discovered_devices),
+            "services": len(self.discovered_services),
+            "data_sources": [],
+        }
+
+        # بحث عن مصادر بيانات محلية
+        local_sources = [
+            "/usr/share/dict/words",          # قاموس
+            "/usr/share/doc",                  # توثيق
+            "/usr/share/man",                  # manpages
+            "/usr/share/info",                 # info pages
+        ]
+
+        for src in local_sources:
+            if os.path.exists(src):
+                knowledge["data_sources"].append(src)
+
+        # بحث عن databases محلية
+        db_patterns = ["*.db", "*.sqlite", "*.sqlite3"]
+        for pattern in db_patterns:
+            for db in Path.home().rglob(pattern):
+                try:
+                    if db.stat().st_size > 1000:  # > 1KB
+                        knowledge["data_sources"].append(str(db))
+                        if len(knowledge["data_sources"]) > 50:
+                            break
+                except Exception:
+                    pass
+
+        return knowledge
+
+    def full_scan(self) -> Dict:
+        """فحص كامل — كل شي متوفر offline"""
+        results = {
+            "lan": self.scan_lan(),
+            "usb": self.discover_usb(),
+            "shares": self.discover_shared_files(),
+            "local": self.collect_local_knowledge(),
+            "timestamp": datetime.now().isoformat(),
+        }
+
+        # حفظ بالذاكرة
+        memory.save_knowledge(
+            topic="Offline Scout Full Scan",
+            content=f"LAN: {len(results['lan'])} devices, "
+                    f"USB: {len(results['usb'])}, "
+                    f"Shares: {len(results['shares'])}, "
+                    f"Local sources: {len(results['local']['data_sources'])}",
+            source="offline_scout",
+        )
+
+        return results
+
+
+# ═══════════════════════════════════════════════════════════
+# الكشّافة الموحدة — online + offline + internal
+# ═══════════════════════════════════════════════════════════
+
+class UnifiedScout:
+    """
+    كشّافة موحدة — تبدّل بين الأوضاع أوتوماتيكياً
+
+    Online:  KnowledgeScout (Ollama + API)
+    Offline: OfflineScout (LAN + USB + files)
+    Always:  InternalScout (file system)
+    """
+
+    def __init__(self):
+        self.online = KnowledgeScout()
+        self.offline = OfflineScout()
+        self.internal = InternalScout()
+
+    def is_online(self) -> bool:
+        """فحص الإنترنت"""
+        try:
+            import socket
+            socket.create_connection(("8.8.8.8", 53), timeout=3)
+            return True
+        except (OSError, Exception):
+            return False
+
+    def scout_cycle(self, samples_per_capsule: int = 10) -> Dict:
+        """دورة كشافة — online أو offline أوتوماتيكي"""
+        results = {"mode": "", "online": {}, "offline": {}, "internal": {}}
+
+        # دائماً: ملفات محلية
+        results["internal"] = self.internal.scan_all()
+
+        if self.is_online():
+            results["mode"] = "online"
+            try:
+                self.online.scout_cycle(samples_per_capsule)
+                results["online"] = {"samples": self.online.total_generated}
+            except Exception as e:
+                logger.warning(f"Online scout error: {e}")
+        else:
+            results["mode"] = "offline"
+            results["offline"] = {
+                "lan": len(self.offline.scan_lan()),
+                "usb": len(self.offline.discover_usb()),
+            }
+
+        logger.info(f"🔍 Unified Scout: mode={results['mode']}, "
+                     f"internal={sum(results['internal'].values())} files")
+        return results
+
+    def get_status(self) -> Dict:
+        return {
+            "online": self.is_online(),
+            "total_generated": self.online.total_generated,
+            "lan_devices": len(self.offline.discovered_devices),
+            "services": len(self.offline.discovered_services),
+            "seen_files": len(self.internal.seen_hashes),
+        }
+
+
+# Singletons
 scout = KnowledgeScout()
+offline_scout = OfflineScout()
+unified_scout = UnifiedScout()
+
+
+if __name__ == "__main__":
+    print("🔍 Unified Scout System — Test\n")
+
+    # فحص الإنترنت
+    us = UnifiedScout()
+    online = us.is_online()
+    print(f"Internet: {'✅ Online' if online else '❌ Offline'}\n")
+
+    # فحص LAN
+    print("═" * 40)
+    print("LAN Scan:")
+    devices = us.offline.scan_lan()
+    for d in devices[:5]:
+        print(f"  📱 {d['ip']} ({d.get('mac', '?')})")
+    print(f"  Total: {len(devices)} devices\n")
+
+    # USB
+    print("USB Devices:")
+    usb = us.offline.discover_usb()
+    for d in usb[:5]:
+        print(f"  🔌 {d['name']}")
+    print(f"  Total: {len(usb)}\n")
+
+    # ملفات محلية
+    print("Internal Scan:")
+    internal = us.internal.scan_all()
+    for capsule, count in sorted(internal.items(), key=lambda x: x[1], reverse=True)[:5]:
+        print(f"  📂 {capsule}: +{count} files")
+
+    print(f"\nStatus: {us.get_status()}")
 
