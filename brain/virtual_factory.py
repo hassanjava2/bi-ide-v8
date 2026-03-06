@@ -1,35 +1,38 @@
 #!/usr/bin/env python3
 """
-virtual_factory.py — المصنع الافتراضي الحي 🏭👷
+virtual_factory.py — نظام المصانع الافتراضية الحي 🏭👷
 
-مصنع كامل يشتغل بعمال AI:
-  1. يُبنى حسب خطة (real_life_layer)
-  2. كل عامل = agent باختصاصه
-  3. يشتغل يوم بيوم — مشاكل تظهر وتُحل
-  4. يستقر ← يتطور ← يبني v2 أفضل
-  5. مستقبلاً: يدرب بشر حقيقيين
+مصانع لكلشي حرفياً:
+  - أسمنت، حديد، زجاج، طوب، صابون، أدوية، إلكترونيات...
+  - كل مصنع يُبنى + يشتغل + يحل مشاكله + يتطور
+  - 11+ عامل AI لكل مصنع
+  - الكشافة تكتشف مصانع جديدة
+  - المجلس يقرر أوتوماتيكياً
+  - المستخدم عنده حق الفيتو على كلشي
+
+المستقبل:
+  - كل عامل AI يدرب بشري حقيقي
+  - يراقب من كاميرات ← يوجه ← يصحح
 """
 
 import json
 import random
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 
 logger = logging.getLogger("factory")
-
 PROJECT_ROOT = Path(__file__).parent.parent
 
 try:
     from brain.memory_system import memory
     from brain.real_life_layer import planner
 except ImportError:
-    import sys
-    sys.path.insert(0, str(PROJECT_ROOT))
+    import sys; sys.path.insert(0, str(PROJECT_ROOT))
     from brain.memory_system import memory
     from brain.real_life_layer import planner
 
@@ -50,7 +53,6 @@ class WorkerRole(Enum):
     ELECTRICIAN = "كهربائي"
     OPERATOR = "مشغّل خط"
 
-
 class FactoryPhase(Enum):
     CONSTRUCTION = "بناء"
     COMMISSIONING = "تجهيز"
@@ -62,388 +64,439 @@ class FactoryPhase(Enum):
     EVOLVED = "متطور"
 
 
-class ProblemSeverity(Enum):
-    LOW = "بسيط"
-    MEDIUM = "متوسط"
-    HIGH = "خطير"
-    CRITICAL = "حرج"
-
-
 # ═══════════════════════════════════════════════════════════
 # Factory Worker — عامل AI
 # ═══════════════════════════════════════════════════════════
 
 @dataclass
 class FactoryWorker:
-    """عامل AI — agent بذاكرة وتخصص"""
     worker_id: str
     name: str
     role: WorkerRole
     experience_days: int = 0
     problems_solved: int = 0
-    shifts_worked: int = 0
-    skills: List[str] = field(default_factory=list)
-    current_task: str = ""
-    morale: float = 0.8        # 0-1
-    efficiency: float = 0.5     # يزيد مع الخبرة
+    efficiency: float = 0.5
     memory: List[Dict] = field(default_factory=list)
 
     def work_shift(self, problems: List) -> List[Dict]:
-        """وردية عمل — يحل مشاكل حسب تخصصه"""
-        self.shifts_worked += 1
         self.experience_days += 1
         actions = []
-
         relevant = [p for p in problems if self._can_handle(p)]
-        for problem in relevant[:3]:  # أقصى 3 مشاكل بالوردية
+        for problem in relevant[:3]:
             solved = random.random() < self.efficiency
             if solved:
                 self.problems_solved += 1
                 self.efficiency = min(self.efficiency + 0.01, 0.99)
-                actions.append({
-                    "worker": self.name,
-                    "role": self.role.value,
-                    "action": "solved",
-                    "problem": problem["description"],
-                    "method": self._solve_method(problem),
-                })
+                actions.append({"worker": self.name, "role": self.role.value,
+                              "action": "solved", "problem": problem["description"]})
             else:
-                actions.append({
-                    "worker": self.name,
-                    "role": self.role.value,
-                    "action": "escalated",
-                    "problem": problem["description"],
-                })
-
-        # ذاكرة العامل
+                actions.append({"worker": self.name, "role": self.role.value,
+                              "action": "escalated", "problem": problem["description"]})
         self.memory.extend(actions[-5:])
         if len(self.memory) > 50:
             self.memory = self.memory[-50:]
-
         return actions
 
     def _can_handle(self, problem: Dict) -> bool:
-        role_problems = {
+        role_tags = {
             WorkerRole.PRODUCTION_ENGINEER: ["production", "output", "speed", "bottleneck"],
             WorkerRole.MAINTENANCE_TECH: ["breakdown", "repair", "maintenance", "wear"],
             WorkerRole.QUALITY_INSPECTOR: ["defect", "quality", "contamination", "spec"],
             WorkerRole.WAREHOUSE_MANAGER: ["inventory", "shortage", "storage", "shipment"],
-            WorkerRole.SAFETY_OFFICER: ["safety", "leak", "fire", "hazard", "injury"],
+            WorkerRole.SAFETY_OFFICER: ["safety", "leak", "fire", "hazard"],
             WorkerRole.ACCOUNTANT: ["cost", "budget", "expense", "profit"],
             WorkerRole.CHEMIST: ["reaction", "temperature", "chemical", "formula"],
             WorkerRole.ELECTRICIAN: ["power", "voltage", "circuit", "motor"],
             WorkerRole.OPERATOR: ["operation", "feed", "control", "valve"],
             WorkerRole.MANAGER: ["any"],
         }
-        tags = role_problems.get(self.role, [])
-        if "any" in tags:
-            return True
-        return any(t in problem.get("tags", []) for t in tags)
-
-    def _solve_method(self, problem: Dict) -> str:
-        methods = {
-            WorkerRole.MAINTENANCE_TECH: "فحص + إصلاح + اختبار",
-            WorkerRole.QUALITY_INSPECTOR: "فحص عينات + تعديل معايير + إعادة فحص",
-            WorkerRole.PRODUCTION_ENGINEER: "تحليل الخط + تعديل سرعة + موازنة",
-            WorkerRole.SAFETY_OFFICER: "تقييم مخاطر + إجراءات وقائية + تدريب",
-            WorkerRole.CHEMIST: "تحليل مخبري + تعديل تركيبة + اختبار",
-            WorkerRole.ELECTRICIAN: "فحص دارات + استبدال قطعة + تجربة",
-            WorkerRole.MANAGER: "تنسيق فرق + تحديد أولويات + متابعة",
-        }
-        return methods.get(self.role, "تحليل + حل + تقييم")
+        tags = role_tags.get(self.role, [])
+        return "any" in tags or any(t in problem.get("tags", []) for t in tags)
 
     def train_human(self, human_name: str, task: str) -> Dict:
-        """تدريب موظف بشري"""
         return {
-            "trainer": self.name,
-            "trainee": human_name,
-            "task": task,
-            "instructions": f"[{self.role.value}] {task}: " + self._solve_method({"tags": []}),
-            "experience_level": "مبتدئ" if self.experience_days < 30 else "متوسط" if self.experience_days < 90 else "خبير",
+            "trainer": self.name, "trainee": human_name, "task": task,
+            "role": self.role.value,
+            "level": "مبتدئ" if self.experience_days < 30 else "متوسط" if self.experience_days < 90 else "خبير",
             "confidence": round(self.efficiency, 2),
         }
 
 
 # ═══════════════════════════════════════════════════════════
-# Production Line — خط إنتاج
-# ═══════════════════════════════════════════════════════════
-
-@dataclass
-class ProductionLine:
-    """خط إنتاج"""
-    line_id: str
-    product: str
-    capacity_per_day: float
-    actual_output: float = 0
-    efficiency: float = 0.0
-    uptime_pct: float = 100
-    defect_rate: float = 5.0   # %
-    energy_kwh: float = 0
-
-
-# ═══════════════════════════════════════════════════════════
-# Factory Problems — مشاكل المصنع
+# مشاكل المصنع
 # ═══════════════════════════════════════════════════════════
 
 PROBLEM_TEMPLATES = [
-    {"description": "عطل بالمحرك الرئيسي", "severity": "high", "tags": ["breakdown", "repair", "motor"]},
-    {"description": "تسرب مادة كيميائية", "severity": "critical", "tags": ["leak", "chemical", "safety"]},
-    {"description": "انخفاض جودة المنتج", "severity": "medium", "tags": ["quality", "defect", "spec"]},
-    {"description": "نقص مواد خام", "severity": "high", "tags": ["inventory", "shortage"]},
-    {"description": "ارتفاع حرارة الفرن فوق الحد", "severity": "high", "tags": ["temperature", "control"]},
-    {"description": "انقطاع كهرباء جزئي", "severity": "medium", "tags": ["power", "voltage", "circuit"]},
-    {"description": "تجاوز الميزانية الشهرية", "severity": "low", "tags": ["cost", "budget"]},
-    {"description": "عيب بالتغليف", "severity": "low", "tags": ["quality", "defect"]},
-    {"description": "بطء خط الإنتاج", "severity": "medium", "tags": ["production", "bottleneck", "speed"]},
-    {"description": "تآكل بالأنابيب", "severity": "medium", "tags": ["maintenance", "wear"]},
-    {"description": "خطر حريق قرب المخزن", "severity": "critical", "tags": ["fire", "safety", "hazard"]},
-    {"description": "تفاعل كيميائي غير متوقع", "severity": "high", "tags": ["reaction", "chemical"]},
-    {"description": "تلف بمضخة التبريد", "severity": "medium", "tags": ["breakdown", "repair"]},
-    {"description": "تأخر شحنة مواد", "severity": "low", "tags": ["shipment", "inventory"]},
-    {"description": "ضوضاء غير طبيعية بالكسارة", "severity": "medium", "tags": ["breakdown", "maintenance"]},
+    {"description": "عطل بالمحرك الرئيسي", "tags": ["breakdown", "repair", "motor"]},
+    {"description": "تسرب مادة كيميائية", "tags": ["leak", "chemical", "safety"]},
+    {"description": "انخفاض جودة المنتج", "tags": ["quality", "defect", "spec"]},
+    {"description": "نقص مواد خام", "tags": ["inventory", "shortage"]},
+    {"description": "ارتفاع حرارة فوق الحد", "tags": ["temperature", "control"]},
+    {"description": "انقطاع كهرباء جزئي", "tags": ["power", "voltage", "circuit"]},
+    {"description": "تجاوز ميزانية", "tags": ["cost", "budget"]},
+    {"description": "بطء خط إنتاج", "tags": ["production", "bottleneck", "speed"]},
+    {"description": "تآكل أنابيب", "tags": ["maintenance", "wear"]},
+    {"description": "خطر حريق", "tags": ["fire", "safety", "hazard"]},
+    {"description": "تفاعل كيميائي غير متوقع", "tags": ["reaction", "chemical"]},
+    {"description": "تلف مضخة تبريد", "tags": ["breakdown", "repair"]},
+    {"description": "ضوضاء غير طبيعية", "tags": ["breakdown", "maintenance"]},
 ]
 
 
 # ═══════════════════════════════════════════════════════════
-# Virtual Factory — المصنع الافتراضي
+# مصنع واحد
 # ═══════════════════════════════════════════════════════════
 
 class VirtualFactory:
-    """
-    مصنع افتراضي حي — يشتغل بعمال AI
-
-    المراحل:
-      1. البناء ← حسب خطة real_life_layer
-      2. التشغيل ← مشاكل تظهر ← عمال يحلونها
-      3. الاستقرار ← إنتاج ثابت
-      4. التطوير ← v2 أفضل
-      5. تدريب بشر ← كل عامل AI يعلّم بشري
-    """
-
     def __init__(self, product: str, capacity: float = 50000, location: str = "Iraq"):
         self.product = product
         self.capacity = capacity
         self.location = location
+        self.factory_id = f"factory_{product}_{int(time.time())}"
         self.phase = FactoryPhase.CONSTRUCTION
         self.day = 0
         self.version = 1
-
-        # خطة المصنع
-        plan = planner.plan_factory(product, capacity, location)
-        self.plan = plan
-
-        # عمال AI
-        self.workers: List[FactoryWorker] = self._create_workers()
-
-        # خط إنتاج
-        self.production = ProductionLine(
-            line_id=f"{product}_line_1",
-            product=product,
-            capacity_per_day=capacity / 365,
-        )
-
-        # سجلات
+        self.workers = self._create_workers()
+        self.total_output = 0.0
+        self.total_problems = 0
+        self.total_solved = 0
         self.daily_logs: List[Dict] = []
-        self.problems_history: List[Dict] = []
-        self.total_output: float = 0
-        self.total_problems: int = 0
-        self.total_solved: int = 0
 
     def _create_workers(self) -> List[FactoryWorker]:
-        """إنشاء عمال المصنع"""
-        workers = []
-        worker_defs = [
-            ("mgr_01", "أبو حسين", WorkerRole.MANAGER, ["leadership", "planning"]),
-            ("eng_01", "عباس المهندس", WorkerRole.PRODUCTION_ENGINEER, ["optimization", "scheduling"]),
-            ("mnt_01", "حيدر الفني", WorkerRole.MAINTENANCE_TECH, ["welding", "electronics"]),
-            ("qc_01", "زهراء المفتشة", WorkerRole.QUALITY_INSPECTOR, ["testing", "specs"]),
-            ("wh_01", "كرار المخزنجي", WorkerRole.WAREHOUSE_MANAGER, ["inventory", "logistics"]),
-            ("saf_01", "ميثم السلامة", WorkerRole.SAFETY_OFFICER, ["first_aid", "fire_safety"]),
-            ("acc_01", "نور المحاسبة", WorkerRole.ACCOUNTANT, ["budgeting", "reporting"]),
-            ("chem_01", "علي الكيميائي", WorkerRole.CHEMIST, ["analysis", "formulation"]),
-            ("elec_01", "مصطفى الكهربائي", WorkerRole.ELECTRICIAN, ["motors", "wiring"]),
-            ("op_01", "أحمد المشغّل", WorkerRole.OPERATOR, ["controls", "monitoring"]),
-            ("op_02", "محمد المشغّل", WorkerRole.OPERATOR, ["feeding", "valves"]),
+        names = [
+            ("mgr", "أبو حسين", WorkerRole.MANAGER),
+            ("eng", "عباس", WorkerRole.PRODUCTION_ENGINEER),
+            ("mnt", "حيدر", WorkerRole.MAINTENANCE_TECH),
+            ("qc", "زهراء", WorkerRole.QUALITY_INSPECTOR),
+            ("wh", "كرار", WorkerRole.WAREHOUSE_MANAGER),
+            ("saf", "ميثم", WorkerRole.SAFETY_OFFICER),
+            ("acc", "نور", WorkerRole.ACCOUNTANT),
+            ("chem", "علي", WorkerRole.CHEMIST),
+            ("elec", "مصطفى", WorkerRole.ELECTRICIAN),
+            ("op1", "أحمد", WorkerRole.OPERATOR),
+            ("op2", "محمد", WorkerRole.OPERATOR),
         ]
-        for wid, name, role, skills in worker_defs:
-            workers.append(FactoryWorker(worker_id=wid, name=name, role=role, skills=skills))
-        return workers
+        return [FactoryWorker(f"{self.product}_{wid}", name, role) for wid, name, role in names]
 
     def simulate_day(self) -> Dict:
-        """محاكاة يوم واحد"""
         self.day += 1
-        log = {"day": self.day, "phase": self.phase.value, "events": [], "problems": [], "solutions": []}
+        log = {"day": self.day, "phase": self.phase.value, "events": [], "solutions": []}
 
-        # === تحديد المرحلة ===
         if self.day <= 3:
             self.phase = FactoryPhase.CONSTRUCTION
-            log["events"].append("🏗️ أعمال بناء مستمرة")
-            return self._finish_day(log)
+            return log
         elif self.day <= 5:
             self.phase = FactoryPhase.COMMISSIONING
-            log["events"].append("⚙️ تجهيز المعدات واختبارها")
-            return self._finish_day(log)
-        elif self.day <= 10:
-            self.phase = FactoryPhase.STARTUP
-        elif self.day <= 30:
-            self.phase = FactoryPhase.UNSTABLE
-        elif self.day <= 60:
-            self.phase = FactoryPhase.STABILIZING
-        elif self.day <= 90:
-            self.phase = FactoryPhase.STABLE
-        else:
-            self.phase = FactoryPhase.OPTIMIZING
+            return log
+        elif self.day <= 10: self.phase = FactoryPhase.STARTUP
+        elif self.day <= 30: self.phase = FactoryPhase.UNSTABLE
+        elif self.day <= 60: self.phase = FactoryPhase.STABILIZING
+        elif self.day <= 90: self.phase = FactoryPhase.STABLE
+        else: self.phase = FactoryPhase.OPTIMIZING
 
-        # === مشاكل اليوم ===
-        problem_chance = {
-            FactoryPhase.STARTUP: 0.8,
-            FactoryPhase.UNSTABLE: 0.6,
-            FactoryPhase.STABILIZING: 0.3,
-            FactoryPhase.STABLE: 0.1,
-            FactoryPhase.OPTIMIZING: 0.05,
-        }
-        chance = problem_chance.get(self.phase, 0.3)
+        chance = {FactoryPhase.STARTUP: 0.8, FactoryPhase.UNSTABLE: 0.6,
+                  FactoryPhase.STABILIZING: 0.3, FactoryPhase.STABLE: 0.1,
+                  FactoryPhase.OPTIMIZING: 0.05}.get(self.phase, 0.3)
 
-        problems = []
-        num_problems = 0
-        for _ in range(5):
-            if random.random() < chance:
-                num_problems += 1
-        if num_problems > 0:
-            problems = random.sample(PROBLEM_TEMPLATES, min(num_problems, len(PROBLEM_TEMPLATES)))
-
+        problems = [p for p in PROBLEM_TEMPLATES if random.random() < chance][:5]
         self.total_problems += len(problems)
-        log["problems"] = [p["description"] for p in problems]
 
-        # === عمال يحلون المشاكل ===
         for worker in self.workers:
-            actions = worker.work_shift(problems)
-            for action in actions:
+            for action in worker.work_shift(problems):
                 if action["action"] == "solved":
                     self.total_solved += 1
-                    log["solutions"].append(f"{action['worker']}: حل '{action['problem']}' بـ{action['method']}")
-                    # إزالة المشكلة المحلولة
                     problems = [p for p in problems if p["description"] != action["problem"]]
+                    log["solutions"].append(f"{action['worker']}: {action['problem']}")
 
-        # === إنتاج ===
-        base_efficiency = {
-            FactoryPhase.STARTUP: 0.2,
-            FactoryPhase.UNSTABLE: 0.4,
-            FactoryPhase.STABILIZING: 0.7,
-            FactoryPhase.STABLE: 0.9,
-            FactoryPhase.OPTIMIZING: 0.95,
-        }
-        eff = base_efficiency.get(self.phase, 0.5)
-        problem_penalty = len(problems) * 0.05
-        eff = max(0.1, eff - problem_penalty)
+        eff = {FactoryPhase.STARTUP: 0.2, FactoryPhase.UNSTABLE: 0.4,
+               FactoryPhase.STABILIZING: 0.7, FactoryPhase.STABLE: 0.9,
+               FactoryPhase.OPTIMIZING: 0.95}.get(self.phase, 0.5)
+        eff = max(0.1, eff - len(problems) * 0.05)
+        output = (self.capacity / 365) * eff
+        self.total_output += output
+        log["output"] = round(output, 1)
+        log["efficiency"] = f"{eff:.0%}"
 
-        self.production.efficiency = eff
-        self.production.actual_output = self.production.capacity_per_day * eff
-        self.total_output += self.production.actual_output
-
-        log["production"] = {
-            "output_tons": round(self.production.actual_output, 1),
-            "efficiency": f"{eff:.0%}",
-            "total_tons": round(self.total_output, 1),
-        }
-
-        return self._finish_day(log)
-
-    def _finish_day(self, log: Dict) -> Dict:
         self.daily_logs.append(log)
-
-        # حفظ بالذاكرة كل 10 أيام
-        if self.day % 10 == 0:
-            memory.save_knowledge(
-                topic=f"Factory {self.product} Day {self.day}",
-                content=f"Phase: {self.phase.value}, Output: {self.total_output:.0f}t, "
-                        f"Problems: {self.total_problems}, Solved: {self.total_solved}",
-                source="virtual_factory",
-            )
-
         return log
 
     def simulate_period(self, days: int = 90) -> Dict:
-        """محاكاة فترة كاملة"""
         for _ in range(days):
             self.simulate_day()
-
         return self.get_report()
 
     def get_report(self) -> Dict:
-        """تقرير المصنع"""
-        solve_rate = (self.total_solved / max(self.total_problems, 1)) * 100
         return {
-            "product": self.product,
-            "version": self.version,
-            "day": self.day,
-            "phase": self.phase.value,
-            "total_output_tons": round(self.total_output, 1),
-            "total_problems": self.total_problems,
-            "total_solved": self.total_solved,
-            "solve_rate_pct": round(solve_rate, 1),
+            "factory_id": self.factory_id, "product": self.product,
+            "version": self.version, "day": self.day, "phase": self.phase.value,
+            "total_output": round(self.total_output, 1),
+            "problems": self.total_problems, "solved": self.total_solved,
+            "solve_rate": round(self.total_solved / max(self.total_problems, 1) * 100, 1),
             "workers": len(self.workers),
-            "avg_efficiency": round(sum(w.efficiency for w in self.workers) / len(self.workers), 2),
             "top_solver": max(self.workers, key=lambda w: w.problems_solved).name,
         }
 
     def evolve(self) -> "VirtualFactory":
-        """تطوير المصنع — v2"""
-        self.version += 1
-        # تحسينات بناءً على الخبرة
-        improved_capacity = self.capacity * 1.15  # 15% أكثر
-        new_factory = VirtualFactory(self.product, improved_capacity, self.location)
-        new_factory.version = self.version
-
-        # نقل خبرات العمال
-        for i, worker in enumerate(new_factory.workers):
+        new = VirtualFactory(self.product, self.capacity * 1.15, self.location)
+        new.version = self.version + 1
+        for i, w in enumerate(new.workers):
             if i < len(self.workers):
-                worker.efficiency = min(self.workers[i].efficiency + 0.1, 0.99)
-                worker.experience_days = self.workers[i].experience_days
+                w.efficiency = min(self.workers[i].efficiency + 0.1, 0.99)
+                w.experience_days = self.workers[i].experience_days
+        return new
+
+
+# ═══════════════════════════════════════════════════════════
+# مدير المصانع — كل المصانع!
+# ═══════════════════════════════════════════════════════════
+
+# أنواع المصانع المعروفة
+FACTORY_CATALOG = {
+    "cement": {"name_ar": "أسمنت", "capacity": 50000, "category": "بناء"},
+    "steel": {"name_ar": "حديد", "capacity": 30000, "category": "بناء"},
+    "glass": {"name_ar": "زجاج", "capacity": 10000, "category": "بناء"},
+    "brick": {"name_ar": "طوب", "capacity": 100000, "category": "بناء"},
+    "concrete": {"name_ar": "خرسانة", "capacity": 80000, "category": "بناء"},
+    "soap": {"name_ar": "صابون", "capacity": 5000, "category": "استهلاكي"},
+    "medicine": {"name_ar": "أدوية", "capacity": 1000, "category": "صحة"},
+    "electronics": {"name_ar": "إلكترونيات", "capacity": 500, "category": "تقنية"},
+    "furniture": {"name_ar": "أثاث", "capacity": 20000, "category": "استهلاكي"},
+    "textile": {"name_ar": "نسيج", "capacity": 15000, "category": "استهلاكي"},
+    "plastic": {"name_ar": "بلاستيك", "capacity": 10000, "category": "صناعي"},
+    "paper": {"name_ar": "ورق", "capacity": 20000, "category": "استهلاكي"},
+    "fertilizer": {"name_ar": "أسمدة", "capacity": 25000, "category": "زراعة"},
+    "food_processing": {"name_ar": "تعليب غذائي", "capacity": 15000, "category": "غذاء"},
+    "water_treatment": {"name_ar": "معالجة مياه", "capacity": 50000, "category": "بنية تحتية"},
+    "solar_panel": {"name_ar": "ألواح شمسية", "capacity": 5000, "category": "طاقة"},
+    "battery": {"name_ar": "بطاريات", "capacity": 3000, "category": "طاقة"},
+    "wire_cable": {"name_ar": "أسلاك وكابلات", "capacity": 10000, "category": "كهرباء"},
+    "pipe": {"name_ar": "أنابيب", "capacity": 20000, "category": "بنية تحتية"},
+    "tools": {"name_ar": "أدوات يدوية", "capacity": 5000, "category": "صناعي"},
+}
+
+
+class FactoryManager:
+    """
+    مدير كل المصانع 🏭🏭🏭
+
+    - ينشئ مصانع لكلشي
+    - الكشافة تكتشف مصانع جديدة
+    - المجلس يقرر أوتوماتيكياً
+    - المستخدم عنده حق الفيتو
+    """
+
+    def __init__(self):
+        self.factories: Dict[str, VirtualFactory] = {}
+        self.pending_proposals: List[Dict] = []   # مقترحات تنتظر المجلس
+        self.vetoed: List[str] = []                # مرفوضة بالفيتو
+        self.user_commands: List[Dict] = []        # أوامر المستخدم
+
+    # ═══════════════════════════════════════════════════════
+    # إنشاء مصانع
+    # ═══════════════════════════════════════════════════════
+
+    def create_factory(self, product: str, capacity: float = None,
+                       location: str = "Iraq") -> VirtualFactory:
+        """إنشاء مصنع جديد"""
+        catalog = FACTORY_CATALOG.get(product, {})
+        if not capacity:
+            capacity = catalog.get("capacity", 10000)
+
+        factory = VirtualFactory(product, capacity, location)
+        self.factories[factory.factory_id] = factory
 
         memory.save_knowledge(
-            topic=f"Factory Evolution v{self.version}",
-            content=f"{self.product}: Evolved to v{self.version}, capacity +15%",
-            source="factory_evolution",
+            topic=f"Factory Created: {product}",
+            content=f"مصنع {catalog.get('name_ar', product)}: {capacity:,} طن/سنة @ {location}",
+            source="factory_manager",
+        )
+        logger.info(f"🏭 Created: {product} ({capacity:,} tons/year)")
+        return factory
+
+    def create_all_essential(self) -> List[str]:
+        """إنشاء كل المصانع الأساسية"""
+        created = []
+        for product in FACTORY_CATALOG:
+            if not any(f.product == product for f in self.factories.values()):
+                self.create_factory(product)
+                created.append(product)
+        return created
+
+    # ═══════════════════════════════════════════════════════
+    # الكشافة → مقترحات مصانع جديدة
+    # ═══════════════════════════════════════════════════════
+
+    def scout_propose_factory(self, product: str, reason: str,
+                               source: str = "scout") -> Dict:
+        """الكشافة أو أي طبقة تقترح مصنع جديد"""
+        proposal = {
+            "id": f"prop_{product}_{int(time.time())}",
+            "product": product, "reason": reason,
+            "source": source, "status": "pending",
+            "timestamp": datetime.now().isoformat(),
+        }
+        self.pending_proposals.append(proposal)
+
+        memory.save_decision(
+            decision_type="factory_proposal",
+            participants=[source],
+            topic=f"مقترح مصنع: {product}",
+            result=proposal,
         )
 
-        return new_factory
+        return proposal
 
-    def format_report(self) -> str:
+    def council_review_proposals(self) -> List[Dict]:
+        """المجلس يراجع المقترحات أوتوماتيكياً"""
+        results = []
+        for proposal in self.pending_proposals:
+            if proposal["status"] != "pending":
+                continue
+            if proposal["product"] in self.vetoed:
+                proposal["status"] = "vetoed"
+                results.append(proposal)
+                continue
+
+            # المجلس يوافق أوتوماتيكياً (إلا لو المستخدم رفض)
+            proposal["status"] = "approved"
+            factory = self.create_factory(proposal["product"])
+            proposal["factory_id"] = factory.factory_id
+            results.append(proposal)
+
+        self.pending_proposals = [p for p in self.pending_proposals if p["status"] == "pending"]
+        return results
+
+    # ═══════════════════════════════════════════════════════
+    # حق الفيتو — المستخدم يسيطر على كلشي
+    # ═══════════════════════════════════════════════════════
+
+    def user_veto(self, factory_id: str = None, product: str = None, reason: str = ""):
+        """المستخدم يرفض — أمره فوق الكل"""
+        cmd = {"type": "veto", "factory_id": factory_id, "product": product,
+               "reason": reason, "timestamp": datetime.now().isoformat()}
+        self.user_commands.append(cmd)
+
+        if product:
+            self.vetoed.append(product)
+        if factory_id and factory_id in self.factories:
+            del self.factories[factory_id]
+
+        memory.save_decision(
+            decision_type="user_veto", participants=["user"],
+            topic=f"فيتو: {product or factory_id}",
+            result=cmd,
+        )
+        logger.info(f"🚫 VETO: {product or factory_id} — {reason}")
+
+    def user_command(self, command: str, target: str = None, params: Dict = None):
+        """
+        أمر مستخدم — يسري على الكل فوراً
+
+        أمثلة:
+          user_command("create", "cement", {"capacity": 100000})
+          user_command("stop", factory_id)
+          user_command("evolve", factory_id)
+          user_command("create_all")
+        """
+        cmd = {"command": command, "target": target,
+               "params": params or {}, "timestamp": datetime.now().isoformat()}
+        self.user_commands.append(cmd)
+
+        if command == "create" and target:
+            cap = (params or {}).get("capacity")
+            return self.create_factory(target, cap)
+        elif command == "create_all":
+            return self.create_all_essential()
+        elif command == "stop" and target in self.factories:
+            del self.factories[target]
+        elif command == "evolve" and target in self.factories:
+            old = self.factories[target]
+            new = old.evolve()
+            self.factories[new.factory_id] = new
+            return new
+        elif command == "veto":
+            self.user_veto(product=target, reason=str(params))
+
+    # ═══════════════════════════════════════════════════════
+    # محاكاة + تقارير
+    # ═══════════════════════════════════════════════════════
+
+    def simulate_all(self, days: int = 30) -> Dict:
+        """محاكاة كل المصانع"""
+        results = {}
+        for fid, factory in self.factories.items():
+            factory.simulate_period(days)
+            results[fid] = factory.get_report()
+        return results
+
+    def get_summary(self) -> Dict:
+        """ملخص كل المصانع"""
+        total_output = sum(f.total_output for f in self.factories.values())
+        total_workers = sum(len(f.workers) for f in self.factories.values())
+        return {
+            "factories": len(self.factories),
+            "products": list(set(f.product for f in self.factories.values())),
+            "total_output_tons": round(total_output, 1),
+            "total_workers": total_workers,
+            "total_problems": sum(f.total_problems for f in self.factories.values()),
+            "total_solved": sum(f.total_solved for f in self.factories.values()),
+            "vetoed": self.vetoed,
+            "user_commands": len(self.user_commands),
+            "pending_proposals": len(self.pending_proposals),
+        }
+
+    def format_summary(self) -> str:
         """تقرير منسق"""
-        r = self.get_report()
+        s = self.get_summary()
         lines = [
-            f"# 🏭 تقرير مصنع: {self.product} v{r['version']}",
-            f"**اليوم**: {r['day']} | **المرحلة**: {r['phase']}",
-            f"**إنتاج كلي**: {r['total_output_tons']:,.0f} طن",
-            f"**مشاكل**: {r['total_problems']} (حُلت {r['total_solved']} — {r['solve_rate_pct']}%)",
-            f"**أفضل عامل**: {r['top_solver']}",
-            f"\n## 👷 العمال ({r['workers']}):",
+            f"# 🏭 مدير المصانع — {s['factories']} مصنع\n",
+            f"إنتاج كلي: **{s['total_output_tons']:,.0f} طن**",
+            f"عمال AI: **{s['total_workers']}**",
+            f"مشاكل: {s['total_problems']} (حُلت {s['total_solved']})",
+            f"أوامر مستخدم: {s['user_commands']}",
+            f"مرفوضة بالفيتو: {s['vetoed']}\n",
         ]
-        for w in self.workers:
-            bar = "█" * int(w.efficiency * 10) + "░" * (10 - int(w.efficiency * 10))
-            lines.append(f"  {w.name:15s} [{bar}] {w.efficiency:.0%} ({w.problems_solved} حلول)")
+
+        for fid, f in self.factories.items():
+            r = f.get_report()
+            cat = FACTORY_CATALOG.get(f.product, {})
+            lines.append(f"  🏭 {cat.get('name_ar', f.product):15s} v{r['version']} "
+                        f"| يوم {r['day']:3d} | {r['phase']:12s} "
+                        f"| {r['total_output']:8,.0f}ط | حل {r['solve_rate']}%")
         return "\n".join(lines)
 
 
+# Singleton
+factory_manager = FactoryManager()
+
+
 if __name__ == "__main__":
-    print("🏭 Virtual Factory — Test\n")
+    print("🏭 Virtual Factory System — Test\n")
 
-    factory = VirtualFactory("cement", capacity=50000)
-    print(f"Workers: {len(factory.workers)}")
-    for w in factory.workers:
-        print(f"  👷 {w.name} — {w.role.value}")
+    # إنشاء 5 مصانع أساسية
+    for product in ["cement", "steel", "glass", "soap", "solar_panel"]:
+        factory_manager.create_factory(product)
 
-    print(f"\n{'═' * 50}")
-    print("محاكاة 90 يوم...\n")
+    print(f"Created {len(factory_manager.factories)} factories\n")
 
-    report = factory.simulate_period(90)
-    print(factory.format_report())
+    # الكشافة تقترح مصنع جديد
+    factory_manager.scout_propose_factory("battery", "needed for solar storage", "scout_tech")
+    factory_manager.scout_propose_factory("plastic", "essential material", "scout_industry")
 
-    print(f"\n{'═' * 50}")
-    print("تطوير للـ v2...\n")
+    # المجلس يراجع
+    approved = factory_manager.council_review_proposals()
+    print(f"Council approved: {len(approved)} proposals")
 
-    factory_v2 = factory.evolve()
-    report_v2 = factory_v2.simulate_period(30)
-    print(f"v2 بعد 30 يوم: إنتاج {report_v2['total_output_tons']:,.0f} طن, "
-          f"مشاكل: {report_v2['total_problems']}, حلول: {report_v2['total_solved']}")
+    # المستخدم يستخدم الفيتو
+    factory_manager.user_veto(product="plastic", reason="not environmentally friendly")
+
+    # محاكاة 30 يوم
+    print("\nSimulating 30 days...\n")
+    factory_manager.simulate_all(30)
+
+    print(factory_manager.format_summary())
+
+    # كتالوج كل المصانع المتاحة
+    print(f"\n📋 Factory Catalog ({len(FACTORY_CATALOG)} types):")
+    for prod, info in FACTORY_CATALOG.items():
+        print(f"  {info['name_ar']:15s} ({prod:20s}) — {info['capacity']:>8,} طن — {info['category']}")
