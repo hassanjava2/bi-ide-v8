@@ -112,8 +112,14 @@ def prepare_capsule_data(data_files, capsule_data_dir, max_samples=10000):
                             continue
                         try:
                             sample = json.loads(line)
-                            # Accept samples with instruction/output or text
-                            if ("instruction" in sample and "output" in sample) or "text" in sample:
+                            # Accept multiple formats
+                            has_data = (
+                                ("instruction" in sample and "output" in sample)
+                                or ("input_text" in sample and "output_text" in sample)
+                                or ("prompt" in sample and "response" in sample)
+                                or "text" in sample
+                            )
+                            if has_data:
                                 out.write(line + "\n")
                                 total += 1
                                 if total >= max_samples:
@@ -187,6 +193,10 @@ def run_training(capsule_dir, data_path, env):
         for i in range(len(examples[list(examples.keys())[0]])):
             if "instruction" in examples and "output" in examples:
                 text = f"<|im_start|>user\n{examples['instruction'][i]}<|im_end|>\n<|im_start|>assistant\n{examples['output'][i]}<|im_end|>"
+            elif "input_text" in examples and "output_text" in examples:
+                text = f"<|im_start|>user\n{examples['input_text'][i]}<|im_end|>\n<|im_start|>assistant\n{examples['output_text'][i]}<|im_end|>"
+            elif "prompt" in examples and "response" in examples:
+                text = f"<|im_start|>user\n{examples['prompt'][i]}<|im_end|>\n<|im_start|>assistant\n{examples['response'][i]}<|im_end|>"
             elif "text" in examples:
                 text = examples["text"][i]
             else:
