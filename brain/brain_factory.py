@@ -1,345 +1,292 @@
+#!/usr/bin/env python3
 """
-brain_factory.py — مصنع الأدمغة (طبقة التوليد)
+brain_factory.py — مصنع الأدمغة اللامتناهي
 
-يخلق أدمغة جديدة (LoRA adapters) أوتوماتيكياً
-يدرّبهم → يقيّمهم → يحذف الضعيف → يكاثر القوي
-يخلط أدمغة من تخصصات مختلفة (mutation) → ابتكار
-
-Architecture: Infinite Brain Network
-Rule: الأدمغة تتكاثر بلا حدود — مو ثابتة
+النظام القديم (LoRA): محذوف
+النظام الجديد (Capsules):
+- يولّد كبسولات أطفال من الأقوياء (وراثة)
+- يجمع كبسولتين → كبسولة هجينة (تزاوج)
+- يحذف الضعيف ← يكاثر القوي (داروين)
+- الشجرة تنمو تلقائياً — بلا حدود
 """
 
-import os
 import json
-import time
+import shutil
 import logging
-from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
+from datetime import datetime
+from typing import Optional
 
 logger = logging.getLogger("brain_factory")
 
-# ─── Config ───────────────────────────────────────────────────
-ADAPTERS_DIR = Path(os.getenv("ADAPTERS_DIR", "/home/bi/training_data/models/finetuned"))
-REGISTRY_PATH = Path(__file__).parent.parent / "config" / "sage_brain_mapping.json"
-BRAIN_STATE_PATH = Path("/tmp/brain_factory_state.json")
+CAPSULES_ROOT = Path(__file__).parent.parent / "capsules"
 
-# Foundation that ALL brains must learn
-FOUNDATION_DATASETS = [
-    "mathematical_physics",    # أساس التفكير المنطقي
-    "formal_logic",            # استدلال رياضي
-    "arabic_fluency",          # يحجي طبيعي
+# مخطط التخصصات الفرعية — كل كبسولة قوية تولّد أطفال
+SPECIALIZATION_MAP = {
+    "code_python": ["fastapi", "django", "pytorch", "automation", "data_science"],
+    "code_typescript": ["react_advanced", "nextjs", "nodejs", "graphql"],
+    "code_rust": ["tauri_advanced", "async_systems", "networking"],
+    "code_sql": ["postgresql", "optimization", "analytics"],
+    "security": ["encryption", "pentesting", "network_security", "forensics"],
+    "erp_accounting": ["tax_iraq", "audit", "budgeting", "financial_analysis"],
+    "erp_sales": ["crm", "analytics", "forecasting"],
+    "erp_inventory": ["warehouse", "logistics", "supply_chain"],
+    "erp_hr": ["payroll", "recruitment", "performance"],
+    "erp_purchasing": ["vendor_management", "procurement", "contracts"],
+    "conversation_ar": ["customer_service", "technical_support", "education"],
+    "iraqi_dialect": ["baghdadi", "basrawi", "mosulawi"],
+    "devops": ["docker", "kubernetes", "ci_cd", "monitoring"],
+    "database_design": ["nosql", "graph_db", "time_series"],
+    "sage": ["risk_analysis", "long_term_planning", "decision_science"],
+    "rebel": ["critical_thinking", "devil_advocate", "stress_testing"],
+}
+
+# مخطط التزاوج — كبسولات هجينة مفيدة
+BREEDING_MAP = [
+    ("code_python", "security", "secure_python"),
+    ("code_python", "devops", "python_devops"),
+    ("code_python", "code_sql", "python_database"),
+    ("code_typescript", "code_css", "fullstack_web"),
+    ("erp_accounting", "security", "financial_security"),
+    ("sage", "code_python", "ai_architect"),
 ]
 
 
 class BrainFactory:
-    """
-    مصنع الأدمغة — يخلق LoRA adapters متخصصة أوتوماتيكياً
-    
-    Capabilities:
-    1. إنشاء adapter جديد من بيانات تخصصية
-    2. تقييم أداء كل adapter
-    3. حذف الضعيف + تكاثر القوي
-    4. Mutation — خلط adapters من تخصصات مختلفة
-    """
-    
-    def __init__(self):
-        self.registry = self._load_registry()
-        self.state = self._load_state()
-        self.adapters_dir = ADAPTERS_DIR
-    
-    def _load_registry(self) -> dict:
-        """تحميل سجل الأدمغة"""
-        if REGISTRY_PATH.exists():
-            return json.loads(REGISTRY_PATH.read_text())
-        return {"version": "2.0", "brain_network": {}}
-    
-    def _load_state(self) -> dict:
-        """تحميل حالة المصنع"""
-        if BRAIN_STATE_PATH.exists():
-            try:
-                return json.loads(BRAIN_STATE_PATH.read_text())
-            except Exception:
-                pass
-        return {
-            "brains_created": 0,
-            "brains_killed": 0,
-            "mutations": 0,
-            "evaluations": [],
-            "last_evolution": None,
-        }
-    
-    def _save_state(self):
-        """حفظ حالة المصنع"""
-        BRAIN_STATE_PATH.write_text(json.dumps(self.state, indent=2, default=str))
-    
-    # ─── Brain Discovery ─────────────────────────────────────
-    
-    def discover_existing_brains(self) -> List[Dict[str, Any]]:
-        """
-        اكتشاف الأدمغة الموجودة على الـ GPU
-        يفحص كل مجلد LoRA adapter ويرجع قائمة
-        """
-        brains = []
-        
-        if not self.adapters_dir.exists():
-            logger.warning(f"مجلد الأدمغة غير موجود: {self.adapters_dir}")
-            return brains
-        
-        for d in sorted(self.adapters_dir.iterdir()):
+    """مصنع الأدمغة — يولّد ويطوّر الكبسولات بلا حدود"""
+
+    def __init__(self, capsules_dir: Optional[Path] = None):
+        self.capsules_dir = capsules_dir or CAPSULES_ROOT
+        self.capsules_dir.mkdir(parents=True, exist_ok=True)
+        self.evolution_count = 0
+
+    def get_all_capsules(self) -> list[dict]:
+        """جلب كل الكبسولات مع معلوماتها"""
+        capsules = []
+        for d in sorted(self.capsules_dir.iterdir()):
             if not d.is_dir():
                 continue
-            
-            # Check if it's a valid adapter
-            adapter_config = d / "adapter_config.json"
-            has_config = adapter_config.exists()
-            
-            # Check checkpoints
-            checkpoints = list(d.glob("checkpoint-*/adapter_config.json"))
-            
-            if has_config or checkpoints:
-                brain_info = {
-                    "id": d.name,
-                    "path": str(d),
-                    "has_adapter_config": has_config,
-                    "checkpoints": len(checkpoints),
-                    "size_mb": sum(f.stat().st_size for f in d.rglob("*") if f.is_file()) / (1024 * 1024),
-                    "created": datetime.fromtimestamp(d.stat().st_ctime).isoformat(),
-                    "modified": datetime.fromtimestamp(d.stat().st_mtime).isoformat(),
-                }
-                brains.append(brain_info)
-        
-        logger.info(f"🧠 اكتشفت {len(brains)} دماغ موجود")
-        return brains
-    
-    # ─── Brain Creation ──────────────────────────────────────
-    
-    def create_brain(
-        self,
-        brain_id: str,
-        specialty: str,
-        perspective: str,
-        training_data_path: str,
-        temperature: float = 0.7,
-        base_model: str = "Qwen/Qwen2.5-1.5B",
-        epochs: int = 3,
-        learning_rate: float = 2e-4,
-    ) -> Dict[str, Any]:
-        """
-        إنشاء دماغ جديد (LoRA adapter)
-        
-        Args:
-            brain_id: معرف فريد للدماغ
-            specialty: التخصص (security, medical, etc)
-            perspective: المنظور (هجومي، دفاعي، متمرد...)
-            training_data_path: مسار بيانات التدريب
-            temperature: حرارة التوليد (عالي = إبداعي، منخفض = دقيق)
-        
-        Returns:
-            معلومات الدماغ المُنشأ
-        """
-        output_dir = self.adapters_dir / brain_id
-        
-        brain_config = {
-            "id": brain_id,
-            "specialty": specialty,
-            "perspective": perspective,
-            "temperature": temperature,
-            "base_model": base_model,
-            "training_config": {
-                "data_path": training_data_path,
-                "epochs": epochs,
-                "learning_rate": learning_rate,
-                "lora_r": 16,
-                "lora_alpha": 32,
-                "lora_dropout": 0.05,
-                "foundation_datasets": FOUNDATION_DATASETS,
-            },
-            "created_at": datetime.now().isoformat(),
-            "status": "pending_training",
-            "evaluation_score": None,
+            info = self._load_capsule_info(d)
+            if info:
+                capsules.append(info)
+        return capsules
+
+    def _load_capsule_info(self, capsule_dir: Path) -> dict:
+        """تحميل معلومات كبسولة"""
+        capsule_id = capsule_dir.name
+        result_path = capsule_dir / "result.json"
+        meta_path = capsule_dir / "meta.json"
+
+        info = {
+            "id": capsule_id,
+            "dir": str(capsule_dir),
+            "has_model": (capsule_dir / "model" / "config.json").exists(),
+            "layer": 0,
+            "parent": None,
+            "children": [],
+            "status": "untrained",
+            "loss": None,
+            "training_minutes": None,
+            "archived": False,
         }
-        
-        # Save brain config
-        output_dir.mkdir(parents=True, exist_ok=True)
-        config_path = output_dir / "brain_config.json"
-        config_path.write_text(json.dumps(brain_config, indent=2, ensure_ascii=False))
-        
-        self.state["brains_created"] += 1
-        self._save_state()
-        
-        logger.info(f"🧠 دماغ جديد: {brain_id} ({specialty}/{perspective})")
-        return brain_config
-    
-    # ─── Swarm Debate ────────────────────────────────────────
-    
-    def swarm_debate(
-        self,
-        swarm_brains: List[str],
-        query: str,
-        rounds: int = 3,
-        inference_fn=None,
-    ) -> Dict[str, Any]:
-        """
-        نقاش السرب — أدمغة متعددة تتناقش
-        
-        Round 1: كل دماغ يجاوب لحاله
-        Round 2: كل دماغ يشوف أجوبة الباقين ويعدّل
-        Round 3: التصويت + الدماغ المتمرد يتحدى
-        
-        Returns:
-            النتيجة المركّبة بعد النقاش
-        """
-        if inference_fn is None:
-            return {"error": "inference_fn required"}
-        
-        debate_log = []
-        current_responses = {}
-        
-        for round_num in range(1, rounds + 1):
-            round_responses = {}
-            
-            for brain_id in swarm_brains:
-                if round_num == 1:
-                    # Round 1: إجابة مستقلة
-                    prompt = query
-                elif round_num == 2:
-                    # Round 2: شوف آراء الباقين وعدّل
-                    others = "\n".join([
-                        f"- {bid}: {resp}"
-                        for bid, resp in current_responses.items()
-                        if bid != brain_id
-                    ])
-                    prompt = f"السؤال: {query}\n\nآراء الآخرين:\n{others}\n\nما رأيك الآن؟ هل تغيّر أو تثبّت موقفك؟"
-                else:
-                    # Round 3: تحدي المتمرد
-                    if "rebel" in brain_id:
-                        prompt = f"السؤال: {query}\n\nالإجماع الحالي:\n{json.dumps(current_responses, ensure_ascii=False)}\n\nأنت المتمرد — تحدَّ هذا الإجماع. ما الخطأ فيه؟"
-                    else:
-                        prompt = f"السؤال: {query}\n\nالمتمرد يعترض. دافع عن موقفك بقوة."
-                
-                try:
-                    response = inference_fn(brain_id, prompt)
-                    round_responses[brain_id] = response
-                except Exception as e:
-                    round_responses[brain_id] = f"⚠️ خطأ: {e}"
-            
-            current_responses = round_responses
-            debate_log.append({
-                "round": round_num,
-                "responses": dict(round_responses),
-            })
-        
-        # Synthesize final result
-        return {
-            "query": query,
-            "debate_rounds": rounds,
-            "participating_brains": swarm_brains,
-            "final_responses": current_responses,
-            "debate_log": debate_log,
-            "timestamp": datetime.now().isoformat(),
-        }
-    
-    # ─── Brain Evaluation ────────────────────────────────────
-    
-    def evaluate_brain(self, brain_id: str, test_prompts: List[str], inference_fn=None) -> float:
-        """
-        تقييم دماغ — يختبره بأسئلة ويعطيه درجة
-        يحفظ النتيجة بالـ state
-        """
-        if inference_fn is None:
-            return 0.0
-        
-        scores = []
-        for prompt in test_prompts:
+
+        if result_path.exists():
             try:
-                response = inference_fn(brain_id, prompt)
-                # Simple quality checks
-                score = 0.0
-                if response and len(response) > 50:
-                    score += 0.3  # يجاوب بمحتوى
-                if not any(w in response for w in ["غير متاح", "خطأ", "error"]):
-                    score += 0.3  # ما يفشل
-                if len(response) > 200:
-                    score += 0.2  # إجابة مفصّلة
-                if any(c in response for c in ["لأن", "بسبب", "نتيجة", "because"]):
-                    score += 0.2  # يبرر إجاباته
-                scores.append(score)
-            except Exception:
-                scores.append(0.0)
-        
-        avg_score = sum(scores) / max(len(scores), 1)
-        
-        self.state["evaluations"].append({
-            "brain_id": brain_id,
-            "score": avg_score,
-            "tests": len(test_prompts),
-            "timestamp": datetime.now().isoformat(),
-        })
-        self._save_state()
-        
-        logger.info(f"📊 تقييم {brain_id}: {avg_score:.2f}")
-        return avg_score
-    
-    # ─── Evolution ───────────────────────────────────────────
-    
-    def evolve(self) -> Dict[str, Any]:
-        """
-        طبقة التطور — حذف الضعيف + تكاثر القوي + mutation
-        
-        1. يفرز الأدمغة حسب الدرجة
-        2. يحذف أضعف 20%
-        3. يكاثر أقوى 20% (يخلق نسخ مع تعديلات)
-        4. Mutation: يخلط adapters من تخصصات مختلفة
-        """
-        evaluations = self.state.get("evaluations", [])
-        
-        if len(evaluations) < 5:
-            return {"status": "not_enough_data", "message": "نحتاج 5 تقييمات أقل شي"}
-        
-        # Sort by score
-        sorted_evals = sorted(evaluations, key=lambda x: x["score"])
-        
-        # Bottom 20% = candidates for deletion
-        kill_count = max(1, len(sorted_evals) // 5)
-        to_kill = sorted_evals[:kill_count]
-        
-        # Top 20% = candidates for reproduction
-        to_reproduce = sorted_evals[-kill_count:]
-        
-        result = {
-            "killed": [e["brain_id"] for e in to_kill],
-            "reproduced": [e["brain_id"] for e in to_reproduce],
-            "total_brains": len(sorted_evals),
-            "timestamp": datetime.now().isoformat(),
-        }
-        
-        self.state["last_evolution"] = result
-        self.state["brains_killed"] += kill_count
-        self._save_state()
-        
-        logger.info(f"🧬 تطور: حذف {kill_count} + تكاثر {kill_count}")
-        return result
-    
-    # ─── Status ──────────────────────────────────────────────
-    
-    def get_status(self) -> Dict[str, Any]:
-        """حالة المصنع"""
-        existing = self.discover_existing_brains()
-        
+                result = json.loads(result_path.read_text())
+                info["status"] = result.get("status", "unknown")
+                info["loss"] = result.get("loss")
+                info["training_minutes"] = result.get("minutes")
+            except:
+                pass
+
+        if meta_path.exists():
+            try:
+                meta = json.loads(meta_path.read_text())
+                info["layer"] = meta.get("layer", 0)
+                info["parent"] = meta.get("parent")
+                info["children"] = meta.get("children", [])
+                info["archived"] = meta.get("archived", False)
+            except:
+                pass
+
+        data_dir = capsule_dir / "data"
+        if data_dir.exists():
+            total = 0
+            for f in data_dir.glob("*.jsonl"):
+                try:
+                    total += sum(1 for _ in open(f))
+                except:
+                    pass
+            info["data_samples"] = total
+        else:
+            info["data_samples"] = 0
+
+        return info
+
+    def get_strong(self, threshold: float = 0.15) -> list[dict]:
+        """كبسولات قوية"""
+        return [c for c in self.get_all_capsules()
+                if c["loss"] is not None and c["loss"] < threshold
+                and c["has_model"] and not c["archived"]]
+
+    def get_weak(self, threshold: float = 0.5) -> list[dict]:
+        """كبسولات ضعيفة"""
+        return [c for c in self.get_all_capsules()
+                if c["loss"] is not None and c["loss"] > threshold
+                and not c["archived"]]
+
+    def get_untrained(self) -> list[dict]:
+        """كبسولات ما اتدربت بعد"""
+        return [c for c in self.get_all_capsules()
+                if not c["has_model"] and c["data_samples"] > 30
+                and not c["archived"]]
+
+    def create_child(self, parent_id: str, specialty: str, description: str = "") -> str:
+        """إنشاء كبسولة ابن ترث موديل الأب"""
+        child_id = f"{parent_id}_{specialty}"
+        child_dir = self.capsules_dir / child_id
+        parent_dir = self.capsules_dir / parent_id
+
+        if child_dir.exists():
+            return child_id
+        if not parent_dir.exists():
+            logger.error(f"Parent {parent_id} not found!")
+            return ""
+
+        child_dir.mkdir(parents=True)
+        (child_dir / "data").mkdir()
+        (child_dir / "model").mkdir()
+
+        # نسخ موديل الأب
+        parent_model = parent_dir / "model"
+        if parent_model.exists() and (parent_model / "config.json").exists():
+            for f in parent_model.iterdir():
+                if f.is_file():
+                    shutil.copy2(f, child_dir / "model" / f.name)
+
+        # معلومات الأب
+        parent_layer = 0
+        parent_meta_path = parent_dir / "meta.json"
+        if parent_meta_path.exists():
+            try:
+                pm = json.loads(parent_meta_path.read_text())
+                parent_layer = pm.get("layer", 0)
+            except:
+                pass
+
+        # حفظ meta الابن
+        (child_dir / "meta.json").write_text(json.dumps({
+            "id": child_id, "parent": parent_id, "specialty": specialty,
+            "description": description, "layer": parent_layer + 1,
+            "children": [], "created": datetime.now().isoformat(),
+        }, indent=2, ensure_ascii=False))
+
+        # تحديث children الأب
+        parent_meta = {"layer": parent_layer, "children": []}
+        if parent_meta_path.exists():
+            try:
+                parent_meta = json.loads(parent_meta_path.read_text())
+            except:
+                pass
+        if child_id not in parent_meta.get("children", []):
+            parent_meta.setdefault("children", []).append(child_id)
+            parent_meta_path.write_text(json.dumps(parent_meta, indent=2, ensure_ascii=False))
+
+        logger.info(f"🧒 Child: {child_id} (L{parent_layer + 1}) from {parent_id}")
+        return child_id
+
+    def breed(self, p1: str, p2: str, name: str) -> str:
+        """تزاوج — موديل الأول + بيانات الثاني"""
+        child_id = f"{p1}_{name}"
+        if (self.capsules_dir / child_id).exists():
+            return child_id
+
+        self.create_child(p1, name, f"Hybrid: {p1} × {p2}")
+
+        # نسخ بيانات الأب الثاني
+        p2_data = self.capsules_dir / p2 / "data"
+        child_data = self.capsules_dir / child_id / "data"
+        if p2_data.exists():
+            for f in p2_data.glob("*.jsonl"):
+                shutil.copy2(f, child_data / f"from_{p2}_{f.name}")
+
+        logger.info(f"🧬 Bred: {p1} × {p2} → {child_id}")
+        return child_id
+
+    def evolve(self) -> dict:
+        """دورة تطور واحدة — الأقوياء يتكاثرون، الضعفاء يتأرشفون"""
+        self.evolution_count += 1
+        strong = self.get_strong(0.15)
+        weak = self.get_weak(0.5)
+        created = []
+        archived = []
+
+        # 1. الأقوياء يولّدون أطفال
+        for capsule in strong:
+            cid = capsule["id"]
+            existing_children = set(capsule.get("children", []))
+
+            if cid in SPECIALIZATION_MAP:
+                for spec in SPECIALIZATION_MAP[cid]:
+                    child_id = f"{cid}_{spec}"
+                    if child_id not in existing_children:
+                        self.create_child(cid, spec, f"Evolution #{self.evolution_count}")
+                        created.append(child_id)
+                        break  # طفل واحد كل دورة
+
+        # 2. تزاوج إذا الأبوين قويين
+        strong_ids = {c["id"] for c in strong}
+        for p1, p2, name in BREEDING_MAP:
+            child_id = f"{p1}_{name}"
+            if p1 in strong_ids and p2 in strong_ids:
+                if not (self.capsules_dir / child_id).exists():
+                    self.breed(p1, p2, name)
+                    created.append(child_id)
+
+        # 3. أرشفة الضعفاء (layer > 0 فقط — لا نحذف الجذور)
+        for capsule in weak:
+            if capsule["layer"] > 0:
+                meta_path = Path(capsule["dir"]) / "meta.json"
+                meta = {}
+                if meta_path.exists():
+                    try:
+                        meta = json.loads(meta_path.read_text())
+                    except:
+                        pass
+                meta["archived"] = True
+                meta["archived_at"] = datetime.now().isoformat()
+                meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False))
+                archived.append(capsule["id"])
+
+        logger.info(f"🧬 Evolution #{self.evolution_count}: +{len(created)} -{len(archived)}")
+        return {"cycle": self.evolution_count, "created": created, "archived": archived}
+
+    def get_tree(self) -> dict:
+        """بناء شجرة الكبسولات"""
+        capsules = {c["id"]: c for c in self.get_all_capsules()}
+        roots = [c for c in capsules.values() if c["parent"] is None and not c["archived"]]
+
+        def node(c):
+            n = {"id": c["id"], "L": c["layer"], "loss": c["loss"],
+                 "data": c["data_samples"], "status": c["status"]}
+            kids = [node(capsules[kid]) for kid in c.get("children", []) if kid in capsules]
+            if kids:
+                n["children"] = kids
+            return n
+
+        return {"roots": [node(r) for r in roots], "total": len(capsules)}
+
+    def get_status(self) -> dict:
+        all_c = self.get_all_capsules()
         return {
-            "factory_status": "active",
-            "existing_brains": len(existing),
-            "brains_created": self.state.get("brains_created", 0),
-            "brains_killed": self.state.get("brains_killed", 0),
-            "mutations": self.state.get("mutations", 0),
-            "evaluations_count": len(self.state.get("evaluations", [])),
-            "last_evolution": self.state.get("last_evolution"),
-            "adapters_dir": str(self.adapters_dir),
-            "gpu_brains": existing[:5],  # First 5 for quick view
-            "timestamp": datetime.now().isoformat(),
+            "total_capsules": len(all_c),
+            "trained": len([c for c in all_c if c["has_model"]]),
+            "untrained": len([c for c in all_c if not c["has_model"] and not c["archived"]]),
+            "archived": len([c for c in all_c if c["archived"]]),
+            "evolution_cycles": self.evolution_count,
+            "max_layer": max((c["layer"] for c in all_c), default=0),
         }
 
 
-# ─── Singleton ───────────────────────────────────────────────
+# Singleton
 brain_factory = BrainFactory()
