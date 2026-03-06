@@ -84,7 +84,7 @@ export function Header({ deviceId }: HeaderProps) {
         <div className="text-sm text-dark-200 font-medium">
           {currentWorkspace?.name || "BI-IDE Desktop"}
           <span className="ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary-600/30 text-primary-300">
-            v8.0.3
+            v8.0.6
           </span>
         </div>
         {gitState && (
