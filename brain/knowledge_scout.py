@@ -2,12 +2,15 @@
 """
 knowledge_scout.py — الكشّافة
 
-تجيب بيانات جديدة بدون توقف لكل الكبسولات:
-1. تولّد بيانات Q&A عبر Ollama (local models)
-2. تصنّف كل معلومة → أي كبسولة تستفيد
-3. توزّع البيانات على الكبسولات
-4. تكرر ∞
+مصدران للبيانات:
+1. كشافة خارجية (Ollama): تولّد Q&A من موديلات محلية
+2. كشافة داخلية (FileScanner): تفحص ملفات الجهاز الحقيقية
+   - كود Python, TypeScript, Rust, SQL, CSS
+   - إعدادات النظام والتطبيقات
+   - كود المشروع نفسه
+   - أي ملف قابل للتعلم
 
+البيانات الحقيقية > البيانات المولّدة (بلا هلوسة)
 الكشافة ما تتعب — تشتغل 24/7
 """
 
@@ -15,6 +18,7 @@ import json
 import time
 import random
 import logging
+import hashlib
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
@@ -226,44 +230,47 @@ class KnowledgeScout:
         return True
 
     def scout_cycle(self, samples_per_capsule: int = 10) -> dict:
-        """دورة كشافة واحدة — تولّد بيانات لكل الكبسولات"""
+        """دورة كشافة واحدة — داخلية + خارجية"""
         self.cycle_count += 1
-        model = self._get_model()
-        if not model:
-            logger.error("No Ollama model available!")
-            return {"error": "no_model"}
-
-        logger.info(f"🔍 Scout cycle #{self.cycle_count} — model: {model}")
+        logger.info(f"🔍 Scout cycle #{self.cycle_count}")
 
         results = {}
-        capsule_dirs = sorted(self.capsules_dir.iterdir())
 
-        for capsule_dir in capsule_dirs:
-            if not capsule_dir.is_dir():
-                continue
-            cid = capsule_dir.name
+        # ═══ الكشافة الداخلية أولاً (بيانات حقيقية) ═══
+        internal = InternalScout(self.capsules_dir)
+        internal_results = internal.scan_all()
+        for k, v in internal_results.items():
+            results[k] = results.get(k, 0) + v
 
-            # تخطي الأرشيف
-            meta_path = capsule_dir / "meta.json"
-            if meta_path.exists():
-                try:
-                    meta = json.loads(meta_path.read_text())
-                    if meta.get("archived"):
-                        continue
-                except:
-                    pass
+        # ═══ ثم الكشافة الخارجية (Ollama) ═══
+        model = self._get_model()
+        if model:
+            logger.info(f"🤖 External scout — model: {model}")
+            capsule_dirs = sorted(self.capsules_dir.iterdir())
+            for capsule_dir in capsule_dirs:
+                if not capsule_dir.is_dir():
+                    continue
+                cid = capsule_dir.name
+                meta_path = capsule_dir / "meta.json"
+                if meta_path.exists():
+                    try:
+                        meta = json.loads(meta_path.read_text())
+                        if meta.get("archived"):
+                            continue
+                    except:
+                        pass
+                count = 0
+                for _ in range(samples_per_capsule):
+                    if self.scout_one(cid, model):
+                        count += 1
+                if count > 0:
+                    results[cid] = results.get(cid, 0) + count
+        else:
+            logger.warning("No Ollama model — internal scout only")
 
-            count = 0
-            for _ in range(samples_per_capsule):
-                if self.scout_one(cid, model):
-                    count += 1
-
-            if count > 0:
-                results[cid] = count
-                logger.info(f"  📦 {cid}: +{count} samples")
-
-        logger.info(f"🔍 Cycle #{self.cycle_count} done: "
-                    f"+{sum(results.values())} samples across {len(results)} capsules")
+        total = sum(results.values())
+        logger.info(f"🔍 Cycle #{self.cycle_count}: +{total} samples "
+                    f"across {len(results)} capsules")
         return results
 
     def scout_forever(self, samples_per_capsule: int = 10, pause_seconds: int = 60):
@@ -282,5 +289,259 @@ class KnowledgeScout:
                 time.sleep(30)
 
 
+# ═══════════════════════════════════════════════════════════
+# الكشّافة الداخلية — تفحص ملفات الجهاز الحقيقية
+# ═══════════════════════════════════════════════════════════
+
+# خارطة: امتداد الملف → أي كبسولة تستفيد
+FILE_TO_CAPSULE = {
+    # كود
+    ".py": "code_python",
+    ".pyx": "code_python",
+    ".pyi": "code_python",
+    ".ts": "code_typescript",
+    ".tsx": "code_typescript",
+    ".js": "code_typescript",
+    ".jsx": "code_typescript",
+    ".rs": "code_rust",
+    ".sql": "code_sql",
+    ".css": "code_css",
+    ".scss": "code_css",
+    ".html": "code_css",
+    ".svelte": "code_typescript",
+    ".vue": "code_typescript",
+    # إعدادات
+    ".toml": "devops",
+    ".yaml": "devops",
+    ".yml": "devops",
+    ".ini": "devops",
+    ".conf": "devops",
+    ".nginx": "devops",
+    ".service": "devops",
+    ".dockerfile": "devops",
+    # قواعد بيانات
+    ".prisma": "database_design",
+    ".migration": "database_design",
+    # أمن
+    ".pem": "security",
+    ".key": "security",
+    # تستينق
+    "test_": "code_testing",  # ملفات بادئة test_
+    "_test.": "code_testing",
+    ".test.": "code_testing",
+    ".spec.": "code_testing",
+}
+
+# مجلدات يجب تفحصها
+SCAN_DIRS = [
+    # المشروع نفسه
+    ("~/bi-ide-v8", 5),          # عمق 5
+    # كود Python المثبت
+    ("/usr/lib/python3", 3),
+    ("/usr/local/lib/python3", 3),
+    # إعدادات النظام
+    ("/etc", 2),
+    # Home configs
+    ("~/.config", 2),
+    # Node modules (أمثلة عملية)
+    ("~/bi-ide-v8/node_modules", 2),
+]
+
+# ملفات/مجلدات نتخطاها
+SKIP_DIRS = {
+    "__pycache__", ".git", "node_modules", ".next", "dist",
+    "build", ".cache", "venv", ".venv", "target", ".cargo",
+    "capsules",  # لا ندرّب على بيانات التدريب!
+}
+
+SKIP_EXTENSIONS = {
+    ".pyc", ".pyo", ".so", ".o", ".a", ".dylib", ".bin",
+    ".whl", ".egg", ".tar", ".gz", ".zip", ".png", ".jpg",
+    ".gif", ".ico", ".svg", ".woff", ".ttf", ".map",
+    ".lock", ".log",
+}
+
+
+class InternalScout:
+    """الكشّافة الداخلية — تتعلم من ملفات الجهاز الحقيقية"""
+
+    def __init__(self, capsules_dir: Path = None):
+        self.capsules_dir = capsules_dir or CAPSULES_ROOT
+        self.seen_hashes_file = self.capsules_dir / ".scout_seen.json"
+        self.seen_hashes = self._load_seen()
+
+    def _load_seen(self) -> set:
+        """تحميل هاشات الملفات المفحوصة سابقاً"""
+        if self.seen_hashes_file.exists():
+            try:
+                return set(json.loads(self.seen_hashes_file.read_text()))
+            except:
+                pass
+        return set()
+
+    def _save_seen(self):
+        """حفظ هاشات الملفات"""
+        # نحتفظ بآخر 50000 هاش فقط
+        hashes = list(self.seen_hashes)[-50000:]
+        self.seen_hashes_file.write_text(json.dumps(hashes))
+
+    def _classify_file(self, filepath: Path) -> str:
+        """تصنيف ملف → كبسولة"""
+        name = filepath.name.lower()
+        suffix = filepath.suffix.lower()
+
+        # ملفات تستنق
+        if name.startswith("test_") or "_test." in name or ".test." in name or ".spec." in name:
+            return "code_testing"
+
+        # Dockerfile
+        if name in ("dockerfile", "docker-compose.yml", "docker-compose.yaml"):
+            return "devops"
+
+        # Makefile, CMake
+        if name in ("makefile", "cmakelists.txt", "justfile"):
+            return "devops"
+
+        # README, docs
+        if name.endswith(".md") or name.endswith(".rst"):
+            return ""  # skip docs for now
+
+        # بالامتداد
+        if suffix in FILE_TO_CAPSULE:
+            return FILE_TO_CAPSULE[suffix]
+
+        return ""
+
+    def _extract_training_pair(self, filepath: Path, capsule_id: str) -> dict:
+        """استخراج زوج Q&A من ملف"""
+        try:
+            content = filepath.read_text(encoding="utf-8", errors="ignore")
+        except:
+            return {}
+
+        if len(content) < 50 or len(content) > 10000:
+            return {}  # صغير جداً أو كبير جداً
+
+        name = filepath.name
+        rel_path = str(filepath)
+
+        # بناء الـ Q&A حسب نوع الملف
+        if capsule_id.startswith("code_"):
+            lang = capsule_id.replace("code_", "")
+            input_text = f"Explain what this {lang} code does and how it works:\n\n```{lang}\n{content[:2000]}\n```"
+            output_text = f"This is the file `{name}`. Here's the code:\n\n```{lang}\n{content[:3000]}\n```"
+        elif capsule_id == "devops":
+            input_text = f"Explain this configuration file ({name}):\n\n{content[:2000]}"
+            output_text = f"This is the configuration file `{name}`:\n\n{content[:3000]}"
+        elif capsule_id == "security":
+            input_text = f"Analyze the security aspects of this file ({name})"
+            output_text = f"Security analysis of `{name}`:\n\n{content[:3000]}"
+        elif capsule_id == "database_design":
+            input_text = f"Explain this database schema/migration ({name}):\n\n{content[:2000]}"
+            output_text = f"Database file `{name}`:\n\n{content[:3000]}"
+        elif capsule_id == "code_testing":
+            input_text = f"Explain what this test file tests and how:\n\n{content[:2000]}"
+            output_text = f"Test file `{name}`:\n\n{content[:3000]}"
+        else:
+            return {}
+
+        return {
+            "input_text": input_text,
+            "output_text": output_text,
+            "source": "internal_scout",
+            "file": rel_path,
+            "timestamp": datetime.now().isoformat(),
+        }
+
+    def scan_directory(self, scan_dir: str, max_depth: int = 3,
+                       max_files: int = 200) -> dict:
+        """فحص مجلد وتوزيع الملفات على الكبسولات"""
+        scan_path = Path(scan_dir).expanduser()
+        if not scan_path.exists():
+            return {}
+
+        results = {}
+        count = 0
+
+        for filepath in self._walk(scan_path, max_depth):
+            if count >= max_files:
+                break
+
+            # تخطي ملفات معينة
+            if filepath.suffix.lower() in SKIP_EXTENSIONS:
+                continue
+            if filepath.stat().st_size > 100_000:  # > 100KB
+                continue
+
+            # هاش لتجنب التكرار
+            file_hash = hashlib.md5(
+                f"{filepath}:{filepath.stat().st_mtime}".encode()
+            ).hexdigest()[:12]
+
+            if file_hash in self.seen_hashes:
+                continue
+
+            # تصنيف الملف
+            capsule_id = self._classify_file(filepath)
+            if not capsule_id:
+                continue
+
+            # استخراج Q&A
+            pair = self._extract_training_pair(filepath, capsule_id)
+            if not pair:
+                continue
+
+            # حفظ في كبسولة
+            data_dir = self.capsules_dir / capsule_id / "data"
+            data_dir.mkdir(parents=True, exist_ok=True)
+            with open(data_dir / "internal_scout.jsonl", "a") as f:
+                f.write(json.dumps(pair, ensure_ascii=False) + "\n")
+
+            self.seen_hashes.add(file_hash)
+            results[capsule_id] = results.get(capsule_id, 0) + 1
+            count += 1
+
+        return results
+
+    def _walk(self, root: Path, max_depth: int, current_depth: int = 0):
+        """مشي بالمجلد مع حد العمق"""
+        if current_depth > max_depth:
+            return
+
+        try:
+            entries = list(root.iterdir())
+        except (PermissionError, OSError):
+            return
+
+        # ملفات أولاً
+        for entry in entries:
+            if entry.is_file():
+                yield entry
+
+        # ثم المجلدات
+        for entry in entries:
+            if entry.is_dir() and entry.name not in SKIP_DIRS:
+                yield from self._walk(entry, max_depth, current_depth + 1)
+
+    def scan_all(self) -> dict:
+        """فحص كل المجلدات المُعرّفة"""
+        logger.info("🔎 Internal Scout — scanning local files...")
+        total_results = {}
+
+        for scan_dir, depth in SCAN_DIRS:
+            expanded = str(Path(scan_dir).expanduser())
+            results = self.scan_directory(expanded, depth)
+            for k, v in results.items():
+                total_results[k] = total_results.get(k, 0) + v
+            if results:
+                logger.info(f"  📂 {scan_dir}: +{sum(results.values())} files")
+
+        self._save_seen()
+        total = sum(total_results.values())
+        logger.info(f"🔎 Internal: +{total} real samples from local files")
+        return total_results
+
+
 # Singleton
 scout = KnowledgeScout()
+
