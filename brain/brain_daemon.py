@@ -68,6 +68,7 @@ class BrainDaemon:
     """المايسترو — يدير الكل 24/7"""
 
     def __init__(self):
+        self.capsules_dir = CAPSULES_DIR
         self.factory = BrainFactory(CAPSULES_DIR)
         self.scout = KnowledgeScout(CAPSULES_DIR)
         self.evaluator = SelfEval(CAPSULES_DIR)
