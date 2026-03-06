@@ -1,0 +1,40 @@
+{
+  "devops": {
+    "capsule_id": "devops",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T00:30:47.382734"
+  },
+  "security": {
+    "capsule_id": "security",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T00:30:47.382745"
+  },
+  "code_python": {
+    "capsule_id": "code_python",
+    "current_level": 2,
+    "samples_completed": 600,
+    "current_accuracy": 0.35,
+    "cycles_at_level": 0,
+    "promoted_at": [
+      "2026-03-07T00:30:47.383087"
+    ],
+    "last_updated": "2026-03-07T00:30:47.383084"
+  },
+  "knowledge_arabic": {
+    "capsule_id": "knowledge_arabic",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T00:30:47.382762"
+  }
+}

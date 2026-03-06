@@ -1,0 +1,10 @@
+{
+  "model": "RMX3709",
+  "android_version": "16",
+  "sdk": "36",
+  "brand": "realme",
+  "cpu": "qcom",
+  "kernel": "5.10.236-android12-9-o-gaa5e512cae29",
+  "scanned_at": "2026-03-06T23:34:36.209849",
+  "total_samples": 74
+}

@@ -1,0 +1,2 @@
+{"file_path": "/tmp/test_bad.py", "language": "python", "capsule_id": "code_python", "lines": 12, "errors": 4, "patterns": 0, "time": "2026-03-07T00:09:58.854431"}
+{"file_path": "/tmp/test_good.py", "language": "python", "capsule_id": "code_python", "lines": 23, "errors": 0, "patterns": 6, "time": "2026-03-07T00:09:58.854776"}

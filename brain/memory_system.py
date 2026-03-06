@@ -34,7 +34,6 @@ PG_CONFIG = {
     "port": 5432,
     "database": "bi_brain",
     "user": "bi",
-    "password": "bi2026",
 }
 
 # SQL لإنشاء الجداول
