@@ -43,6 +43,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ─── Brain Capsule API ──────────────────────────────────────────
+try:
+    from brain.brain_api import create_brain_router
+    app.include_router(create_brain_router())
+    logging.getLogger("rtx_api").info("🧠 Brain API router loaded: /brain/*")
+except Exception as e:
+    logging.getLogger("rtx_api").warning(f"Brain API not loaded: {e}")
+
 # ─── Training Data Storage ───────────────────────────────────────
 # Points to the real 45GB training data directory
 TRAINING_DIR = Path(os.getenv("TRAINING_DATA_DIR", "/home/bi/training_data"))
