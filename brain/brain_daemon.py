@@ -33,6 +33,7 @@ from brain.brain_factory import BrainFactory
 from brain.knowledge_scout import KnowledgeScout
 from brain.self_eval import SelfEval
 from brain.council_brain import CouncilBrain
+from brain.self_trainer import SelfTrainer
 
 LOG_PATH = Path("/tmp/brain_daemon.log")
 logging.basicConfig(
@@ -58,6 +59,7 @@ PAUSE_BETWEEN_CYCLES = 30  # ثواني بين الدورات
 CLEANUP_AFTER_TRAIN = True  # دولاب البيانات
 EVAL_EVERY_N_CYCLES = 5     # امتحان كل 5 دورات
 COUNCIL_EVERY_N_CYCLES = 5  # المجلس كل 5 دورات
+SELF_TRAIN_EVERY_N_CYCLES = 2  # تدريب ذاتي كل دورتين
 
 
 class BrainDaemon:
@@ -68,6 +70,7 @@ class BrainDaemon:
         self.scout = KnowledgeScout(CAPSULES_DIR)
         self.evaluator = SelfEval(CAPSULES_DIR)
         self.council = CouncilBrain(CAPSULES_DIR)
+        self.self_trainer = SelfTrainer()
         self.cycle = 0
         self.total_trained = 0
         self.total_evolved = 0
@@ -361,6 +364,18 @@ class BrainDaemon:
                 logger.info(f"🏛️ Actions: {executed}")
             except Exception as e:
                 logger.error(f"Council error: {e}")
+
+        # ═══ تدريب ذاتي — كبسولات تدرّب بعضها (المبدأ 9) ═══
+        if self.cycle % SELF_TRAIN_EVERY_N_CYCLES == 0:
+            logger.info(f"\n🔄 Self-training session...")
+            try:
+                result = self.self_trainer.run_debate_session(
+                    topic="general", num_rounds=5)
+                samples = result.get("samples_generated",
+                           len(result.get("approved", [])))
+                logger.info(f"🔄 Self-train: +{samples} new samples")
+            except Exception as e:
+                logger.error(f"Self-train error: {e}")
 
         # ═══ ملخص ═══
         disk_info = self._disk_status()

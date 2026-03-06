@@ -402,9 +402,9 @@ brain/
 ├── council_brain.py        ✅ مجلس الأدمغة (sage+rebel → قرارات + تنفيذ)
 ├── auto_programmer.py      ✅ مبرمج ذاتي (يعدل كوده + backup + rollback)
 ├── project_orchestrator.py ✅ منسق المشاريع (أمر → تحليل → توزيع → تنفيذ → 100%)
-├── self_trainer.py         ⬜ التدريب الذاتي (كبسولات تدرّب بعضها)
-├── hallucination_guard.py  ⬜ 5 فلاتر ضد الهلوسة
-└── training_pipeline.py    ⬜ Pipeline تدريب (RTX/H200)
+├── self_trainer.py         ✅ التدريب الذاتي (كبسولات تدرّب بعضها — مبدأ 9)
+├── hallucination_guard.py  ✅ 5 فلاتر ضد الهلوسة (متمرد + إجماع + رياضي + ثقة + مصادر)
+└── training_pipeline.py    ✅ Pipeline تدريب (progressive training — RTX/H200)
 ```
 
 ### دولاب البيانات (Data Wheel):
