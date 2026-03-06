@@ -11,6 +11,11 @@ import {
   Plus,
   FilePlus,
   FolderPlus,
+  Search as SearchIcon,
+  GitBranch,
+  Sparkles,
+  GraduationCap,
+  Monitor,
 } from "lucide-react";
 import { useStore, FileNode } from "../lib/store";
 import { fs, workspace, git, training, ai, trainingData, AiChatMessage } from "../lib/tauri";
@@ -132,7 +137,7 @@ function TreeNode({ node, depth, workspaceRoot, onToggle, onSelect }: TreeNodePr
 }
 
 export function Sidebar() {
-  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "sync" | "ai" | "training" | "council" | "hierarchy" | "monitor" | "projects">("explorer");
+  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "ai" | "training" | "system">("explorer");
   const [isLoading, setIsLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [isSendingChat, setIsSendingChat] = useState(false);
@@ -398,11 +403,11 @@ export function Sidebar() {
     });
 
     const unlistenCouncilPanel = listen("open-council-panel", () => {
-      setActiveTab("council");
+      setActiveTab("system");
     });
 
     const unlistenProjectsPanel = listen("open-projects-panel", () => {
-      setActiveTab("projects");
+      setActiveTab("ai");
     });
 
     const unlistenTrainingStart = listen("training-start-job", async (event: any) => {
@@ -435,107 +440,30 @@ export function Sidebar() {
 
   return (
     <div className="h-full flex flex-col bg-dark-900">
-      {/* Tab Bar */}
+      {/* Tab Bar — Clean 6-tab professional layout */}
       <div className="flex border-b border-dark-700">
-        <button
-          onClick={() => setActiveTab("explorer")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === "explorer"
-            ? "text-primary-400 border-b-2 border-primary-500"
-            : "text-dark-400 hover:text-dark-200"
-            }`}
-        >
-          Explorer
-        </button>
-        <button
-          onClick={() => setActiveTab("search")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors ${activeTab === "search"
-            ? "text-primary-400 border-b-2 border-primary-500"
-            : "text-dark-400 hover:text-dark-200"
-            }`}
-        >
-          Search
-        </button>
-        <button
-          onClick={() => setActiveTab("git")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "git"
-            ? "text-primary-400 border-b-2 border-primary-500"
-            : "text-dark-400 hover:text-dark-200"
-            }`}
-        >
-          Git
-          {gitState && !gitState.isClean && (
-            <span className="absolute top-1 right-1 w-2 h-2 bg-orange-400 rounded-full" />
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab("sync")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "sync"
-            ? "text-blue-400 border-b-2 border-blue-500"
-            : "text-dark-400 hover:text-dark-200"
-            }`}
-          title="المزامنة"
-        >
-          ☁️
-        </button>
-        <button
-          onClick={() => setActiveTab("training")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "training"
-            ? "text-green-400 border-b-2 border-green-500"
-            : "text-dark-400 hover:text-dark-200"
-            }`}
-          title="التدريب"
-        >
-          🎓
-        </button>
-        <button
-          onClick={() => setActiveTab("ai")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "ai"
-            ? "text-primary-400 border-b-2 border-primary-500"
-            : "text-dark-400 hover:text-dark-200"
-            }`}
-        >
-          AI
-        </button>
-        <button
-          onClick={() => setActiveTab("council")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "council"
-            ? "text-yellow-400 border-b-2 border-yellow-500"
-            : "text-dark-400 hover:text-dark-200"
-            }`}
-          title="مجلس الحكماء"
-        >
-          🏛️
-        </button>
-        <button
-          onClick={() => setActiveTab("hierarchy")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "hierarchy"
-            ? "text-cyan-400 border-b-2 border-cyan-500"
-            : "text-dark-400 hover:text-dark-200"
-            }`}
-          title="النظام الهرمي"
-        >
-          📊
-        </button>
-        <button
-          onClick={() => setActiveTab("monitor")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "monitor"
-            ? "text-emerald-400 border-b-2 border-emerald-500"
-            : "text-dark-400 hover:text-dark-200"
-            }`}
-          title="مراقبة الأجهزة"
-        >
-          📡
-        </button>
-        <button
-          onClick={() => setActiveTab("projects")}
-          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "projects"
-            ? "text-cyan-400 border-b-2 border-cyan-500"
-            : "text-dark-400 hover:text-dark-200"
-            }`}
-          title="المشاريع"
-        >
-          🏗️
-        </button>
+        {[
+          { id: "explorer" as const, label: "Explorer", icon: null },
+          { id: "search" as const, label: "Search", icon: SearchIcon },
+          { id: "git" as const, label: "Git", icon: GitBranch },
+          { id: "ai" as const, label: "AI", icon: Sparkles },
+          { id: "training" as const, label: "Train", icon: GraduationCap },
+          { id: "system" as const, label: "System", icon: Monitor },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === tab.id
+              ? "text-primary-400 border-b-2 border-primary-500"
+              : "text-dark-400 hover:text-dark-200"
+              }`}
+          >
+            {tab.label}
+            {tab.id === "git" && gitState && !gitState.isClean && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-orange-400 rounded-full" />
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Content */}
@@ -658,26 +586,24 @@ export function Sidebar() {
           </Suspense>
         )}
 
-        {activeTab === "sync" && (
-          <Suspense fallback={panelFallback}>
-            <SyncPanel />
-          </Suspense>
-        )}
-
         {activeTab === "training" && (
           <Suspense fallback={panelFallback}>
             <TrainingDashboard />
           </Suspense>
         )}
 
-        {activeTab === "council" && <CouncilPanel />}
-        {activeTab === "hierarchy" && <HierarchyPanel />}
-        {activeTab === "projects" && <ProjectsPanel />}
-
-        {activeTab === "monitor" && (
-          <Suspense fallback={panelFallback}>
-            <MonitorDashboard />
-          </Suspense>
+        {activeTab === "system" && (
+          <div className="h-full flex flex-col overflow-auto">
+            <CouncilPanel />
+            <div className="border-t border-dark-700">
+              <HierarchyPanel />
+            </div>
+            <div className="border-t border-dark-700">
+              <Suspense fallback={panelFallback}>
+                <MonitorDashboard />
+              </Suspense>
+            </div>
+          </div>
         )}
       </div>
     </div>

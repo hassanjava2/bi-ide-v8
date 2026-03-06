@@ -38,33 +38,41 @@ pub async fn send_council_message(
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
-    let rtx_base = "http://100.104.35.44:8090";
+    // RTX endpoints — try LOCAL network first (faster), then Tailscale
+    let rtx_endpoints = [
+        "http://192.168.1.164:8090",   // Local LAN (10ms)
+        "http://100.104.35.44:8090",   // Tailscale (may be down)
+    ];
 
-    // === Path 1: Brain capsules (ALL messages — council + AI assistant) ===
-    let brain_url = format!("{}/brain/ask", rtx_base);
-    let brain_body = serde_json::json!({
-        "question": message,
-        "max_tokens": 512
-    });
-    match try_brain_ask(&client, &brain_url, &brain_body, 40).await {
-        Ok(resp) => {
-            info!("Brain capsule response received");
-            return Ok(resp);
-        }
-        Err(e) => {
-            warn!("Brain capsule failed: {}, trying council", e);
+    // === Path 1: Brain capsules (ALL messages) ===
+    for rtx_base in &rtx_endpoints {
+        let brain_url = format!("{}/brain/ask", rtx_base);
+        let brain_body = serde_json::json!({
+            "question": message,
+            "max_tokens": 512
+        });
+        match try_brain_ask(&client, &brain_url, &brain_body, 15).await {
+            Ok(resp) => {
+                info!("Brain capsule OK via {}", rtx_base);
+                return Ok(resp);
+            }
+            Err(e) => {
+                warn!("Brain capsule via {} failed: {}", rtx_base, e);
+            }
         }
     }
 
-    // === Path 2: Council (RTX direct — LoRA model, needs 8-10s) ===
-    let rtx_url = format!("{}/council/message", rtx_base);
-    match try_send(&client, &rtx_url, &message, &session_id, 45).await {
-        Ok(resp) => {
-            info!("RTX council response received");
-            return Ok(resp);
-        }
-        Err(e) => {
-            warn!("RTX direct failed: {}, falling back to VPS", e);
+    // === Path 2: Council (RTX direct — LoRA model) ===
+    for rtx_base in &rtx_endpoints {
+        let rtx_url = format!("{}/council/message", rtx_base);
+        match try_send(&client, &rtx_url, &message, &session_id, 30).await {
+            Ok(resp) => {
+                info!("RTX council OK via {}", rtx_base);
+                return Ok(resp);
+            }
+            Err(e) => {
+                warn!("RTX council via {} failed: {}", rtx_base, e);
+            }
         }
     }
 
@@ -76,15 +84,12 @@ pub async fn send_council_message(
             Ok(resp)
         }
         Err(e) => {
-            warn!("VPS also failed: {}", e);
+            warn!("All endpoints failed: {}", e);
             Ok(CouncilMessageResponse {
-                response: format!(
-                    "⚡ لا يمكن الاتصال بنظام AI حالياً.\n\n🔍 تحقق من:\n• اتصال الإنترنت\n• حالة السيرفر (bi-iq.com)\n• حالة RTX 5090\n\nالخطأ: {}\n\nرسالتك محفوظة: \"{}\"",
-                    e, message
-                ),
+                response: "Connection failed — check RTX and network".to_string(),
                 source: "offline".to_string(),
                 confidence: 0.0,
-                wise_man: "النظام".to_string(),
+                wise_man: "System".to_string(),
                 processing_time_ms: 0,
             })
         }
