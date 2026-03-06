@@ -36,6 +36,14 @@ from brain.council_brain import CouncilBrain
 from brain.self_trainer import SelfTrainer
 from brain.self_evolution_loop import SelfEvolutionLoop
 
+# التدريب الموزع (اختياري)
+FLEET_CONFIG = PROJECT_ROOT / "config" / "training_fleet.yaml"
+try:
+    from brain.training_dispatcher import TrainingDispatcher
+    HAS_DISPATCHER = FLEET_CONFIG.exists()
+except ImportError:
+    HAS_DISPATCHER = False
+
 LOG_PATH = Path("/tmp/brain_daemon.log")
 logging.basicConfig(
     level=logging.INFO,
@@ -79,6 +87,13 @@ class BrainDaemon:
         self.total_trained = 0
         self.total_evolved = 0
         self.start_time = datetime.now()
+        # التدريب الموزع
+        if HAS_DISPATCHER:
+            self.dispatcher = TrainingDispatcher(FLEET_CONFIG)
+            logger.info(f"🌐 Fleet mode: {len(self.dispatcher.workers)} workers")
+        else:
+            self.dispatcher = None
+            logger.info(f"🖥️ Local mode: training on this machine only")
 
     def _train_capsule(self, capsule_dir: Path, capsule_id: str) -> dict:
         """تدريب كبسولة واحدة"""
@@ -307,6 +322,7 @@ class BrainDaemon:
         logger.info(f"🎯 {len(capsules)} active capsules")
 
         trained_this_cycle = 0
+        trainable = []
         for cid, cdir in capsules:
             # ═══ 1. كشافة لهاي الكبسولة بس ═══
             existing = self._count_data(cdir)
@@ -330,14 +346,24 @@ class BrainDaemon:
             if not needs_train:
                 continue
 
-            # ═══ 2. تدريب فوري ═══
-            logger.info(f"\n🔄 FIFO [{cid}]: scout={new_data} + existing={existing} → train")
-            try:
-                self._train_capsule(cdir, cid)
-                trained_this_cycle += 1
-                # ═══ 3. الحذف صار أوتوماتيكي داخل _train_capsule ═══
-            except Exception as e:
-                logger.error(f"❌ {cid}: {e}")
+            trainable.append((cid, cdir, new_data, existing))
+
+        # ═══ 2. تدريب — موزع أو محلي ═══
+        if trainable:
+            if self.dispatcher:
+                logger.info(f"\n🌐 Fleet dispatch: {len(trainable)} capsules")
+                capsule_list = [{"id": cid, "dir": cdir, "samples": nd + ex} for cid, cdir, nd, ex in trainable]
+                results = self.dispatcher.dispatch_all(capsule_list)
+                trained_this_cycle = sum(1 for r in results if r.get("status") == "completed")
+                self.total_trained += trained_this_cycle
+            else:
+                for cid, cdir, new_data, existing in trainable:
+                    logger.info(f"\n🔄 FIFO [{cid}]: scout={new_data} + existing={existing} → train")
+                    try:
+                        self._train_capsule(cdir, cid)
+                        trained_this_cycle += 1
+                    except Exception as e:
+                        logger.error(f"❌ {cid}: {e}")
 
         # ═══ تطور كل N دورات ═══
         if self.cycle % EVOLVE_EVERY_N_CYCLES == 0:
