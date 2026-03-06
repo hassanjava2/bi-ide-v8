@@ -316,6 +316,25 @@ FILE_TO_CAPSULE = {
     ".html": "code_css",
     ".svelte": "code_typescript",
     ".vue": "code_typescript",
+    # لغات إضافية — تعلم عميق
+    ".c": "code_python",       # C → كبسولة عامة
+    ".h": "code_python",
+    ".cpp": "code_python",
+    ".cc": "code_python",
+    ".java": "code_typescript", # Java → كبسولة TS (مشابه)
+    ".kt": "code_typescript",  # Kotlin
+    ".go": "code_python",      # Go
+    ".sh": "devops",
+    ".bash": "devops",
+    ".zsh": "devops",
+    ".ps1": "devops",          # PowerShell
+    ".bat": "devops",
+    ".cmd": "devops",
+    ".rb": "code_python",      # Ruby
+    ".php": "code_python",     # PHP
+    ".swift": "code_rust",     # Swift → مشابه Rust
+    ".asm": "security",        # Assembly → الأمن
+    ".s": "security",
     # إعدادات
     ".toml": "devops",
     ".yaml": "devops",
@@ -325,33 +344,73 @@ FILE_TO_CAPSULE = {
     ".nginx": "devops",
     ".service": "devops",
     ".dockerfile": "devops",
+    ".json": "devops",
+    ".xml": "devops",
     # قواعد بيانات
     ".prisma": "database_design",
     ".migration": "database_design",
     # أمن
     ".pem": "security",
     ".key": "security",
-    # تستينق
-    "test_": "code_testing",  # ملفات بادئة test_
-    "_test.": "code_testing",
-    ".test.": "code_testing",
-    ".spec.": "code_testing",
+    ".crt": "security",
+    ".rules": "security",      # firewall rules
+    # مستندات (تعلم عربي)
+    ".md": "conversation_ar",
+    ".txt": "conversation_ar",
+    ".rst": "conversation_ar",
 }
 
-# مجلدات يجب تفحصها
+# مجلدات يجب تفحصها — حسب نظام التشغيل
+import platform
+_OS = platform.system()  # Linux, Darwin, Windows
+
+# مسارات مشتركة
 SCAN_DIRS = [
     # المشروع نفسه
-    ("~/bi-ide-v8", 5),          # عمق 5
-    # كود Python المثبت
-    ("/usr/lib/python3", 3),
-    ("/usr/local/lib/python3", 3),
-    # إعدادات النظام
-    ("/etc", 2),
+    ("~/bi-ide-v8", 5),
     # Home configs
     ("~/.config", 2),
-    # Node modules (أمثلة عملية)
-    ("~/bi-ide-v8/node_modules", 2),
 ]
+
+# بيانات الطوارئ (لو موجودة)
+_EMERGENCY_PATHS = ["/data/emergency", os.path.expanduser("~/emergency_data"), "/mnt/4tb/emergency"]
+for _ep in _EMERGENCY_PATHS:
+    if os.path.isdir(_ep):
+        SCAN_DIRS.append((_ep, 6))
+        break
+
+if _OS == "Linux":
+    SCAN_DIRS += [
+        # كود Python المثبت
+        ("/usr/lib/python3", 3),
+        ("/usr/local/lib/python3", 3),
+        # إعدادات النظام
+        ("/etc", 2),
+        # === تعلم عميق — كود النظام ===
+        ("/usr/src", 4),             # Linux kernel headers
+        ("/usr/include", 3),         # C/C++ headers
+        ("/usr/share/doc", 2),       # توثيق النظام
+        ("/opt", 3),                 # برامج مثبتة
+        ("/usr/local/src", 4),       # كود محلي
+        ("/var/log", 1),             # لوغات (تعلم استكشاف الأخطاء)
+    ]
+elif _OS == "Darwin":  # macOS
+    SCAN_DIRS += [
+        ("/usr/local/lib/python3", 3),
+        ("/etc", 2),
+        ("/usr/local/Cellar", 3),    # Homebrew
+        ("~/Library/Application Support", 2),
+        ("/Applications", 1),
+        ("/usr/share", 2),
+    ]
+elif _OS == "Windows":
+    SCAN_DIRS += [
+        ("C:\\Python3", 3),
+        ("C:\\Program Files", 2),
+        ("C:\\Windows\\System32\\", 1),
+        (os.path.expanduser("~\\AppData\\Local\\Programs"), 2),
+        (os.path.expanduser("~\\Documents"), 3),
+    ]
 
 # ملفات/مجلدات نتخطاها
 SKIP_DIRS = {
