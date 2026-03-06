@@ -16,6 +16,7 @@ import {
   Sparkles,
   GraduationCap,
   Monitor,
+  Server,
 } from "lucide-react";
 import { useStore, FileNode } from "../lib/store";
 import { fs, workspace, git, training, ai, trainingData, AiChatMessage } from "../lib/tauri";
@@ -57,6 +58,12 @@ const TrainingDashboard = lazy(() =>
 const MonitorDashboard = lazy(() =>
   import("./monitor/MonitorDashboard").then((module) => ({
     default: module.MonitorDashboard,
+  }))
+);
+
+const FleetPanel = lazy(() =>
+  import("./training/FleetPanel").then((module) => ({
+    default: module.FleetPanel,
   }))
 );
 
@@ -137,7 +144,7 @@ function TreeNode({ node, depth, workspaceRoot, onToggle, onSelect }: TreeNodePr
 }
 
 export function Sidebar() {
-  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "ai" | "training" | "system">("explorer");
+  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "ai" | "training" | "fleet" | "system">("explorer");
   const [isLoading, setIsLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [isSendingChat, setIsSendingChat] = useState(false);
@@ -448,6 +455,7 @@ export function Sidebar() {
           { id: "git" as const, label: "Git", icon: GitBranch },
           { id: "ai" as const, label: "AI", icon: Sparkles },
           { id: "training" as const, label: "Train", icon: GraduationCap },
+          { id: "fleet" as const, label: "Fleet", icon: Server },
           { id: "system" as const, label: "System", icon: Monitor },
         ].map(tab => (
           <button
@@ -589,6 +597,12 @@ export function Sidebar() {
         {activeTab === "training" && (
           <Suspense fallback={panelFallback}>
             <TrainingDashboard />
+          </Suspense>
+        )}
+
+        {activeTab === "fleet" && (
+          <Suspense fallback={panelFallback}>
+            <FleetPanel />
           </Suspense>
         )}
 
