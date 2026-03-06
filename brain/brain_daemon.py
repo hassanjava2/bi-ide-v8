@@ -34,6 +34,7 @@ from brain.knowledge_scout import KnowledgeScout
 from brain.self_eval import SelfEval
 from brain.council_brain import CouncilBrain
 from brain.self_trainer import SelfTrainer
+from brain.self_evolution_loop import SelfEvolutionLoop
 
 LOG_PATH = Path("/tmp/brain_daemon.log")
 logging.basicConfig(
@@ -60,6 +61,7 @@ CLEANUP_AFTER_TRAIN = True  # دولاب البيانات
 EVAL_EVERY_N_CYCLES = 5     # امتحان كل 5 دورات
 COUNCIL_EVERY_N_CYCLES = 5  # المجلس كل 5 دورات
 SELF_TRAIN_EVERY_N_CYCLES = 2  # تدريب ذاتي كل دورتين
+EVOLVE_SELF_EVERY_N = 10       # تطوير ذاتي كل 10 دورات
 
 
 class BrainDaemon:
@@ -71,6 +73,7 @@ class BrainDaemon:
         self.evaluator = SelfEval(CAPSULES_DIR)
         self.council = CouncilBrain(CAPSULES_DIR)
         self.self_trainer = SelfTrainer()
+        self.evolution = SelfEvolutionLoop()
         self.cycle = 0
         self.total_trained = 0
         self.total_evolved = 0
@@ -376,6 +379,15 @@ class BrainDaemon:
                 logger.info(f"🔄 Self-train: +{samples} new samples")
             except Exception as e:
                 logger.error(f"Self-train error: {e}")
+
+        # ═══ تطوير ذاتي — اللولب التطوري ═══
+        if self.cycle % EVOLVE_SELF_EVERY_N == 0 and self.cycle > 0:
+            logger.info(f"\n🧬∞ Self-evolution cycle...")
+            try:
+                result = self.evolution.run_cycle(max_fixes=3)
+                logger.info(f"🧬∞ Evolution: {result['evolved']} improvements")
+            except Exception as e:
+                logger.error(f"Evolution error: {e}")
 
         # ═══ ملخص ═══
         disk_info = self._disk_status()

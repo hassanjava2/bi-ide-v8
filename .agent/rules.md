@@ -404,7 +404,9 @@ brain/
 ├── project_orchestrator.py ✅ منسق المشاريع (أمر → تحليل → توزيع → تنفيذ → 100%)
 ├── self_trainer.py         ✅ التدريب الذاتي (كبسولات تدرّب بعضها — مبدأ 9)
 ├── hallucination_guard.py  ✅ 5 فلاتر ضد الهلوسة (متمرد + إجماع + رياضي + ثقة + مصادر)
-└── training_pipeline.py    ✅ Pipeline تدريب (progressive training — RTX/H200)
+├── training_pipeline.py    ✅ Pipeline تدريب (progressive training — RTX/H200)
+├── ide_controller.py       ✅ تحكم بالـ IDE (read/write/edit/run/test/build/git)
+└── self_evolution_loop.py  ✅ اللولب التطوري (فحص → اكتشاف → إصلاح → اختبار → commit)
 ```
 
 ### دولاب البيانات (Data Wheel):
