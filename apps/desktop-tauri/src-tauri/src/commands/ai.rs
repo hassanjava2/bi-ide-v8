@@ -37,9 +37,9 @@ pub async fn send_council_message(
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
-    // Try RTX direct first (LAN, fast)
-    let rtx_url = "http://192.168.1.164:8090/council/message";
-    match try_send(&client, rtx_url, &message, &session_id, 5).await {
+    // Try RTX direct first (Tailscale, ~200ms latency, first call loads LoRA model)
+    let rtx_url = "http://100.104.35.44:8090/council/message";
+    match try_send(&client, rtx_url, &message, &session_id, 30).await {
         Ok(resp) => {
             info!("RTX direct response received");
             return Ok(resp);

@@ -19,7 +19,7 @@ const API_CONFIG = {
     timeout: 60000, // VPS AI takes ~30s to process
   },
   rtx: {
-    host: '192.168.1.164',
+    host: '100.104.35.44',
     port: 8090,
     get baseUrl() {
       return `http://${this.host}:${this.port}`;
