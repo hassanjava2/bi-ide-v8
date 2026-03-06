@@ -156,14 +156,19 @@ def run_training(capsule_dir, data_path, env):
     output_dir = str(capsule_dir / "model")
     
     # Adjust settings based on hardware
+    # Memory optimization
+    os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
+    
     if env["has_gpu"]:
-        batch_size = 2
-        gradient_accum = 8
+        batch_size = 1
+        gradient_accum = 16
         fp16 = True
         device_map = "auto"
+        max_len = 256  # Reduce to fit in 24GB
         logger.info(f"🚀 GPU training: {env['gpu_name']} ({env['gpu_memory_gb']}GB)")
     else:
         batch_size = 1
+        max_len = 256
         gradient_accum = 16
         fp16 = False
         device_map = "cpu"
@@ -203,7 +208,7 @@ def run_training(capsule_dir, data_path, env):
                 text = str(list(examples.values())[0][i])
             texts.append(text)
         
-        return tokenizer(texts, truncation=True, max_length=512, padding="max_length")
+        return tokenizer(texts, truncation=True, max_length=max_len, padding="max_length")
     
     tokenized = dataset.map(tokenize_fn, batched=True, remove_columns=dataset.column_names)
     
