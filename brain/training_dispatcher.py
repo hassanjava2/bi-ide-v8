@@ -42,6 +42,8 @@ CAPSULES_DIR = ROOT / "capsules"
 FLEET_CONFIG = ROOT / "config" / "training_fleet.yaml"
 WORKER_SCRIPT = ROOT / "brain" / "training_worker.py"
 MIN_SAMPLES = 20
+TRAINING_LOCK = ".training_in_progress"  # ملف قفل أثناء التدريب
+import shutil
 
 
 class WorkerSlot:
@@ -85,6 +87,7 @@ class TrainingDispatcher:
         self.base_model = self.fleet_config.get("base_model", "Qwen/Qwen2.5-1.5B")
         self.training_config = self.fleet_config.get("training", {})
         self.results = []
+        self._active_inboxes = {}  # capsule_id → inbox_path
 
         logger.info(f"📡 Fleet: {len(self.workers)} workers")
         for w in self.workers:
@@ -169,8 +172,72 @@ class TrainingDispatcher:
         except Exception:
             return False
 
+    # ══════════════════════════════════════════════
+    # صندوق الوارد — حماية البيانات أثناء التدريب
+    # ══════════════════════════════════════════════
+
+    def _activate_inbox(self, cap_dir: Path, cap_id: str):
+        """تفعيل صندوق الوارد — الكشافة تكتب هنا أثناء التدريب"""
+        inbox = cap_dir / "inbox"
+        inbox.mkdir(parents=True, exist_ok=True)
+        # ملف قفل يخبر الكشافة تكتب بـ inbox/ بدال data/
+        (cap_dir / TRAINING_LOCK).write_text(json.dumps({
+            "started": datetime.now().isoformat(),
+            "capsule": cap_id,
+        }))
+        self._active_inboxes[cap_id] = inbox
+        logger.info(f"   📥 Inbox activated for {cap_id}")
+
+    def _merge_inbox(self, cap_dir: Path, cap_id: str):
+        """دمج صندوق الوارد — البيانات الجديدة تنتقل لـ data/"""
+        inbox = cap_dir / "inbox"
+        data_dir = cap_dir / "data"
+        lock_file = cap_dir / TRAINING_LOCK
+
+        if not inbox.exists():
+            return 0
+
+        # نقل كل JSONL من inbox → data
+        moved = 0
+        for f in inbox.glob("*.jsonl"):
+            dest = data_dir / f"inbox_{f.name}"
+            shutil.move(str(f), str(dest))
+            moved += 1
+
+        # حذف القفل
+        if lock_file.exists():
+            lock_file.unlink()
+
+        # حذف المجلد الفارغ
+        if inbox.exists() and not any(inbox.iterdir()):
+            inbox.rmdir()
+
+        self._active_inboxes.pop(cap_id, None)
+
+        if moved > 0:
+            logger.info(f"   📬 Merged {moved} inbox files → data/ for {cap_id}")
+        return moved
+
+    @staticmethod
+    def is_training(cap_dir: Path) -> bool:
+        """هل الكبسولة قيد التدريب؟ (يستخدمها الكشافة)"""
+        return (cap_dir / TRAINING_LOCK).exists()
+
+    @staticmethod
+    def get_write_dir(cap_dir: Path) -> Path:
+        """وين الكشافة تكتب؟ inbox/ لو قيد التدريب، data/ لو لا"""
+        if (cap_dir / TRAINING_LOCK).exists():
+            inbox = cap_dir / "inbox"
+            inbox.mkdir(parents=True, exist_ok=True)
+            return inbox
+        return cap_dir / "data"
+
+    # ══════════════════════════════════════════════
+    # إرسال كبسولة للتدريب
+    # ══════════════════════════════════════════════
+
     def dispatch_capsule(self, capsule: dict, worker: WorkerSlot) -> dict:
-        """يرسل كبسولة لحاسبة بعيدة ويدربها"""
+        """يرسل كبسولة لحاسبة بعيدة ويدربها (مع حماية inbox)"""
         cap_id = capsule["id"]
         cap_dir = capsule["dir"]
 
@@ -179,6 +246,9 @@ class TrainingDispatcher:
         if not worker.acquire():
             return {"capsule": cap_id, "status": "error", "reason": "worker busy"}
 
+        # تفعيل صندوق الوارد قبل الإرسال
+        self._activate_inbox(cap_dir, cap_id)
+
         try:
             t0 = time.time()
 
@@ -186,68 +256,84 @@ class TrainingDispatcher:
             is_local = worker.host in ("localhost", "127.0.0.1", "192.168.1.164")
 
             if is_local:
-                # تشغيل مباشر
-                return self._train_local(capsule, worker)
-
-            # === إرسال البيانات ===
-            remote_dir = f"/tmp/bi-capsule-{cap_id}"
-            remote_data = f"{remote_dir}/data"
-            remote_model = f"{remote_dir}/model"
-
-            # إنشاء المجلدات
-            self._ssh_cmd(worker, f"mkdir -p {remote_data} {remote_model}")
-
-            # rsync البيانات
-            logger.info(f"   📦 Syncing data to {worker.name}...")
-            if not self._rsync_to(worker, cap_dir / "data", remote_data):
-                return {"capsule": cap_id, "status": "error", "reason": "rsync data failed"}
-
-            # rsync الموديل الموجود (لو فيه)
-            if (cap_dir / "model" / "config.json").exists():
-                self._rsync_to(worker, cap_dir / "model", remote_model)
-
-            # rsync سكربت العامل
-            self._ssh_cmd(worker, f"mkdir -p {remote_dir}/brain")
-            subprocess.run([
-                "scp", str(WORKER_SCRIPT),
-                f"{worker.user}@{worker.host}:{remote_dir}/brain/training_worker.py"
-            ], capture_output=True, timeout=30)
-
-            # === تشغيل التدريب ===
-            logger.info(f"   🏋️ Training on {worker.name}...")
-            train_cmd = (
-                f"cd {remote_dir} && "
-                f"{worker.venv} brain/training_worker.py "
-                f"--capsule-dir {remote_dir} "
-                f"--base-model {self.base_model}"
-            )
-            code, stdout, stderr = self._ssh_cmd(worker, train_cmd, timeout=3600)
-
-            if code != 0:
-                logger.error(f"   ❌ Training failed: {stderr[:200]}")
-                return {"capsule": cap_id, "status": "error", "reason": stderr[:200]}
-
-            # === سحب النتائج ===
-            logger.info(f"   🛬 Pulling adapter from {worker.name}...")
-            if not self._rsync_from(worker, remote_model, cap_dir / "model"):
-                return {"capsule": cap_id, "status": "error", "reason": "rsync adapter failed"}
-
-            # سحب result.json
-            self._rsync_from(worker, f"{remote_dir}/result.json", cap_dir)
-
-            # تنظيف الحاسبة البعيدة
-            self._ssh_cmd(worker, f"rm -rf {remote_dir}")
+                result = self._train_local(capsule, worker)
+            else:
+                result = self._train_remote(capsule, worker)
 
             elapsed = time.time() - t0
-            logger.info(f"   ✅ {cap_id}: done in {elapsed/60:.1f}min on {worker.name}")
+            result["minutes"] = round(elapsed / 60, 1)
 
-            return {"capsule": cap_id, "status": "completed", "worker": worker.name, "minutes": round(elapsed/60, 1)}
+            # دمج صندوق الوارد بعد انتهاء التدريب
+            inbox_merged = self._merge_inbox(cap_dir, cap_id)
+            result["inbox_merged"] = inbox_merged
+
+            if result.get("status") == "completed":
+                logger.info(f"   ✅ {cap_id}: done in {elapsed/60:.1f}min on {worker.name}")
+
+            return result
 
         except Exception as e:
             logger.error(f"   ❌ {cap_id}: {e}")
+            # حتى لو فشل — ندمج الـ inbox
+            self._merge_inbox(cap_dir, cap_id)
             return {"capsule": cap_id, "status": "error", "reason": str(e)}
         finally:
             worker.release()
+
+    def _train_remote(self, capsule: dict, worker: WorkerSlot) -> dict:
+        """تدريب على حاسبة بعيدة عبر SSH"""
+        cap_id = capsule["id"]
+        cap_dir = capsule["dir"]
+
+        remote_dir = f"/tmp/bi-capsule-{cap_id}"
+        remote_data = f"{remote_dir}/data"
+        remote_model = f"{remote_dir}/model"
+
+        # إنشاء المجلدات
+        self._ssh_cmd(worker, f"mkdir -p {remote_data} {remote_model}")
+
+        # rsync البيانات
+        logger.info(f"   📦 Syncing data to {worker.name}...")
+        if not self._rsync_to(worker, cap_dir / "data", remote_data):
+            return {"capsule": cap_id, "status": "error", "reason": "rsync data failed"}
+
+        # rsync الموديل الموجود (لو فيه)
+        if (cap_dir / "model" / "config.json").exists():
+            self._rsync_to(worker, cap_dir / "model", remote_model)
+
+        # rsync سكربت العامل
+        self._ssh_cmd(worker, f"mkdir -p {remote_dir}/brain")
+        subprocess.run([
+            "scp", str(WORKER_SCRIPT),
+            f"{worker.user}@{worker.host}:{remote_dir}/brain/training_worker.py"
+        ], capture_output=True, timeout=30)
+
+        # تشغيل التدريب
+        logger.info(f"   🏋️ Training on {worker.name}...")
+        train_cmd = (
+            f"cd {remote_dir} && "
+            f"{worker.venv} brain/training_worker.py "
+            f"--capsule-dir {remote_dir} "
+            f"--base-model {self.base_model}"
+        )
+        code, stdout, stderr = self._ssh_cmd(worker, train_cmd, timeout=3600)
+
+        if code != 0:
+            logger.error(f"   ❌ Training failed: {stderr[:200]}")
+            return {"capsule": cap_id, "status": "error", "reason": stderr[:200]}
+
+        # سحب الـ adapter
+        logger.info(f"   🛬 Pulling adapter from {worker.name}...")
+        if not self._rsync_from(worker, remote_model, cap_dir / "model"):
+            return {"capsule": cap_id, "status": "error", "reason": "rsync adapter failed"}
+
+        # سحب result.json
+        self._rsync_from(worker, f"{remote_dir}/result.json", cap_dir)
+
+        # تنظيف
+        self._ssh_cmd(worker, f"rm -rf {remote_dir}")
+
+        return {"capsule": cap_id, "status": "completed", "worker": worker.name}
 
     def _train_local(self, capsule: dict, worker: WorkerSlot) -> dict:
         """تدريب محلي — نفس الحاسبة"""
