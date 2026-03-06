@@ -2,16 +2,18 @@
 capsule.py — كبسولة الدماغ (Brain Capsule)
 
 كل كبسولة = وحدة مغلقة فيها:
-- الموديل (LoRA adapter)
+- الموديل الخاص (مدرّب من الصفر — مو LoRA)
 - البيانات (training data)
 - الإعدادات (config)
 - سجل التعلم (what it knows)
 - واجهة تواصل مع كبسولات أخرى
+- Pipeline تدريب داخلي
 
 مبادئ:
 1. Encapsulation — بيانات + موديل + تدريب = داخل الكبسولة
 2. Inheritance — تخصص جديد = يرث من أب (+ أم اختياري)
 3. Communication — كل كبسولة تعلن عن معرفتها + تسأل كبسولات أخرى
+4. From Scratch — الموديل الأساسي = مادة خام. التدريب ينتج موديل خاص
 """
 
 import json
@@ -30,11 +32,12 @@ class BrainCapsule:
     كبسولة دماغ مغلقة — self-contained AI brain unit
     
     كل شي خاص بالدماغ محتوى داخل الكبسولة:
-    - LoRA adapter weights
+    - موديل مدرّب من الصفر (مو LoRA — مو wrapper)
     - بيانات التدريب الخاصة
-    - قائمة المعرفة (شنو يعرف)  
+    - قائمة المعرفة (شنو يعرف)
     - سجل التعلم والتطور
     - واجهة التواصل مع الباقين
+    - Pipeline تدريب داخلي
     """
     
     def __init__(
@@ -56,7 +59,10 @@ class BrainCapsule:
         # Create capsule directory structure
         self.base_dir.mkdir(parents=True, exist_ok=True)
         (self.base_dir / "data").mkdir(exist_ok=True)
-        (self.base_dir / "adapter").mkdir(exist_ok=True)
+        (self.base_dir / "model").mkdir(exist_ok=True)
+        
+        # Training pipeline (lazy init)
+        self._pipeline = None
         
         # Load or create config
         self.config_path = self.base_dir / "config.json"
@@ -143,7 +149,7 @@ class BrainCapsule:
             "status": self.config.get("status", "unknown"),
         }
     
-    # ─── Training ────────────────────────────────────────────
+    # ─── Data Ingestion ──────────────────────────────────────
     
     def ingest_data(self, data: List[Dict[str, str]], source: str = "unknown"):
         """إضافة بيانات تدريب جديدة للكبسولة"""
@@ -186,7 +192,7 @@ class BrainCapsule:
     def ask(self, question: str, inference_fn=None) -> Dict[str, Any]:
         """
         اسأل الكبسولة سؤال
-        إذا تعرف → تجاوب
+        إذا تعرف → تجاوب (من الموديل الخاص)
         إذا ما تعرف → ترجع طلب معرفة
         """
         # Check if we have knowledge about this topic
@@ -198,26 +204,45 @@ class BrainCapsule:
                 max_confidence = conf
                 best_topic = word
         
-        if max_confidence > 0.3 and inference_fn:
-            # We know about this — generate response
+        if max_confidence > 0.3:
+            # We know about this — try our own model first, then inference_fn
             try:
-                response = inference_fn(self.capsule_id, question)
-                return {
-                    "status": "answered",
-                    "capsule_id": self.capsule_id,
-                    "capsule_name": self.name,
-                    "response": response,
-                    "confidence": max_confidence,
-                    "relevant_topic": best_topic,
-                }
-            except Exception as e:
-                return {
-                    "status": "error",
-                    "capsule_id": self.capsule_id,
-                    "error": str(e),
-                }
+                # Try capsule's own trained model
+                response = self.inference(question)
+                if not response.startswith("⚠️"):
+                    return {
+                        "status": "answered",
+                        "capsule_id": self.capsule_id,
+                        "capsule_name": self.name,
+                        "response": response,
+                        "confidence": max_confidence,
+                        "relevant_topic": best_topic,
+                        "source": "capsule_model",
+                    }
+            except Exception:
+                pass
+            
+            # Fallback to external inference function
+            if inference_fn:
+                try:
+                    response = inference_fn(self.capsule_id, question)
+                    return {
+                        "status": "answered",
+                        "capsule_id": self.capsule_id,
+                        "capsule_name": self.name,
+                        "response": response,
+                        "confidence": max_confidence,
+                        "relevant_topic": best_topic,
+                        "source": "external_inference",
+                    }
+                except Exception as e:
+                    return {
+                        "status": "error",
+                        "capsule_id": self.capsule_id,
+                        "error": str(e),
+                    }
         
-        # Don't know — request knowledge
+        # Don't know — request knowledge (NOT hallucinate!)
         return {
             "status": "unknown",
             "capsule_id": self.capsule_id,
@@ -225,6 +250,30 @@ class BrainCapsule:
             "message": f"ما أعرف عن '{question[:50]}...' — أحتاج بيانات",
             "knowledge_request": self.request_knowledge(question[:100]),
         }
+    
+    # ─── Training (from scratch — NOT LoRA) ────────────────────
+    
+    def _get_pipeline(self):
+        """Lazy init للـ training pipeline"""
+        if self._pipeline is None:
+            from brain.training_pipeline import TrainingPipeline
+            self._pipeline = TrainingPipeline(self.base_dir, self.capsule_id)
+        return self._pipeline
+    
+    def train(self, **kwargs) -> Dict[str, Any]:
+        """تدريب الموديل الخاص بالكبسولة من الصفر"""
+        pipeline = self._get_pipeline()
+        result = pipeline.train(**kwargs)
+        if result.get("status") == "completed":
+            self.config["status"] = "trained"
+            self._save_config()
+            self._log_learn(f"training completed: {result.get('metrics', {})}")
+        return result
+    
+    def inference(self, prompt: str, max_tokens: int = 256) -> str:
+        """استدلال من الموديل الخاص بالكبسولة"""
+        pipeline = self._get_pipeline()
+        return pipeline.inference(prompt, max_tokens)
     
     # ─── Inheritance ─────────────────────────────────────────
     
@@ -281,7 +330,7 @@ class BrainCapsule:
     
     def get_status(self) -> Dict[str, Any]:
         """حالة الكبسولة"""
-        adapter_exists = (self.base_dir / "adapter" / "adapter_config.json").exists()
+        model_exists = (self.base_dir / "model" / "config.json").exists()
         data_files = list((self.base_dir / "data").glob("*.jsonl"))
         
         return {
@@ -290,7 +339,7 @@ class BrainCapsule:
             "specialty": self.specialty,
             "parents": self.parent_ids,
             "status": self.config.get("status", "unknown"),
-            "has_adapter": adapter_exists,
+            "has_trained_model": model_exists,
             "data_files": len(data_files),
             "training_samples": self.config.get("total_training_samples", 0),
             "known_topics": len(self.knowledge.get("topics", {})),
