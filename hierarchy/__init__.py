@@ -474,9 +474,9 @@ class AIHierarchy:
 
     def ask(self, message: str) -> Dict[str, Any]:
         """
-        Synchronous ask() — AI only, no fake responses.
+        Synchronous ask() — tries brain capsules FIRST, then RTX Ollama.
         
-        Pipeline: RTX Ollama → honest unavailable message
+        Pipeline: Brain Capsules → RTX Ollama → honest unavailable message
         """
         import requests
         
@@ -490,7 +490,30 @@ class AIHierarchy:
         except Exception:
             pass
         
-        # 1. Try RTX endpoint (Ollama on RTX 5090)
+        # 1. Try Brain Capsules first (/brain/ask — specialized models)
+        brain_url = f"{RTX_URL}/brain/ask"
+        try:
+            resp = requests.post(
+                brain_url,
+                json={"question": message, "max_tokens": 512},
+                timeout=30,
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                answer = data.get("answer") or data.get("response", "")
+                if answer and len(answer) > 5:
+                    capsule = data.get("capsule", "brain-capsule")
+                    return {
+                        "response": answer,
+                        "wise_man": f"{wise_man_name} ({capsule})",
+                        "confidence": data.get("confidence", 0.85),
+                        "evidence": [],
+                        "response_source": f"capsule:{capsule}",
+                    }
+        except Exception as e:
+            print(f"⚠️ Brain capsule call failed: {e}")
+        
+        # 2. Fallback: RTX endpoint (Ollama on RTX 5090)
         rtx_url = f"{RTX_URL}/council/message"
         try:
             resp = requests.post(
@@ -511,7 +534,7 @@ class AIHierarchy:
         except Exception as e:
             print(f"⚠️ RTX council call failed: {e}")
         
-        # 2. AI unavailable — honest message (NO FAKE RESPONSES)
+        # 3. AI unavailable — honest message (NO FAKE RESPONSES)
         return {
             "response": "عذراً، الذكاء الاصطناعي غير متاح حالياً. يرجى المحاولة لاحقاً.",
             "wise_man": wise_man_name,
