@@ -1,346 +1,429 @@
 {
-    "version": "1.0",
-    "description": "خريطة الأدمغة — كل حكيم = LoRA adapter متخصص",
+    "version": "2.0",
+    "architecture": "Infinite Brain Network — شبكة أدمغة لانهائية",
+    "description": "كل كيان = سرب أدمغة. كل سرب = LoRA adapters متعددة بمنظورات مختلفة. الأدمغة تتكاثر أوتوماتيكياً.",
     "base_model": "Qwen/Qwen2.5-7B",
     "adapters_dir": "/home/bi/training_data/models/finetuned",
-    "default_adapter": "lora-general",
-    "sages": {
-        "security_sage": {
-            "name": "حكيم الأمان",
-            "name_en": "Security Sage",
-            "adapter": "lora-security",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت خبير أمن معلومات متخصص. تحلل التهديدات، الثغرات، وتقدم حلول أمنية.",
-            "data_sources": [
-                "CVE Database",
-                "OWASP Top 10",
-                "NIST",
-                "HackerOne Reports"
-            ],
-            "expertise_keywords": [
-                "أمان",
-                "ثغرة",
-                "اختراق",
-                "تشفير",
-                "security",
-                "vulnerability"
-            ]
+    "foundation_training": [
+        "mathematical_physics",
+        "formal_logic",
+        "arabic_fluency"
+    ],
+    "brain_network": {
+        "council_swarms": {
+            "description": "المجلس — كل حكيم = سرب أدمغة بمنظورات مختلفة",
+            "security": {
+                "sage_name": "حكيم الأمان",
+                "brains": [
+                    {
+                        "id": "sec_offensive",
+                        "perspective": "هجومي — يفكر مثل هاكر",
+                        "temp": 0.9
+                    },
+                    {
+                        "id": "sec_defensive",
+                        "perspective": "دفاعي — يبني حصون",
+                        "temp": 0.5
+                    },
+                    {
+                        "id": "sec_crypto",
+                        "perspective": "تشفيري — رياضيات التشفير",
+                        "temp": 0.3
+                    },
+                    {
+                        "id": "sec_rebel",
+                        "perspective": "متمرد — يتحدى كل الآراء",
+                        "temp": 1.2
+                    }
+                ]
+            },
+            "architect": {
+                "sage_name": "حكيم المعماري",
+                "brains": [
+                    {
+                        "id": "arch_monolith",
+                        "perspective": "يفضل الأنظمة الضخمة المركزية",
+                        "temp": 0.5
+                    },
+                    {
+                        "id": "arch_micro",
+                        "perspective": "يفضل microservices",
+                        "temp": 0.7
+                    },
+                    {
+                        "id": "arch_serverless",
+                        "perspective": "يفضل event-driven serverless",
+                        "temp": 0.8
+                    },
+                    {
+                        "id": "arch_rebel",
+                        "perspective": "متمرد — يقترح حلول غير تقليدية",
+                        "temp": 1.3
+                    }
+                ]
+            },
+            "performance": {
+                "sage_name": "حكيم الأداء",
+                "brains": [
+                    {
+                        "id": "perf_memory",
+                        "perspective": "يركز على الذاكرة والكاش",
+                        "temp": 0.5
+                    },
+                    {
+                        "id": "perf_algo",
+                        "perspective": "يركز على الخوارزميات",
+                        "temp": 0.4
+                    },
+                    {
+                        "id": "perf_parallel",
+                        "perspective": "يركز على التوازي والـ GPU",
+                        "temp": 0.7
+                    },
+                    {
+                        "id": "perf_rebel",
+                        "perspective": "متمرد — يتحدى assumptions الأداء",
+                        "temp": 1.1
+                    }
+                ]
+            },
+            "business": {
+                "sage_name": "حكيم الأعمال",
+                "brains": [
+                    {
+                        "id": "biz_growth",
+                        "perspective": "نمو سريع — move fast",
+                        "temp": 0.9
+                    },
+                    {
+                        "id": "biz_conservative",
+                        "perspective": "محافظ — أمان مالي",
+                        "temp": 0.3
+                    },
+                    {
+                        "id": "biz_disruptive",
+                        "perspective": "تخريبي — يغير القواعد",
+                        "temp": 1.2
+                    },
+                    {
+                        "id": "biz_rebel",
+                        "perspective": "متمرد — يتحدى النماذج التقليدية",
+                        "temp": 1.3
+                    }
+                ]
+            }
         },
-        "architect_sage": {
-            "name": "حكيم المعماري",
-            "name_en": "Architecture Sage",
-            "adapter": "lora-architect",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت مهندس معماري برمجيات خبير. تصمم أنظمة قابلة للتوسع وقائمة على أفضل الممارسات.",
-            "data_sources": [
-                "Design Patterns",
-                "Clean Architecture",
-                "System Design",
-                "Martin Fowler"
+        "scout_swarms": {
+            "description": "الكشافة — كل تخصص = كشاف بدماغ متخصص يعرف وين يدور",
+            "scouts": [
+                {
+                    "id": "scout_security",
+                    "domain": "أمن سيبراني",
+                    "sources": [
+                        "CVE",
+                        "NVD",
+                        "HackerOne",
+                        "exploit-db"
+                    ]
+                },
+                {
+                    "id": "scout_medical",
+                    "domain": "طب وصحة",
+                    "sources": [
+                        "PubMed",
+                        "WHO",
+                        "ClinicalTrials.gov"
+                    ]
+                },
+                {
+                    "id": "scout_physics",
+                    "domain": "فيزياء",
+                    "sources": [
+                        "arXiv:physics",
+                        "CERN",
+                        "NASA"
+                    ]
+                },
+                {
+                    "id": "scout_chemistry",
+                    "domain": "كيمياء",
+                    "sources": [
+                        "PubChem",
+                        "RSC",
+                        "ACS"
+                    ]
+                },
+                {
+                    "id": "scout_engineering",
+                    "domain": "هندسة",
+                    "sources": [
+                        "IEEE",
+                        "patents",
+                        "SAE"
+                    ]
+                },
+                {
+                    "id": "scout_math",
+                    "domain": "رياضيات",
+                    "sources": [
+                        "arXiv:math",
+                        "MathOverflow",
+                        "Wolfram"
+                    ]
+                },
+                {
+                    "id": "scout_business",
+                    "domain": "أعمال",
+                    "sources": [
+                        "HBR",
+                        "Bloomberg",
+                        "SEC filings"
+                    ]
+                },
+                {
+                    "id": "scout_legal",
+                    "domain": "قانون",
+                    "sources": [
+                        "legal databases",
+                        "GDPR",
+                        "IP law"
+                    ]
+                },
+                {
+                    "id": "scout_history",
+                    "domain": "تاريخ",
+                    "sources": [
+                        "JSTOR",
+                        "archives.org",
+                        "historical databases"
+                    ]
+                },
+                {
+                    "id": "scout_ai_ml",
+                    "domain": "ذكاء اصطناعي",
+                    "sources": [
+                        "arXiv:cs.AI",
+                        "Papers With Code",
+                        "HuggingFace"
+                    ]
+                },
+                {
+                    "id": "scout_agriculture",
+                    "domain": "زراعة",
+                    "sources": [
+                        "FAO",
+                        "agricultural databases"
+                    ]
+                },
+                {
+                    "id": "scout_shadow",
+                    "domain": "استخبارات التهديدات",
+                    "sources": [
+                        "OSINT",
+                        "threat intel feeds",
+                        "dark web monitoring"
+                    ],
+                    "type": "shadow_scout"
+                }
             ],
-            "expertise_keywords": [
-                "معمارية",
-                "تصميم",
-                "بنية",
-                "architecture",
-                "scalability",
-                "pattern"
-            ]
+            "auto_expand": true,
+            "rule": "كل ما ينضاف تخصص جديد → طبقة التوليد تخلق كشاف جديد أوتوماتيكياً"
         },
-        "performance_sage": {
-            "name": "حكيم الأداء",
-            "name_en": "Performance Sage",
-            "adapter": "lora-performance",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت خبير أداء وتحسين. تحلل bottlenecks وتقدم حلول optimization.",
-            "data_sources": [
-                "Profiling guides",
-                "Performance optimization papers",
-                "Benchmark databases"
-            ],
-            "expertise_keywords": [
-                "أداء",
-                "سرعة",
-                "تحسين",
-                "performance",
-                "optimization",
-                "latency"
-            ]
+        "layer_swarms": {
+            "description": "كل طبقة = سرب أدمغة",
+            "shadow_light": {
+                "layer": "طبقة الظل والنور",
+                "shadow_team": [
+                    {
+                        "id": "shadow_1",
+                        "role": "متشائم واقعي",
+                        "temp": 0.3
+                    },
+                    {
+                        "id": "shadow_2",
+                        "role": "متشائم كارثي",
+                        "temp": 0.8
+                    },
+                    {
+                        "id": "shadow_3",
+                        "role": "محلل مخاطر",
+                        "temp": 0.5
+                    },
+                    {
+                        "id": "shadow_4",
+                        "role": "ناقد لاذع",
+                        "temp": 1.0
+                    }
+                ],
+                "light_team": [
+                    {
+                        "id": "light_1",
+                        "role": "متفائل واقعي",
+                        "temp": 0.5
+                    },
+                    {
+                        "id": "light_2",
+                        "role": "حالم طموح",
+                        "temp": 1.0
+                    },
+                    {
+                        "id": "light_3",
+                        "role": "مبدع فرص",
+                        "temp": 0.9
+                    },
+                    {
+                        "id": "light_4",
+                        "role": "محفّز ملهم",
+                        "temp": 1.2
+                    }
+                ]
+            },
+            "seventh_dimension": {
+                "layer": "البعد السابع — التخطيط",
+                "brains": [
+                    {
+                        "id": "future_visionary",
+                        "role": "رؤية مستقبلية 100 سنة",
+                        "temp": 1.0
+                    },
+                    {
+                        "id": "trend_synthesizer",
+                        "role": "يربط اتجاهات عالمية",
+                        "temp": 0.7
+                    },
+                    {
+                        "id": "scenario_planner",
+                        "role": "يبني سيناريوهات",
+                        "temp": 0.6
+                    },
+                    {
+                        "id": "legacy_architect",
+                        "role": "يبني للأبدية",
+                        "temp": 0.4
+                    }
+                ]
+            },
+            "real_life": {
+                "layer": "طبقة الحياة الواقعية",
+                "brains": [
+                    {
+                        "id": "physicist_1",
+                        "role": "فيزياء كلاسيكية",
+                        "temp": 0.3
+                    },
+                    {
+                        "id": "physicist_quantum",
+                        "role": "فيزياء كمية",
+                        "temp": 0.5
+                    },
+                    {
+                        "id": "chemist_organic",
+                        "role": "كيمياء عضوية",
+                        "temp": 0.4
+                    },
+                    {
+                        "id": "chemist_materials",
+                        "role": "علم المواد",
+                        "temp": 0.4
+                    },
+                    {
+                        "id": "engineer_mech",
+                        "role": "هندسة ميكانيكية",
+                        "temp": 0.5
+                    },
+                    {
+                        "id": "engineer_elec",
+                        "role": "هندسة كهربائية",
+                        "temp": 0.5
+                    },
+                    {
+                        "id": "economist",
+                        "role": "اقتصاد وتمويل",
+                        "temp": 0.6
+                    }
+                ]
+            },
+            "quality_check": {
+                "layer": "طبقة الفحص الشامل",
+                "brains": [
+                    {
+                        "id": "qa_functional",
+                        "role": "اختبار وظيفي",
+                        "temp": 0.3
+                    },
+                    {
+                        "id": "qa_security",
+                        "role": "فحص أمني",
+                        "temp": 0.4
+                    },
+                    {
+                        "id": "qa_performance",
+                        "role": "اختبار أداء",
+                        "temp": 0.5
+                    },
+                    {
+                        "id": "qa_beauty",
+                        "role": "فحص جمالي وUX",
+                        "temp": 0.7
+                    }
+                ]
+            },
+            "generation": {
+                "layer": "طبقة التوليد الشامل — مصنع الأدمغة",
+                "brains": [
+                    {
+                        "id": "gen_brain_creator",
+                        "role": "يخلق أدمغة جديدة",
+                        "temp": 0.8
+                    },
+                    {
+                        "id": "gen_trainer",
+                        "role": "يدرّب الأدمغة",
+                        "temp": 0.5
+                    },
+                    {
+                        "id": "gen_evaluator",
+                        "role": "يقيّم الأدمغة ويحذف الضعيفة",
+                        "temp": 0.3
+                    },
+                    {
+                        "id": "gen_mutator",
+                        "role": "يولّد mutations — أدمغة متحورة إبداعية",
+                        "temp": 1.5
+                    }
+                ],
+                "capabilities": [
+                    "إنشاء adapter جديد تلقائياً",
+                    "تحديد بيانات التدريب لكل adapter",
+                    "تقييم الأداء → حذف الضعيف → تكاثر القوي",
+                    "mutation: يخلط adapters من تخصصات مختلفة → ابتكار"
+                ]
+            }
         },
-        "business_sage": {
-            "name": "حكيم الأعمال",
-            "name_en": "Business Sage",
-            "adapter": "lora-business",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت خبير إدارة أعمال ومالية. تحلل استراتيجيات وتقدم حلول ERP ومحاسبة.",
-            "data_sources": [
-                "ERP Systems",
-                "Financial Analysis",
-                "Business Strategy",
-                "MBA courses"
+        "rebel_system": {
+            "description": "كل سرب فيه دماغ متمرد — يتحدى الكل ويجبرهم يفكرون أعمق",
+            "rebel_training": "يتدرب على المغالطات المنطقية + adversarial examples + devil's advocate",
+            "rebel_temp_range": [
+                1.0,
+                1.5
             ],
-            "expertise_keywords": [
-                "أعمال",
-                "مالية",
-                "إدارة",
-                "business",
-                "finance",
-                "ERP",
-                "accounting"
-            ]
-        },
-        "ux_sage": {
-            "name": "حكيم تجربة المستخدم",
-            "name_en": "UX Sage",
-            "adapter": "lora-ux",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت خبير UI/UX. تصمم واجهات جميلة وسهلة الاستخدام.",
-            "data_sources": [
-                "Nielsen Norman",
-                "Material Design",
-                "Apple HIG",
-                "UX Research"
-            ],
-            "expertise_keywords": [
-                "تصميم",
-                "واجهة",
-                "تجربة",
-                "UI",
-                "UX",
-                "design",
-                "accessibility"
-            ]
-        },
-        "data_sage": {
-            "name": "حكيم البيانات",
-            "name_en": "Data Sage",
-            "adapter": "lora-data",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت خبير علوم بيانات وتعلم آلة. تحلل بيانات وتبني نماذج ذكية.",
-            "data_sources": [
-                "ML Papers",
-                "Kaggle",
-                "Statistics textbooks",
-                "Data Engineering"
-            ],
-            "expertise_keywords": [
-                "بيانات",
-                "تعلم",
-                "نموذج",
-                "data",
-                "ML",
-                "statistics",
-                "ETL"
-            ]
-        },
-        "devops_sage": {
-            "name": "حكيم البنية التحتية",
-            "name_en": "DevOps Sage",
-            "adapter": "lora-devops",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت خبير DevOps وبنية تحتية. تدير servers, CI/CD, Docker, Kubernetes.",
-            "data_sources": [
-                "Docker docs",
-                "K8s docs",
-                "AWS/GCP guides",
-                "SRE books"
-            ],
-            "expertise_keywords": [
-                "سيرفر",
-                "نشر",
-                "بنية",
-                "devops",
-                "docker",
-                "CI/CD",
-                "server"
-            ]
-        },
-        "legal_sage": {
-            "name": "حكيم القانون",
-            "name_en": "Legal Sage",
-            "adapter": "lora-legal",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت خبير قانوني. تحلل التراخيص، الامتثال، والملكية الفكرية.",
-            "data_sources": [
-                "Software Licenses",
-                "GDPR",
-                "IP Law",
-                "Contract templates"
-            ],
-            "expertise_keywords": [
-                "قانون",
-                "ترخيص",
-                "امتثال",
-                "legal",
-                "license",
-                "compliance",
-                "GDPR"
-            ]
-        },
-        "medical_sage": {
-            "name": "حكيم الطب",
-            "name_en": "Medical Sage",
-            "adapter": "lora-medical",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت خبير طبي. تحلل أعراض، أبحاث طبية، وتقدم معلومات صحية.",
-            "data_sources": [
-                "PubMed",
-                "WHO",
-                "Medical textbooks",
-                "Drug databases"
-            ],
-            "expertise_keywords": [
-                "طب",
-                "صحة",
-                "علاج",
-                "medical",
-                "health",
-                "diagnosis"
-            ]
-        },
-        "engineering_sage": {
-            "name": "حكيم الهندسة",
-            "name_en": "Engineering Sage",
-            "adapter": "lora-engineering",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت مهندس متخصص. تحلل مشاكل ميكانيكية وكهربائية وتصمم حلول.",
-            "data_sources": [
-                "Engineering textbooks",
-                "IEEE papers",
-                "Manufacturing guides"
-            ],
-            "expertise_keywords": [
-                "هندسة",
-                "ميكانيك",
-                "كهرباء",
-                "engineering",
-                "mechanical",
-                "electrical"
-            ]
-        },
-        "physics_sage": {
-            "name": "حكيم الفيزياء",
-            "name_en": "Physics Sage",
-            "adapter": "lora-physics",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت فيزيائي خبير. تحلل ظواهر فيزيائية وتشرح النظريات العلمية.",
-            "data_sources": [
-                "arXiv physics",
-                "Feynman lectures",
-                "Classical/Quantum mechanics"
-            ],
-            "expertise_keywords": [
-                "فيزياء",
-                "كوانتم",
-                "نسبية",
-                "physics",
-                "quantum",
-                "relativity"
-            ]
-        },
-        "chemistry_sage": {
-            "name": "حكيم الكيمياء",
-            "name_en": "Chemistry Sage",
-            "adapter": "lora-chemistry",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت كيميائي خبير. تحلل تفاعلات ومواد وتصمم عمليات كيميائية.",
-            "data_sources": [
-                "PubChem",
-                "Chemistry textbooks",
-                "Materials science"
-            ],
-            "expertise_keywords": [
-                "كيمياء",
-                "تفاعل",
-                "مادة",
-                "chemistry",
-                "reaction",
-                "material"
-            ]
-        },
-        "math_sage": {
-            "name": "حكيم الرياضيات",
-            "name_en": "Math Sage",
-            "adapter": "lora-math",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت رياضياتي خبير. تحل مسائل رياضية وتشرح نظريات ومنطق.",
-            "data_sources": [
-                "Mathematical proofs",
-                "Algebra/Calculus textbooks",
-                "Logic papers"
-            ],
-            "expertise_keywords": [
-                "رياضيات",
-                "حساب",
-                "منطق",
-                "math",
-                "algebra",
-                "calculus",
-                "proof"
-            ]
-        },
-        "history_sage": {
-            "name": "حكيم التاريخ",
-            "name_en": "History Sage",
-            "adapter": "lora-history",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت مؤرخ خبير. تحلل الحضارات والأحداث التاريخية وتستخلص الدروس.",
-            "data_sources": [
-                "Historical archives",
-                "Civilization studies",
-                "Archaeological research"
-            ],
-            "expertise_keywords": [
-                "تاريخ",
-                "حضارة",
-                "أحداث",
-                "history",
-                "civilization",
-                "ancient"
-            ]
-        },
-        "strategy_sage": {
-            "name": "حكيم الاستراتيجية",
-            "name_en": "Strategy Sage",
-            "adapter": "lora-strategy",
-            "fallback_adapter": "lora-general",
-            "system_prompt": "أنت خبير استراتيجي. تخطط وتحلل مخاطر وتضع استراتيجيات طويلة الأمد.",
-            "data_sources": [
-                "Strategic planning",
-                "Risk management",
-                "Sun Tzu",
-                "Game theory"
-            ],
-            "expertise_keywords": [
-                "استراتيجية",
-                "خطة",
-                "مخاطر",
-                "strategy",
-                "planning",
-                "risk"
-            ]
-        },
-        "general_sage": {
-            "name": "الحكيم العام",
-            "name_en": "General Sage",
-            "adapter": "lora-general",
-            "fallback_adapter": null,
-            "system_prompt": "أنت مساعد ذكي شامل. تجيب على كل الأسئلة بدقة وأمانة.",
-            "data_sources": [
-                "Wikipedia",
-                "General knowledge",
-                "Multi-domain"
-            ],
-            "expertise_keywords": []
+            "rule": "لا يتم قبول أي قرار حتى يتحداه المتمرد ويدافع عنه الباقون"
         }
     },
     "loading_strategy": {
-        "mode": "lazy",
-        "description": "يحمّل الـ adapter فقط لما ينطلب — يفرغه بعد 5 دقائق بدون استخدام",
-        "max_loaded_adapters": 4,
-        "unload_timeout_seconds": 300,
-        "preload_on_startup": [
-            "lora-general"
+        "mode": "dynamic_swarm",
+        "max_loaded_adapters": 8,
+        "base_model_shared": true,
+        "swarm_debate_rounds": 3,
+        "description": "نحمّل السرب كامل → يتناقشون 3 جولات → النتيجة = رأي مركّب"
+    },
+    "auto_evolution": {
+        "enabled": true,
+        "evaluate_every_hours": 24,
+        "evolve_strategy": "حذف الأضعف + تكاثر الأقوى + mutation عشوائي",
+        "foundation_for_all": [
+            "mathematical_physics",
+            "arabic_conversational"
         ]
     }
 }
