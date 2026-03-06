@@ -214,7 +214,13 @@ class KnowledgeScout:
             return False
 
         # حفظ في ملف الكبسولة
-        data_dir = self.capsules_dir / capsule_id / "data"
+        # حماية inbox — لو قيد التدريب الكشافة تكتب بـ inbox/
+        cap_dir = self.capsules_dir / capsule_id
+        lock_file = cap_dir / ".training_in_progress"
+        if lock_file.exists():
+            data_dir = cap_dir / "inbox"
+        else:
+            data_dir = cap_dir / "data"
         data_dir.mkdir(parents=True, exist_ok=True)
         scout_file = data_dir / "scout_data.jsonl"
 
@@ -492,7 +498,13 @@ class InternalScout:
                 continue
 
             # حفظ في كبسولة
-            data_dir = self.capsules_dir / capsule_id / "data"
+            # حماية inbox — لو قيد التدريب الكشافة تكتب بـ inbox/
+            cap_path = self.capsules_dir / capsule_id
+            lock_file = cap_path / ".training_in_progress"
+            if lock_file.exists():
+                data_dir = cap_path / "inbox"
+            else:
+                data_dir = cap_path / "data"
             data_dir.mkdir(parents=True, exist_ok=True)
             with open(data_dir / "internal_scout.jsonl", "a") as f:
                 f.write(json.dumps(pair, ensure_ascii=False) + "\n")
