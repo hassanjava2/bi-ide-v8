@@ -115,11 +115,19 @@ export const API_ENDPOINTS = {
     topology: '/network/topology',
   },
   brain: {
+    ask: '/brain/ask',
+    askMulti: '/brain/ask-multi',
     status: '/brain/status',
-    jobs: '/brain/jobs',
-    evaluate: '/brain/evaluate',
-    evaluations: '/brain/evaluations',
-    consult: '/brain/consult-hierarchy',
+    capsules: '/brain/capsules',
+    tree: '/brain/tree',
+    rankings: '/brain/rankings',
+    eval: '/brain/eval',
+    evalAll: '/brain/eval-all',
+    council: '/brain/council',
+    route: '/brain/route',
+    project: '/brain/project',
+    projectAnalyze: '/brain/project/analyze',
+    projects: '/brain/projects',
   },
   notifications: {
     ws: '/ws/notifications',
@@ -317,7 +325,55 @@ export function buildApiUrl(endpoint: string): string {
   return `${API_CONFIG.vps.baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 }
 
-// ─── Export ──────────────────────────────────────────────────────
+// ─── Brain Capsule Invoke (via Rust) ─────────────────────────
+
+export async function sendBrainAsk(
+  question: string,
+  capsuleId?: string
+): Promise<CouncilMessageResponse> {
+  console.log('[AI Routing] Brain Ask → Rust invoke');
+  try {
+    const result = await invoke<{
+      response: string;
+      source: string;
+      confidence: number;
+      wise_man: string;
+      processing_time_ms: number;
+    }>('send_brain_ask', {
+      question,
+      capsuleId: capsuleId || null,
+    });
+
+    return {
+      response: result.response,
+      source: result.source as CouncilMessageResponse['source'],
+      confidence: result.confidence,
+      evidence: [],
+      response_source: result.source,
+      wise_man: result.wise_man,
+      processing_time_ms: result.processing_time_ms,
+      timestamp: new Date().toISOString(),
+    };
+  } catch (err: any) {
+    return {
+      response: `⚡ الكبسولة غير متاحة: ${err.message || err}`,
+      source: 'local-fallback',
+      confidence: 0,
+      evidence: [],
+      response_source: 'local-fallback',
+      wise_man: 'النظام',
+      processing_time_ms: 0,
+      timestamp: new Date().toISOString(),
+    };
+  }
+}
+
+export async function sendBrainProject(command: string): Promise<any> {
+  console.log('[AI Routing] Brain Project → Rust invoke');
+  return invoke('send_brain_project', { command });
+}
+
+// ─── Export ──────────────────────────────────────────────────
 
 export { API_CONFIG };
 export default API_CONFIG;
