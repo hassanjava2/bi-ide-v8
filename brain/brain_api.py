@@ -29,6 +29,12 @@ from brain.bi_os_kernel import kernel as bios_kernel
 from brain.real_life_layer import planner as factory_planner
 from brain.advanced_brain import brain as advanced_brain
 from brain.ide_file_learner import learner as file_learner
+from brain.capsule_tree import tree as capsule_tree
+from brain.virtual_factory import factory_manager, FACTORY_CATALOG
+from brain.layer_system import layer_manager
+from brain.vision_layer import vision
+from brain.self_evolution_loop import evolver
+from brain.knowledge_scout import unified_scout
 
 
 def create_app():
@@ -83,6 +89,34 @@ def create_app():
 
     class ShellReq(BaseModel):
         command: str
+
+    class VetoReq(BaseModel):
+        factory_id: str = None
+        product: str = None
+        reason: str = ""
+
+    class UserCommandReq(BaseModel):
+        command: str
+        target: str = None
+        params: dict = None
+
+    class InheritReq(BaseModel):
+        parent_id: str
+        child_id: str
+
+    class NodeReq(BaseModel):
+        node_id: str
+        name: str
+        name_ar: str
+        node_type: str = "capsule"
+        parent_ids: list = []
+        keywords: list = []
+
+    class AnalyzeReq(BaseModel):
+        filepath: str
+
+    class EvolutionReq(BaseModel):
+        reason: str = ""
 
     # ─── Chat ───
     @app.post("/api/chat")
@@ -227,7 +261,202 @@ def create_app():
                     "with_models": moe.get_status()["experts_with_models"]},
             "council": {"sages": len(council.get_all_sages())},
             "bios": bios_kernel.get_status(),
+            "capsule_tree": capsule_tree.stats(),
+            "factories": factory_manager.get_summary(),
+            "layers": layer_manager.stats(),
+            "vision": vision.get_status(),
+            "evolution": evolver.get_status(),
+            "scout": unified_scout.get_status(),
         }
+
+    # ═══════════════════════════════════════════════════════
+    # أشجار الكبسولات 🌳
+    # ═══════════════════════════════════════════════════════
+
+    @app.get("/api/capsules/tree")
+    async def capsules_tree_view(root_id: str = None):
+        return {"tree": capsule_tree.get_tree_view(root_id), "stats": capsule_tree.stats()}
+
+    @app.get("/api/capsules/search")
+    async def capsules_search(q: str, top_k: int = 5):
+        results = capsule_tree.find_capsules(q, top_k)
+        return {"results": [{"id": n.node_id, "name": n.name, "name_ar": n.name_ar,
+                             "type": n.node_type, "keywords": n.keywords} for n in results]}
+
+    @app.get("/api/capsules/stats")
+    async def capsules_stats():
+        return capsule_tree.stats()
+
+    @app.post("/api/capsules/inherit")
+    async def capsules_inherit(r: InheritReq):
+        capsule_tree.inherit(r.parent_id, r.child_id)
+        return {"status": "ok"}
+
+    @app.post("/api/capsules/cascade/{root_id}")
+    async def capsules_cascade(root_id: str):
+        capsule_tree.cascade_inherit(root_id)
+        return {"status": "ok", "stats": capsule_tree.stats()}
+
+    @app.post("/api/capsules/add")
+    async def capsules_add(r: NodeReq):
+        n = capsule_tree.add_node(r.node_id, r.name, r.name_ar, r.node_type, r.parent_ids, r.keywords)
+        return {"id": n.node_id, "name": n.name_ar, "level": n.level}
+
+    @app.post("/api/capsules/expand")
+    async def capsules_expand(r: ChatReq):
+        new_nodes = capsule_tree.auto_expand(r.message)
+        return {"new_nodes": new_nodes, "stats": capsule_tree.stats()}
+
+    @app.get("/api/capsules/orphans")
+    async def capsules_orphans():
+        orphans = capsule_tree.check_orphans()
+        return {"orphans": orphans, "count": len(orphans)}
+
+    @app.post("/api/capsules/fix-orphans")
+    async def capsules_fix_orphans():
+        fixed = capsule_tree.fix_orphans()
+        return {"fixed": fixed}
+
+    # ═══════════════════════════════════════════════════════
+    # المصانع 🏭
+    # ═══════════════════════════════════════════════════════
+
+    @app.get("/api/factories")
+    async def factories_list():
+        return factory_manager.get_summary()
+
+    @app.get("/api/factories/catalog")
+    async def factories_catalog():
+        return {"catalog": FACTORY_CATALOG, "count": len(FACTORY_CATALOG)}
+
+    @app.get("/api/factories/report")
+    async def factories_report():
+        return {"report": factory_manager.format_summary()}
+
+    @app.post("/api/factories/create")
+    async def factories_create(r: FactoryReq):
+        f = factory_manager.create_factory(r.product, r.capacity, r.location)
+        return f.get_report()
+
+    @app.post("/api/factories/create-all")
+    async def factories_create_all():
+        created = factory_manager.create_all_essential()
+        return {"created": created, "count": len(created)}
+
+    @app.post("/api/factories/simulate")
+    async def factories_simulate(days: int = 30):
+        results = factory_manager.simulate_all(days)
+        return {"results": results, "summary": factory_manager.get_summary()}
+
+    @app.post("/api/factories/veto")
+    async def factories_veto(r: VetoReq):
+        factory_manager.user_veto(r.factory_id, r.product, r.reason)
+        return {"status": "vetoed", "product": r.product}
+
+    @app.post("/api/factories/command")
+    async def factories_command(r: UserCommandReq):
+        result = factory_manager.user_command(r.command, r.target, r.params)
+        return {"status": "executed", "result": str(result)}
+
+    @app.post("/api/factories/propose")
+    async def factories_propose(r: FactoryReq):
+        p = factory_manager.scout_propose_factory(r.product, f"Proposed by user: {r.location}")
+        return p
+
+    @app.post("/api/factories/council-review")
+    async def factories_council_review():
+        results = factory_manager.council_review_proposals()
+        return {"reviewed": len(results), "results": results}
+
+    # ═══════════════════════════════════════════════════════
+    # الطبقات 🏛️
+    # ═══════════════════════════════════════════════════════
+
+    @app.get("/api/layers")
+    async def layers_list():
+        return {"hierarchy": layer_manager.get_hierarchy(), "stats": layer_manager.stats()}
+
+    @app.get("/api/layers/stats")
+    async def layers_stats():
+        return layer_manager.stats()
+
+    @app.post("/api/layers/detect")
+    async def layers_detect(r: ChatReq):
+        new_layers = layer_manager.auto_detect_needed_layers(r.message)
+        return {"new_layers": new_layers, "stats": layer_manager.stats()}
+
+    @app.post("/api/layers/process")
+    async def layers_process(r: ChatReq):
+        return layer_manager.process_request(r.message, r.mode)
+
+    # ═══════════════════════════════════════════════════════
+    # الرؤية 👁️
+    # ═══════════════════════════════════════════════════════
+
+    @app.post("/api/vision/analyze")
+    async def vision_analyze(r: AnalyzeReq):
+        result = vision.analyze(r.filepath)
+        return {
+            "source": result.source, "type": result.source_type,
+            "summary": result.summary, "metadata": result.metadata,
+            "objects": [{"label": o.label, "confidence": o.confidence} for o in result.objects],
+        }
+
+    @app.get("/api/vision/status")
+    async def vision_status():
+        return vision.get_status()
+
+    @app.get("/api/vision/cameras")
+    async def vision_cameras():
+        return {"cameras": vision.camera.cameras, "count": len(vision.camera.cameras)}
+
+    # ═══════════════════════════════════════════════════════
+    # التطور الذاتي 🧬
+    # ═══════════════════════════════════════════════════════
+
+    @app.get("/api/evolution/status")
+    async def evo_status():
+        return evolver.get_status()
+
+    @app.get("/api/evolution/health")
+    async def evo_health():
+        return evolver.check_health()
+
+    @app.get("/api/evolution/improvements")
+    async def evo_improvements():
+        return {"improvements": evolver.find_improvements()}
+
+    @app.post("/api/evolution/snapshot")
+    async def evo_snapshot(r: EvolutionReq):
+        return evolver.archive.snapshot(r.reason)
+
+    @app.post("/api/evolution/propose")
+    async def evo_propose():
+        return evolver.propose_evolution()
+
+    @app.post("/api/evolution/approve")
+    async def evo_approve():
+        return evolver.approve_evolution()
+
+    @app.post("/api/evolution/reject")
+    async def evo_reject(r: EvolutionReq):
+        return evolver.reject_evolution(r.reason)
+
+    @app.get("/api/evolution/versions")
+    async def evo_versions():
+        return {"versions": evolver.archive.list_versions()}
+
+    # ═══════════════════════════════════════════════════════
+    # الكشافة 🔍
+    # ═══════════════════════════════════════════════════════
+
+    @app.get("/api/scout/status")
+    async def scout_status():
+        return unified_scout.get_status()
+
+    @app.post("/api/scout/cycle")
+    async def scout_cycle():
+        return unified_scout.scout_cycle()
 
     return app
 
@@ -242,12 +471,15 @@ if __name__ == "__main__":
     if app:
         import uvicorn
         print(f"""
-🧠 BI-IDE Brain API v1.0 — http://localhost:{args.port}
-{'═' * 40}
-/api/chat          /api/council/debate
-/api/moe/route     /api/curriculum/status
-/api/factory/plan  /api/brain/think
-/api/bios/shell    /api/learner/file
-/api/status        /api/memory/stats
-{'═' * 40}""")
+🧠 BI-IDE Brain API v2.0 — http://localhost:{args.port}
+{'═' * 50}
+/api/chat              /api/council/debate
+/api/moe/route         /api/curriculum/status
+/api/factory/plan      /api/brain/think
+/api/bios/shell        /api/learner/file
+/api/capsules/tree     /api/factories
+/api/layers            /api/vision/analyze
+/api/evolution/status  /api/scout/status
+/api/status            /api/memory/stats
+{'═' * 50}""")
         uvicorn.run(app, host="0.0.0.0", port=args.port)
