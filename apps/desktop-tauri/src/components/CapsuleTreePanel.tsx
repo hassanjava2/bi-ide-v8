@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { TreePine, Search, RefreshCw, GitMerge, AlertTriangle, Wrench, ChevronDown, ChevronRight } from "lucide-react";
-
-const API = "http://localhost:8400";
+import { TreePine, Search, RefreshCw, GitMerge, ChevronDown, ChevronRight, Wrench } from "lucide-react";
+import { apiGet, apiPost } from "../lib/api-config";
 
 interface TreeStats {
     trees: number;
@@ -24,8 +23,7 @@ export function CapsuleTreePanel() {
 
     const fetchTree = async () => {
         try {
-            const res = await fetch(`${API}/api/capsules/tree`);
-            const data = await res.json();
+            const data = await apiGet("/api/capsules/tree");
             setTreeView(data.tree);
             setStats(data.stats);
         } catch { }
@@ -36,8 +34,7 @@ export function CapsuleTreePanel() {
     const search = async () => {
         if (!searchQuery.trim()) return;
         try {
-            const res = await fetch(`${API}/api/capsules/search?q=${encodeURIComponent(searchQuery)}`);
-            const data = await res.json();
+            const data = await apiGet(`/api/capsules/search?q=${encodeURIComponent(searchQuery)}`);
             setSearchResults(data.results);
         } catch { }
     };
@@ -45,9 +42,9 @@ export function CapsuleTreePanel() {
     const cascadeAll = async () => {
         setLoading(true);
         try {
-            await fetch(`${API}/api/capsules/cascade/engineering`, { method: "POST" });
-            await fetch(`${API}/api/capsules/cascade/science`, { method: "POST" });
-            await fetch(`${API}/api/capsules/cascade/manufacturing`, { method: "POST" });
+            await apiPost("/api/capsules/cascade/engineering", {});
+            await apiPost("/api/capsules/cascade/science", {});
+            await apiPost("/api/capsules/cascade/manufacturing", {});
             await fetchTree();
         } finally { setLoading(false); }
     };
@@ -55,7 +52,7 @@ export function CapsuleTreePanel() {
     const fixOrphans = async () => {
         setLoading(true);
         try {
-            await fetch(`${API}/api/capsules/fix-orphans`, { method: "POST" });
+            await apiPost("/api/capsules/fix-orphans", {});
             await fetchTree();
         } finally { setLoading(false); }
     };
@@ -63,10 +60,7 @@ export function CapsuleTreePanel() {
     const autoExpand = async () => {
         setLoading(true);
         try {
-            await fetch(`${API}/api/capsules/expand`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: "robotics solar nano biotech renewable 3dprint" }),
-            });
+            await apiPost("/api/capsules/expand", { message: "robotics solar nano biotech renewable 3dprint" });
             await fetchTree();
         } finally { setLoading(false); }
     };
@@ -106,7 +100,6 @@ export function CapsuleTreePanel() {
                 </div>
             )}
 
-            {/* Actions */}
             <div className="flex gap-1 mb-3">
                 <button onClick={cascadeAll} disabled={loading}
                     className="flex-1 flex items-center justify-center gap-1 px-2 py-1 bg-green-700 hover:bg-green-600 rounded text-[10px] font-medium text-white disabled:opacity-50">
@@ -124,7 +117,6 @@ export function CapsuleTreePanel() {
                 )}
             </div>
 
-            {/* Search */}
             <div className="flex gap-1 mb-3">
                 <input
                     value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
@@ -148,7 +140,6 @@ export function CapsuleTreePanel() {
                 </div>
             )}
 
-            {/* Tree View */}
             <button onClick={() => setExpanded(!expanded)}
                 className="flex items-center gap-1 text-xs text-dark-400 hover:text-dark-200 mb-1">
                 {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}

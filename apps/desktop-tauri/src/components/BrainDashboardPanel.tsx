@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { Layers, Eye, Dna, Radar, RefreshCw, Camera, Shield, Activity } from "lucide-react";
-
-const API = "http://localhost:8400";
+import { Layers, Eye, Dna, Radar, RefreshCw, Activity } from "lucide-react";
+import { apiGet, apiPost } from "../lib/api-config";
 
 export function BrainDashboardPanel() {
     const [layers, setLayers] = useState<any>(null);
@@ -14,10 +13,10 @@ export function BrainDashboardPanel() {
         setLoading(true);
         try {
             const [layersRes, evoRes, scoutRes, visionRes] = await Promise.all([
-                fetch(`${API}/api/layers`).then(r => r.json()).catch(() => null),
-                fetch(`${API}/api/evolution/status`).then(r => r.json()).catch(() => null),
-                fetch(`${API}/api/scout/status`).then(r => r.json()).catch(() => null),
-                fetch(`${API}/api/vision/status`).then(r => r.json()).catch(() => null),
+                apiGet("/api/layers").catch(() => null),
+                apiGet("/api/evolution/status").catch(() => null),
+                apiGet("/api/scout/status").catch(() => null),
+                apiGet("/api/vision/status").catch(() => null),
             ]);
             setLayers(layersRes);
             setEvolution(evoRes);
@@ -31,10 +30,7 @@ export function BrainDashboardPanel() {
     const snapshot = async () => {
         setLoading(true);
         try {
-            await fetch(`${API}/api/evolution/snapshot`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ reason: "Manual snapshot from IDE" }),
-            });
+            await apiPost("/api/evolution/snapshot", { reason: "Manual snapshot from IDE" });
             await fetchAll();
         } finally { setLoading(false); }
     };
@@ -42,7 +38,7 @@ export function BrainDashboardPanel() {
     const scoutCycle = async () => {
         setLoading(true);
         try {
-            await fetch(`${API}/api/scout/cycle`, { method: "POST" });
+            await apiPost("/api/scout/cycle", {});
             await fetchAll();
         } finally { setLoading(false); }
     };

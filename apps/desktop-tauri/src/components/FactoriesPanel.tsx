@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Factory, Play, Ban, Plus, BarChart3, RefreshCw, ChevronDown, ChevronRight } from "lucide-react";
-
-const API = "http://localhost:8400";
+import { apiGet, apiPost } from "../lib/api-config";
 
 interface FactorySummary {
     factories: number;
@@ -30,23 +29,20 @@ export function FactoriesPanel() {
 
     const fetchSummary = async () => {
         try {
-            const res = await fetch(`${API}/api/factories`);
-            setSummary(await res.json());
+            setSummary(await apiGet("/api/factories"));
         } catch { }
     };
 
     const fetchCatalog = async () => {
         try {
-            const res = await fetch(`${API}/api/factories/catalog`);
-            const data = await res.json();
+            const data = await apiGet("/api/factories/catalog");
             setCatalog(data.catalog);
         } catch { }
     };
 
     const fetchReport = async () => {
         try {
-            const res = await fetch(`${API}/api/factories/report`);
-            const data = await res.json();
+            const data = await apiGet("/api/factories/report");
             setReport(data.report);
         } catch { }
     };
@@ -59,10 +55,7 @@ export function FactoriesPanel() {
     const createFactory = async (product: string) => {
         setLoading(true);
         try {
-            await fetch(`${API}/api/factories/create`, {
-                method: "POST", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ product }),
-            });
+            await apiPost("/api/factories/create", { product });
             await fetchSummary();
             await fetchReport();
         } finally { setLoading(false); }
@@ -71,7 +64,7 @@ export function FactoriesPanel() {
     const createAll = async () => {
         setLoading(true);
         try {
-            await fetch(`${API}/api/factories/create-all`, { method: "POST" });
+            await apiPost("/api/factories/create-all", {});
             await fetchSummary();
             await fetchReport();
         } finally { setLoading(false); }
@@ -80,17 +73,14 @@ export function FactoriesPanel() {
     const simulate = async () => {
         setLoading(true);
         try {
-            await fetch(`${API}/api/factories/simulate?days=${simDays}`, { method: "POST" });
+            await apiPost("/api/factories/simulate?days=" + simDays, {});
             await fetchSummary();
             await fetchReport();
         } finally { setLoading(false); }
     };
 
     const veto = async (product: string) => {
-        await fetch(`${API}/api/factories/veto`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ product, reason: "User veto from IDE" }),
-        });
+        await apiPost("/api/factories/veto", { product, reason: "User veto from IDE" });
         await fetchSummary();
     };
 

@@ -31,10 +31,28 @@ PROJECT_ROOT = Path(__file__).parent.parent
 try:
     from brain.memory_system import memory
     from brain.real_life_layer import planner
+    from brain.capsule_tree import tree as capsule_tree
 except ImportError:
     import sys; sys.path.insert(0, str(PROJECT_ROOT))
     from brain.memory_system import memory
     from brain.real_life_layer import planner
+    from brain.capsule_tree import tree as capsule_tree
+
+# ═══════════════════════════════════════════════════════════
+# خريطة ربط: دور العامل ← كبسولات التخصص
+# ═══════════════════════════════════════════════════════════
+ROLE_TO_CAPSULES = {
+    "MANAGER": ["beam", "foundation", "highway"],        # civil/structures
+    "PRODUCTION_ENGINEER": ["furnace", "ore", "mold"],   # manufacturing
+    "MAINTENANCE_TECH": ["piston", "diesel", "cooling"],  # mechanical
+    "QUALITY_INSPECTOR": ["cement", "steel", "glass"],    # industrial chemistry
+    "WAREHOUSE_MANAGER": ["asphalt", "pavement", "alloy"],
+    "SAFETY_OFFICER": ["heat", "temperature", "entropy"],  # thermodynamics
+    "ACCOUNTANT": ["carbon", "polymer", "mineral"],        # chemistry
+    "CHEMIST": ["cement", "steel", "glass"],               # industrial chem
+    "ELECTRICIAN": ["grid", "transformer", "generator"],   # power_systems
+    "OPERATOR": ["foundry", "furnace", "blast"],           # metals
+}
 
 
 # ═══════════════════════════════════════════════════════════
@@ -77,13 +95,18 @@ class FactoryWorker:
     problems_solved: int = 0
     efficiency: float = 0.5
     memory: List[Dict] = field(default_factory=list)
+    assigned_capsules: List[str] = field(default_factory=list)
 
     def work_shift(self, problems: List) -> List[Dict]:
         self.experience_days += 1
+        # كبسولات مدرّبة ترفع الكفاءة
+        capsule_bonus = min(len(self.assigned_capsules) * 0.02, 0.1)
+        effective_eff = min(self.efficiency + capsule_bonus, 0.99)
+
         actions = []
         relevant = [p for p in problems if self._can_handle(p)]
         for problem in relevant[:3]:
-            solved = random.random() < self.efficiency
+            solved = random.random() < effective_eff
             if solved:
                 self.problems_solved += 1
                 self.efficiency = min(self.efficiency + 0.01, 0.99)
@@ -305,6 +328,9 @@ class FactoryManager:
         factory = VirtualFactory(product, capacity, location)
         self.factories[factory.factory_id] = factory
 
+        # ربط العمال بكبسولات التخصص
+        self._assign_capsules_to_workers(factory)
+
         memory.save_knowledge(
             topic=f"Factory Created: {product}",
             content=f"مصنع {catalog.get('name_ar', product)}: {capacity:,} طن/سنة @ {location}",
@@ -312,6 +338,18 @@ class FactoryManager:
         )
         logger.info(f"🏭 Created: {product} ({capacity:,} tons/year)")
         return factory
+
+    def _assign_capsules_to_workers(self, factory: VirtualFactory):
+        """ربط كل عامل بكبسولات التخصص من capsule_tree"""
+        for worker in factory.workers:
+            role_name = worker.role.name
+            desired = ROLE_TO_CAPSULES.get(role_name, [])
+            for keyword in desired:
+                matches = capsule_tree.find_capsules(keyword, top_k=1)
+                if matches:
+                    cap_id = matches[0].node_id
+                    if cap_id not in worker.assigned_capsules:
+                        worker.assigned_capsules.append(cap_id)
 
     def create_all_essential(self) -> List[str]:
         """إنشاء كل المصانع الأساسية"""
