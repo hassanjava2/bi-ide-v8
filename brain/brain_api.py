@@ -183,6 +183,39 @@ def create_brain_router():
         capsule_id = bus.route(question)
         return {"question": question, "routed_to": capsule_id}
 
+    # ─── Projects (المنسق) ──────────────────────────
+
+    class ProjectRequest(BaseModel):
+        command: str = Field(..., min_length=1, max_length=5000)
+
+    @router.post("/project")
+    async def brain_project(request: ProjectRequest):
+        """أمر مشروع كامل → تحليل → تنفيذ → 100%"""
+        from brain.project_orchestrator import ProjectOrchestrator
+        orch = ProjectOrchestrator(CAPSULES_DIR)
+        return orch.execute_full(request.command)
+
+    @router.post("/project/analyze")
+    async def brain_project_analyze(request: ProjectRequest):
+        """تحليل أمر فقط (بدون تنفيذ) — شوف شنو راح يصير"""
+        from brain.project_orchestrator import ProjectOrchestrator
+        orch = ProjectOrchestrator(CAPSULES_DIR)
+        return orch.analyze(request.command)
+
+    @router.get("/project/{project_id}")
+    async def brain_project_status(project_id: str):
+        """حالة مشروع"""
+        from brain.project_orchestrator import ProjectOrchestrator
+        orch = ProjectOrchestrator(CAPSULES_DIR)
+        return orch.get_project(project_id)
+
+    @router.get("/projects")
+    async def brain_projects():
+        """كل المشاريع"""
+        from brain.project_orchestrator import ProjectOrchestrator
+        orch = ProjectOrchestrator(CAPSULES_DIR)
+        return {"projects": orch.list_projects()}
+
     return router
 
 

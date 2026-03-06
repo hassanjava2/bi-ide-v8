@@ -388,14 +388,30 @@ activate.py, unified_activation.py, connect_services.py
 | **دولاب البيانات** | كل استخدام = تدريب جديد |
 | **نظرية كل شي** | يربط بين كل الاختصاصات |
 
-### ملفات الدماغ:
-- `brain/capsule.py` — الكبسولة (encapsulation + inheritance)
-- `brain/capsule_registry.py` — سجل المعرفة (discovery)
-- `brain/capsule_bus.py` — ناقل التواصل (inter-capsule)
-- `brain/brain_factory.py` — مصنع الأدمغة (create/evaluate/evolve)
-- `brain/self_trainer.py` — التدريب الذاتي (كبسولات تدرّب بعضها)
-- `brain/hallucination_guard.py` — الفلاتر الخمسة ضد الهلوسة
-- `brain/training_pipeline.py` — Pipeline تدريب من الصفر (RTX/H200)
+### ملفات الدماغ (✅ = مكتمل ومفعّل):
+```
+brain/
+├── capsule.py              ✅ الكبسولة (encapsulation + inheritance)
+├── capsule_registry.py     ✅ سجل المعرفة (DNS للأدمغة)
+├── capsule_bus.py          ✅ ناقل التواصل (inter-capsule + collaborate)
+├── brain_factory.py        ✅ مصنع الأدمغة (وراثة + تزاوج + داروين + auto-register)
+├── brain_daemon.py         ✅ المايسترو 24/7 (FIFO: scout→train→delete→∞)
+├── knowledge_scout.py      ✅ كشافة داخلية (ملفات حقيقية) + خارجية (Ollama)
+├── brain_api.py            ✅ جسر REST API للـ IDE (port 8090: /brain/*)
+├── self_eval.py            ✅ امتحانات ذاتية (أسئلة → درجات A-F)
+├── council_brain.py        ✅ مجلس الأدمغة (sage+rebel → قرارات + تنفيذ)
+├── auto_programmer.py      ✅ مبرمج ذاتي (يعدل كوده + backup + rollback)
+├── project_orchestrator.py ✅ منسق المشاريع (أمر → تحليل → توزيع → تنفيذ → 100%)
+├── self_trainer.py         ⬜ التدريب الذاتي (كبسولات تدرّب بعضها)
+├── hallucination_guard.py  ⬜ 5 فلاتر ضد الهلوسة
+└── training_pipeline.py    ⬜ Pipeline تدريب (RTX/H200)
+```
+
+### دولاب البيانات (Data Wheel):
+```
+الكشافة تنزّل ← يتدرب ← ينحذف ← تنزّل ← ∞
+NVMe 4TB ما يمتلي أبداً — FIFO streaming per capsule
+```
 
 ---
 
