@@ -62,7 +62,7 @@ def detect_environment():
         if torch.cuda.is_available():
             env["has_gpu"] = True
             env["gpu_name"] = torch.cuda.get_device_name(0)
-            env["gpu_memory_gb"] = round(torch.cuda.get_device_properties(0).total_mem / (1024**3), 1)
+            env["gpu_memory_gb"] = round(torch.cuda.get_device_properties(0).total_memory / (1024**3), 1)
     except ImportError:
         env["pytorch"] = "NOT INSTALLED"
     
