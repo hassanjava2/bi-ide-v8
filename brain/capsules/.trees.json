@@ -1,0 +1,1673 @@
+{
+  "roots": [
+    "engineering",
+    "science",
+    "medicine",
+    "manufacturing",
+    "agriculture",
+    "computing"
+  ],
+  "nodes": {
+    "engineering": {
+      "node_id": "engineering",
+      "name": "Engineering",
+      "name_ar": "هندسة",
+      "node_type": "tree",
+      "parent_ids": [],
+      "children_ids": [
+        "engineering.electrical",
+        "engineering.mechanical",
+        "engineering.civil",
+        "engineering.software",
+        "engineering.chemical",
+        "engineering.robotics"
+      ],
+      "inherits_from": [],
+      "inherits_to": [
+        "engineering.electrical",
+        "engineering.mechanical",
+        "engineering.civil",
+        "engineering.software",
+        "engineering.chemical",
+        "engineering.robotics"
+      ],
+      "level": 0,
+      "keywords": [],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660018"
+    },
+    "engineering.electrical": {
+      "node_id": "engineering.electrical",
+      "name": "Electrical",
+      "name_ar": "كهربائية",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "engineering"
+      ],
+      "children_ids": [
+        "engineering.electrical.power_systems",
+        "engineering.electrical.solar_energy",
+        "engineering.electrical.electronics",
+        "engineering.electrical.renewable"
+      ],
+      "inherits_from": [
+        "engineering"
+      ],
+      "inherits_to": [
+        "engineering.electrical.power_systems",
+        "engineering.electrical.solar_energy",
+        "engineering.electrical.electronics",
+        "engineering.electrical.renewable"
+      ],
+      "level": 1,
+      "keywords": [
+        "power",
+        "electronics",
+        "telecom",
+        "solar",
+        "circuit"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660025"
+    },
+    "engineering.electrical.power_systems": {
+      "node_id": "engineering.electrical.power_systems",
+      "name": "Power Systems",
+      "name_ar": "أنظمة طاقة",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.electrical"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.electrical"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "grid",
+        "transformer",
+        "generator",
+        "power",
+        "electronics",
+        "telecom",
+        "solar",
+        "circuit"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660027"
+    },
+    "engineering.electrical.solar_energy": {
+      "node_id": "engineering.electrical.solar_energy",
+      "name": "Solar Energy",
+      "name_ar": "طاقة شمسية",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.electrical"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.electrical"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "panel",
+        "inverter",
+        "solar",
+        "power",
+        "electronics",
+        "telecom",
+        "circuit"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660161"
+    },
+    "engineering.electrical.electronics": {
+      "node_id": "engineering.electrical.electronics",
+      "name": "Electronics",
+      "name_ar": "إلكترونيات",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.electrical"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.electrical"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "pcb",
+        "chip",
+        "ic",
+        "resistor",
+        "power",
+        "electronics",
+        "telecom",
+        "solar",
+        "circuit"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660236"
+    },
+    "engineering.mechanical": {
+      "node_id": "engineering.mechanical",
+      "name": "Mechanical",
+      "name_ar": "ميكانيكية",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "engineering"
+      ],
+      "children_ids": [
+        "engineering.mechanical.engines",
+        "engineering.mechanical.hvac"
+      ],
+      "inherits_from": [
+        "engineering"
+      ],
+      "inherits_to": [
+        "engineering.mechanical.engines",
+        "engineering.mechanical.hvac"
+      ],
+      "level": 1,
+      "keywords": [
+        "engine",
+        "turbine",
+        "gear",
+        "thermal"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660317"
+    },
+    "engineering.mechanical.engines": {
+      "node_id": "engineering.mechanical.engines",
+      "name": "Engines",
+      "name_ar": "محركات",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.mechanical"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.mechanical"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "piston",
+        "diesel",
+        "combustion",
+        "engine",
+        "turbine",
+        "gear",
+        "thermal"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660319"
+    },
+    "engineering.mechanical.hvac": {
+      "node_id": "engineering.mechanical.hvac",
+      "name": "HVAC",
+      "name_ar": "تكييف",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.mechanical"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.mechanical"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "cooling",
+        "heating",
+        "ventilation",
+        "engine",
+        "turbine",
+        "gear",
+        "thermal"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660382"
+    },
+    "engineering.civil": {
+      "node_id": "engineering.civil",
+      "name": "Civil",
+      "name_ar": "مدنية",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "engineering"
+      ],
+      "children_ids": [
+        "engineering.civil.structures",
+        "engineering.civil.roads"
+      ],
+      "inherits_from": [
+        "engineering"
+      ],
+      "inherits_to": [
+        "engineering.civil.structures",
+        "engineering.civil.roads"
+      ],
+      "level": 1,
+      "keywords": [
+        "building",
+        "bridge",
+        "concrete",
+        "road"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660458"
+    },
+    "engineering.civil.structures": {
+      "node_id": "engineering.civil.structures",
+      "name": "Structures",
+      "name_ar": "إنشاءات",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.civil"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.civil"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "beam",
+        "column",
+        "foundation",
+        "building",
+        "bridge",
+        "concrete",
+        "road"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660459"
+    },
+    "engineering.civil.roads": {
+      "node_id": "engineering.civil.roads",
+      "name": "Roads",
+      "name_ar": "طرق",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.civil"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.civil"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "asphalt",
+        "highway",
+        "pavement",
+        "building",
+        "bridge",
+        "concrete",
+        "road"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660527"
+    },
+    "engineering.software": {
+      "node_id": "engineering.software",
+      "name": "Software",
+      "name_ar": "برمجيات",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "engineering"
+      ],
+      "children_ids": [
+        "engineering.software.web",
+        "engineering.software.mobile",
+        "engineering.software.backend",
+        "engineering.software.devops"
+      ],
+      "inherits_from": [
+        "engineering"
+      ],
+      "inherits_to": [
+        "engineering.software.web",
+        "engineering.software.mobile",
+        "engineering.software.backend",
+        "engineering.software.devops"
+      ],
+      "level": 1,
+      "keywords": [
+        "code",
+        "algorithm",
+        "api",
+        "database"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660623"
+    },
+    "engineering.software.web": {
+      "node_id": "engineering.software.web",
+      "name": "Web Dev",
+      "name_ar": "ويب",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.software"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.software"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "html",
+        "css",
+        "react",
+        "node",
+        "code",
+        "algorithm",
+        "api",
+        "database"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660624"
+    },
+    "engineering.software.mobile": {
+      "node_id": "engineering.software.mobile",
+      "name": "Mobile",
+      "name_ar": "موبايل",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.software"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.software"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "android",
+        "ios",
+        "flutter",
+        "code",
+        "algorithm",
+        "api",
+        "database"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660713"
+    },
+    "engineering.software.backend": {
+      "node_id": "engineering.software.backend",
+      "name": "Backend",
+      "name_ar": "خلفية",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.software"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.software"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "rest",
+        "graphql",
+        "microservice",
+        "code",
+        "algorithm",
+        "api",
+        "database"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660777"
+    },
+    "engineering.software.devops": {
+      "node_id": "engineering.software.devops",
+      "name": "DevOps",
+      "name_ar": "عمليات",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.software"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.software"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "docker",
+        "k8s",
+        "ci",
+        "cd",
+        "code",
+        "algorithm",
+        "api",
+        "database"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660844"
+    },
+    "engineering.chemical": {
+      "node_id": "engineering.chemical",
+      "name": "Chemical",
+      "name_ar": "كيميائية",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "engineering"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "reactor",
+        "polymer",
+        "catalyst"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660915"
+    },
+    "science": {
+      "node_id": "science",
+      "name": "Science",
+      "name_ar": "علوم",
+      "node_type": "tree",
+      "parent_ids": [],
+      "children_ids": [
+        "science.physics",
+        "science.chemistry",
+        "science.biology",
+        "science.math",
+        "science.nanotech"
+      ],
+      "inherits_from": [],
+      "inherits_to": [
+        "science.physics",
+        "science.chemistry",
+        "science.biology",
+        "science.math",
+        "science.nanotech"
+      ],
+      "level": 0,
+      "keywords": [],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660924"
+    },
+    "science.physics": {
+      "node_id": "science.physics",
+      "name": "Physics",
+      "name_ar": "فيزياء",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "science"
+      ],
+      "children_ids": [
+        "science.physics.thermodynamics",
+        "science.physics.mechanics",
+        "science.physics.quantum"
+      ],
+      "inherits_from": [
+        "science"
+      ],
+      "inherits_to": [
+        "science.physics.thermodynamics",
+        "science.physics.mechanics",
+        "science.physics.quantum"
+      ],
+      "level": 1,
+      "keywords": [
+        "force",
+        "energy",
+        "wave",
+        "quantum",
+        "gravity"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660925"
+    },
+    "science.physics.thermodynamics": {
+      "node_id": "science.physics.thermodynamics",
+      "name": "Thermodynamics",
+      "name_ar": "ديناميكا حرارية",
+      "node_type": "capsule",
+      "parent_ids": [
+        "science.physics"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "science.physics"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "heat",
+        "entropy",
+        "temperature"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660926"
+    },
+    "science.physics.mechanics": {
+      "node_id": "science.physics.mechanics",
+      "name": "Mechanics",
+      "name_ar": "ميكانيكا",
+      "node_type": "capsule",
+      "parent_ids": [
+        "science.physics"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "science.physics"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "force",
+        "motion",
+        "velocity"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.660987"
+    },
+    "science.physics.quantum": {
+      "node_id": "science.physics.quantum",
+      "name": "Quantum",
+      "name_ar": "كمّ",
+      "node_type": "capsule",
+      "parent_ids": [
+        "science.physics"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "science.physics"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "qubit",
+        "superposition",
+        "entangle"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661053"
+    },
+    "science.chemistry": {
+      "node_id": "science.chemistry",
+      "name": "Chemistry",
+      "name_ar": "كيمياء",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "science"
+      ],
+      "children_ids": [
+        "science.chemistry.organic",
+        "science.chemistry.inorganic",
+        "science.chemistry.industrial"
+      ],
+      "inherits_from": [
+        "science"
+      ],
+      "inherits_to": [
+        "science.chemistry.organic",
+        "science.chemistry.inorganic",
+        "science.chemistry.industrial"
+      ],
+      "level": 1,
+      "keywords": [
+        "reaction",
+        "element",
+        "molecule",
+        "acid"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661127"
+    },
+    "science.chemistry.organic": {
+      "node_id": "science.chemistry.organic",
+      "name": "Organic",
+      "name_ar": "عضوية",
+      "node_type": "capsule",
+      "parent_ids": [
+        "science.chemistry"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "science.chemistry"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "carbon",
+        "hydrocarbon",
+        "polymer"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661128"
+    },
+    "science.chemistry.inorganic": {
+      "node_id": "science.chemistry.inorganic",
+      "name": "Inorganic",
+      "name_ar": "غير عضوية",
+      "node_type": "capsule",
+      "parent_ids": [
+        "science.chemistry"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "science.chemistry"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "metal",
+        "mineral",
+        "oxide"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661195"
+    },
+    "science.chemistry.industrial": {
+      "node_id": "science.chemistry.industrial",
+      "name": "Industrial",
+      "name_ar": "صناعية",
+      "node_type": "capsule",
+      "parent_ids": [
+        "science.chemistry"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "science.chemistry"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "cement",
+        "steel",
+        "glass",
+        "soap"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661258"
+    },
+    "science.biology": {
+      "node_id": "science.biology",
+      "name": "Biology",
+      "name_ar": "أحياء",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "science"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "science"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "cell",
+        "dna",
+        "protein",
+        "ecology"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661325"
+    },
+    "science.math": {
+      "node_id": "science.math",
+      "name": "Mathematics",
+      "name_ar": "رياضيات",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "science"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "science"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "calculus",
+        "algebra",
+        "geometry"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661334"
+    },
+    "medicine": {
+      "node_id": "medicine",
+      "name": "Medicine",
+      "name_ar": "طب",
+      "node_type": "tree",
+      "parent_ids": [],
+      "children_ids": [
+        "medicine.surgery",
+        "medicine.pharmacy",
+        "medicine.diagnostics",
+        "medicine.emergency"
+      ],
+      "inherits_from": [],
+      "inherits_to": [
+        "medicine.surgery",
+        "medicine.pharmacy",
+        "medicine.diagnostics",
+        "medicine.emergency"
+      ],
+      "level": 0,
+      "keywords": [],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661341"
+    },
+    "medicine.surgery": {
+      "node_id": "medicine.surgery",
+      "name": "Surgery",
+      "name_ar": "جراحة",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "medicine"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "medicine"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "operation",
+        "scalpel",
+        "suture"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661343"
+    },
+    "medicine.pharmacy": {
+      "node_id": "medicine.pharmacy",
+      "name": "Pharmacy",
+      "name_ar": "صيدلة",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "medicine"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "medicine"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "drug",
+        "dose",
+        "vaccine"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661350"
+    },
+    "medicine.diagnostics": {
+      "node_id": "medicine.diagnostics",
+      "name": "Diagnostics",
+      "name_ar": "تشخيص",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "medicine"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "medicine"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "xray",
+        "mri",
+        "blood"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661357"
+    },
+    "medicine.emergency": {
+      "node_id": "medicine.emergency",
+      "name": "Emergency",
+      "name_ar": "طوارئ",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "medicine"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "medicine"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "trauma",
+        "cpr",
+        "triage"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661364"
+    },
+    "manufacturing": {
+      "node_id": "manufacturing",
+      "name": "Manufacturing",
+      "name_ar": "صناعة",
+      "node_type": "tree",
+      "parent_ids": [],
+      "children_ids": [
+        "manufacturing.metals",
+        "manufacturing.ceramics",
+        "manufacturing.textiles",
+        "manufacturing.food",
+        "manufacturing.chemicals",
+        "manufacturing.construction_materials"
+      ],
+      "inherits_from": [],
+      "inherits_to": [
+        "manufacturing.metals",
+        "manufacturing.ceramics",
+        "manufacturing.textiles",
+        "manufacturing.food",
+        "manufacturing.chemicals",
+        "manufacturing.construction_materials"
+      ],
+      "level": 0,
+      "keywords": [],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661427"
+    },
+    "manufacturing.metals": {
+      "node_id": "manufacturing.metals",
+      "name": "Metals",
+      "name_ar": "معادن",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "manufacturing"
+      ],
+      "children_ids": [
+        "manufacturing.metals.steelmaking",
+        "manufacturing.metals.casting"
+      ],
+      "inherits_from": [
+        "manufacturing"
+      ],
+      "inherits_to": [
+        "manufacturing.metals.steelmaking",
+        "manufacturing.metals.casting"
+      ],
+      "level": 1,
+      "keywords": [
+        "steel",
+        "iron",
+        "aluminum",
+        "welding"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661429"
+    },
+    "manufacturing.metals.steelmaking": {
+      "node_id": "manufacturing.metals.steelmaking",
+      "name": "Steelmaking",
+      "name_ar": "صناعة حديد",
+      "node_type": "capsule",
+      "parent_ids": [
+        "manufacturing.metals"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "manufacturing.metals"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "blast",
+        "furnace",
+        "ore"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661430"
+    },
+    "manufacturing.metals.casting": {
+      "node_id": "manufacturing.metals.casting",
+      "name": "Casting",
+      "name_ar": "صب",
+      "node_type": "capsule",
+      "parent_ids": [
+        "manufacturing.metals"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "manufacturing.metals"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "mold",
+        "foundry",
+        "alloy"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661504"
+    },
+    "manufacturing.ceramics": {
+      "node_id": "manufacturing.ceramics",
+      "name": "Ceramics",
+      "name_ar": "سيراميك",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "manufacturing"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "manufacturing"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "clay",
+        "kiln",
+        "brick",
+        "tile"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661581"
+    },
+    "manufacturing.textiles": {
+      "node_id": "manufacturing.textiles",
+      "name": "Textiles",
+      "name_ar": "نسيج",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "manufacturing"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "manufacturing"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "fabric",
+        "cotton",
+        "weaving"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661588"
+    },
+    "manufacturing.food": {
+      "node_id": "manufacturing.food",
+      "name": "Food",
+      "name_ar": "غذائية",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "manufacturing"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "manufacturing"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "processing",
+        "canning",
+        "fermentation"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661595"
+    },
+    "manufacturing.chemicals": {
+      "node_id": "manufacturing.chemicals",
+      "name": "Chemicals",
+      "name_ar": "كيماويات",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "manufacturing"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "manufacturing"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "soap",
+        "detergent",
+        "plastic"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661601"
+    },
+    "manufacturing.construction_materials": {
+      "node_id": "manufacturing.construction_materials",
+      "name": "Construction",
+      "name_ar": "مواد بناء",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "manufacturing"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "manufacturing"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "cement",
+        "concrete",
+        "glass"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661666"
+    },
+    "agriculture": {
+      "node_id": "agriculture",
+      "name": "Agriculture",
+      "name_ar": "زراعة",
+      "node_type": "tree",
+      "parent_ids": [],
+      "children_ids": [
+        "agriculture.crops",
+        "agriculture.livestock",
+        "agriculture.aquaculture"
+      ],
+      "inherits_from": [],
+      "inherits_to": [
+        "agriculture.crops",
+        "agriculture.livestock",
+        "agriculture.aquaculture"
+      ],
+      "level": 0,
+      "keywords": [],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661732"
+    },
+    "agriculture.crops": {
+      "node_id": "agriculture.crops",
+      "name": "Crops",
+      "name_ar": "محاصيل",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "agriculture"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "agriculture"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "wheat",
+        "rice",
+        "irrigation"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661734"
+    },
+    "agriculture.livestock": {
+      "node_id": "agriculture.livestock",
+      "name": "Livestock",
+      "name_ar": "ثروة حيوانية",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "agriculture"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "agriculture"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "cattle",
+        "poultry",
+        "dairy"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661743"
+    },
+    "agriculture.aquaculture": {
+      "node_id": "agriculture.aquaculture",
+      "name": "Aquaculture",
+      "name_ar": "أسماك",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "agriculture"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "agriculture"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "fish",
+        "shrimp",
+        "pond"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661750"
+    },
+    "computing": {
+      "node_id": "computing",
+      "name": "Computing",
+      "name_ar": "حوسبة",
+      "node_type": "tree",
+      "parent_ids": [],
+      "children_ids": [
+        "computing.ai_ml",
+        "computing.security",
+        "computing.systems",
+        "computing.networking"
+      ],
+      "inherits_from": [],
+      "inherits_to": [
+        "computing.ai_ml",
+        "computing.security",
+        "computing.systems",
+        "computing.networking"
+      ],
+      "level": 0,
+      "keywords": [],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661764"
+    },
+    "computing.ai_ml": {
+      "node_id": "computing.ai_ml",
+      "name": "AI/ML",
+      "name_ar": "ذكاء اصطناعي",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "computing"
+      ],
+      "children_ids": [
+        "computing.ai_ml.nlp",
+        "computing.ai_ml.vision_ai"
+      ],
+      "inherits_from": [
+        "computing"
+      ],
+      "inherits_to": [
+        "computing.ai_ml.nlp",
+        "computing.ai_ml.vision_ai"
+      ],
+      "level": 1,
+      "keywords": [
+        "neural",
+        "training",
+        "model"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661766"
+    },
+    "computing.ai_ml.nlp": {
+      "node_id": "computing.ai_ml.nlp",
+      "name": "NLP",
+      "name_ar": "معالجة لغات",
+      "node_type": "capsule",
+      "parent_ids": [
+        "computing.ai_ml"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "computing.ai_ml"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "tokenizer",
+        "embedding",
+        "transformer"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661767"
+    },
+    "computing.ai_ml.vision_ai": {
+      "node_id": "computing.ai_ml.vision_ai",
+      "name": "Computer Vision",
+      "name_ar": "رؤية حاسوبية",
+      "node_type": "capsule",
+      "parent_ids": [
+        "computing.ai_ml"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "computing.ai_ml"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "yolo",
+        "detection",
+        "segmentation"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661862"
+    },
+    "computing.security": {
+      "node_id": "computing.security",
+      "name": "Security",
+      "name_ar": "أمن سيبراني",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "computing"
+      ],
+      "children_ids": [
+        "computing.security.crypto",
+        "computing.security.pentest"
+      ],
+      "inherits_from": [
+        "computing"
+      ],
+      "inherits_to": [
+        "computing.security.crypto",
+        "computing.security.pentest"
+      ],
+      "level": 1,
+      "keywords": [
+        "encrypt",
+        "firewall",
+        "exploit"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661974"
+    },
+    "computing.security.crypto": {
+      "node_id": "computing.security.crypto",
+      "name": "Cryptography",
+      "name_ar": "تشفير",
+      "node_type": "capsule",
+      "parent_ids": [
+        "computing.security"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "computing.security"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "aes",
+        "rsa",
+        "hash"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.661975"
+    },
+    "computing.security.pentest": {
+      "node_id": "computing.security.pentest",
+      "name": "Pentesting",
+      "name_ar": "اختبار اختراق",
+      "node_type": "capsule",
+      "parent_ids": [
+        "computing.security"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "computing.security"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "vulnerability",
+        "exploit",
+        "scan"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.662071"
+    },
+    "computing.systems": {
+      "node_id": "computing.systems",
+      "name": "Systems",
+      "name_ar": "أنظمة",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "computing"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "computing"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "kernel",
+        "os",
+        "driver"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.662185"
+    },
+    "computing.networking": {
+      "node_id": "computing.networking",
+      "name": "Networking",
+      "name_ar": "شبكات",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "computing"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "computing"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "tcp",
+        "http",
+        "dns",
+        "router"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": false,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.662194"
+    },
+    "engineering.robotics": {
+      "node_id": "engineering.robotics",
+      "name": "Robotics",
+      "name_ar": "روبوتات",
+      "node_type": "pyramid",
+      "parent_ids": [
+        "engineering"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "robot",
+        "servo",
+        "actuator",
+        "sensor"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": true,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.680471"
+    },
+    "engineering.electrical.renewable": {
+      "node_id": "engineering.electrical.renewable",
+      "name": "Renewable Energy",
+      "name_ar": "طاقة متجددة",
+      "node_type": "capsule",
+      "parent_ids": [
+        "engineering.electrical"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "engineering.electrical"
+      ],
+      "inherits_to": [],
+      "level": 2,
+      "keywords": [
+        "solar",
+        "wind",
+        "hydrogen",
+        "power",
+        "electronics",
+        "telecom",
+        "circuit"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": true,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.681855"
+    },
+    "science.nanotech": {
+      "node_id": "science.nanotech",
+      "name": "Nanotechnology",
+      "name_ar": "نانو",
+      "node_type": "capsule",
+      "parent_ids": [
+        "science"
+      ],
+      "children_ids": [],
+      "inherits_from": [
+        "science"
+      ],
+      "inherits_to": [],
+      "level": 1,
+      "keywords": [
+        "nano",
+        "graphene",
+        "atomic"
+      ],
+      "data_count": 0,
+      "inherited_data_count": 0,
+      "model_trained": false,
+      "auto_created": true,
+      "linked": true,
+      "created_at": "2026-03-07T01:29:50.683390"
+    }
+  }
+}

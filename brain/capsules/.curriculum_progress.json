@@ -19,14 +19,15 @@
   },
   "code_python": {
     "capsule_id": "code_python",
-    "current_level": 2,
-    "samples_completed": 600,
+    "current_level": 3,
+    "samples_completed": 1200,
     "current_accuracy": 0.35,
     "cycles_at_level": 0,
     "promoted_at": [
-      "2026-03-07T00:30:47.383087"
+      "2026-03-07T00:30:47.383087",
+      "2026-03-07T01:33:50.905363"
     ],
-    "last_updated": "2026-03-07T00:30:47.383084"
+    "last_updated": "2026-03-07T01:33:50.905361"
   },
   "knowledge_arabic": {
     "capsule_id": "knowledge_arabic",
@@ -36,5 +37,482 @@
     "cycles_at_level": 0,
     "promoted_at": [],
     "last_updated": "2026-03-07T00:30:47.382762"
+  },
+  "manufacturing_textiles": {
+    "capsule_id": "manufacturing_textiles",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904704"
+  },
+  "agriculture_aquaculture": {
+    "capsule_id": "agriculture_aquaculture",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904713"
+  },
+  "agriculture_crops": {
+    "capsule_id": "agriculture_crops",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904719"
+  },
+  "science_chemistry": {
+    "capsule_id": "science_chemistry",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904723"
+  },
+  "medicine_emergency": {
+    "capsule_id": "medicine_emergency",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904728"
+  },
+  "science_chemistry_organic": {
+    "capsule_id": "science_chemistry_organic",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904775"
+  },
+  "computing_security": {
+    "capsule_id": "computing_security",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904780"
+  },
+  "science_physics": {
+    "capsule_id": "science_physics",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904784"
+  },
+  "engineering_software_web": {
+    "capsule_id": "engineering_software_web",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904788"
+  },
+  "engineering_software": {
+    "capsule_id": "engineering_software",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904792"
+  },
+  "computing_systems": {
+    "capsule_id": "computing_systems",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904795"
+  },
+  "engineering_mechanical": {
+    "capsule_id": "engineering_mechanical",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904805"
+  },
+  "engineering_software_devops": {
+    "capsule_id": "engineering_software_devops",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904809"
+  },
+  "science_biology": {
+    "capsule_id": "science_biology",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904813"
+  },
+  "engineering_mechanical_engines": {
+    "capsule_id": "engineering_mechanical_engines",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904817"
+  },
+  "engineering_robotics": {
+    "capsule_id": "engineering_robotics",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904821"
+  },
+  "engineering_civil": {
+    "capsule_id": "engineering_civil",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904825"
+  },
+  "computing_security_crypto": {
+    "capsule_id": "computing_security_crypto",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904829"
+  },
+  "medicine_diagnostics": {
+    "capsule_id": "medicine_diagnostics",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904841"
+  },
+  "engineering_civil_structures": {
+    "capsule_id": "engineering_civil_structures",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904845"
+  },
+  "computing_networking": {
+    "capsule_id": "computing_networking",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904849"
+  },
+  "engineering_electrical_renewable": {
+    "capsule_id": "engineering_electrical_renewable",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904855"
+  },
+  "manufacturing_chemicals": {
+    "capsule_id": "manufacturing_chemicals",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904859"
+  },
+  "manufacturing_construction_materials": {
+    "capsule_id": "manufacturing_construction_materials",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904865"
+  },
+  "medicine_surgery": {
+    "capsule_id": "medicine_surgery",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904871"
+  },
+  "agriculture_livestock": {
+    "capsule_id": "agriculture_livestock",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904875"
+  },
+  "computing_ai_ml_vision_ai": {
+    "capsule_id": "computing_ai_ml_vision_ai",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904878"
+  },
+  "science_math": {
+    "capsule_id": "science_math",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904882"
+  },
+  "manufacturing_metals": {
+    "capsule_id": "manufacturing_metals",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904895"
+  },
+  "science_physics_mechanics": {
+    "capsule_id": "science_physics_mechanics",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904899"
+  },
+  "manufacturing_food": {
+    "capsule_id": "manufacturing_food",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904905"
+  },
+  "computing_security_pentest": {
+    "capsule_id": "computing_security_pentest",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904909"
+  },
+  "engineering_electrical": {
+    "capsule_id": "engineering_electrical",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904916"
+  },
+  "engineering_chemical": {
+    "capsule_id": "engineering_chemical",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904920"
+  },
+  "science_chemistry_inorganic": {
+    "capsule_id": "science_chemistry_inorganic",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904923"
+  },
+  "engineering_software_mobile": {
+    "capsule_id": "engineering_software_mobile",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904927"
+  },
+  "science_nanotech": {
+    "capsule_id": "science_nanotech",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904930"
+  },
+  "computing_ai_ml_nlp": {
+    "capsule_id": "computing_ai_ml_nlp",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904934"
+  },
+  "manufacturing_ceramics": {
+    "capsule_id": "manufacturing_ceramics",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904938"
+  },
+  "engineering_mechanical_hvac": {
+    "capsule_id": "engineering_mechanical_hvac",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904941"
+  },
+  "science_chemistry_industrial": {
+    "capsule_id": "science_chemistry_industrial",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904945"
+  },
+  "manufacturing_metals_steelmaking": {
+    "capsule_id": "manufacturing_metals_steelmaking",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904949"
+  },
+  "computing_ai_ml": {
+    "capsule_id": "computing_ai_ml",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904952"
+  },
+  "engineering_electrical_power_systems": {
+    "capsule_id": "engineering_electrical_power_systems",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904956"
+  },
+  "engineering_electrical_solar_energy": {
+    "capsule_id": "engineering_electrical_solar_energy",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904960"
+  },
+  "engineering_software_backend": {
+    "capsule_id": "engineering_software_backend",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904971"
+  },
+  "medicine_pharmacy": {
+    "capsule_id": "medicine_pharmacy",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904975"
+  },
+  "manufacturing_metals_casting": {
+    "capsule_id": "manufacturing_metals_casting",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904978"
+  },
+  "engineering_civil_roads": {
+    "capsule_id": "engineering_civil_roads",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904982"
+  },
+  "science_physics_thermodynamics": {
+    "capsule_id": "science_physics_thermodynamics",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904986"
+  },
+  "science_physics_quantum": {
+    "capsule_id": "science_physics_quantum",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904989"
+  },
+  "engineering_electrical_electronics": {
+    "capsule_id": "engineering_electrical_electronics",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904993"
+  },
+  "engineering_electrical_renewable_energy": {
+    "capsule_id": "engineering_electrical_renewable_energy",
+    "current_level": 1,
+    "samples_completed": 0,
+    "current_accuracy": 0.0,
+    "cycles_at_level": 0,
+    "promoted_at": [],
+    "last_updated": "2026-03-07T01:33:50.904996"
   }
 }

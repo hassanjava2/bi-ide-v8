@@ -1,0 +1,4 @@
+{"file_path": "/tmp/test_bad.py", "error_type": "syntax", "error_text": "Bare except catches all exceptions", "fix_text": "Use except Exception as e:", "time": "2026-03-07T00:09:58.854489"}
+{"file_path": "/tmp/test_bad.py", "error_type": "security", "error_text": "eval() is dangerous — code injection risk", "fix_text": "Use ast.literal_eval() or json.loads()", "time": "2026-03-07T00:09:58.854547"}
+{"file_path": "/tmp/test_bad.py", "error_type": "security", "error_text": "Hardcoded password", "fix_text": "Use environment variables", "time": "2026-03-07T00:09:58.854574"}
+{"file_path": "/tmp/test_bad.py", "error_type": "security", "error_text": "os.system() is unsafe", "fix_text": "Use subprocess.run()", "time": "2026-03-07T00:09:58.854600"}

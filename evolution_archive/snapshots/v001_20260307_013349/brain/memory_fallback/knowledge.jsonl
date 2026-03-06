@@ -1,0 +1,11 @@
+{"topic": "Project: rest_api_python", "content": "Generated api: سوي لي REST API بـ Python للمنتجات. Files: 6", "source": "auto_programmer", "confidence": 0.5, "time": "2026-03-07T00:18:49.587007"}
+{"topic": "Factory: cement in Iraq", "content": "{\"capacity\": 50000, \"cost\": 5982500.0, \"timeline\": 12}", "source": "factory_planner", "confidence": 0.5, "time": "2026-03-07T00:21:25.416040"}
+{"topic": "Factory: steel in Iraq", "content": "{\"capacity\": 50000, \"cost\": 37826250.0, \"timeline\": 12}", "source": "factory_planner", "confidence": 0.5, "time": "2026-03-07T00:21:25.416160"}
+{"topic": "Factory: glass in Iraq", "content": "{\"capacity\": 50000, \"cost\": 13597125.0, \"timeline\": 12}", "source": "factory_planner", "confidence": 0.5, "time": "2026-03-07T00:21:25.416215"}
+{"topic": "Factory: soap in Iraq", "content": "{\"capacity\": 50000, \"cost\": 32848375.0, \"timeline\": 12}", "source": "factory_planner", "confidence": 0.5, "time": "2026-03-07T00:21:25.416262"}
+{"topic": "Imagination: biology × architecture", "content": "عمارة حيوية — مباني تتنفس مثل الكائنات", "source": "imagination", "confidence": 0.62, "time": "2026-03-07T00:21:25.459093"}
+{"topic": "Imagination: agriculture × robotics", "content": "زراعة روبوتية — حصاد ذاتي بالكامل", "source": "imagination", "confidence": 0.34, "time": "2026-03-07T00:21:25.459190"}
+{"topic": "Imagination: oceanography × mining", "content": "تعدين بحري — استخراج معادن من المحيطات", "source": "imagination", "confidence": 0.41, "time": "2026-03-07T00:21:25.459228"}
+{"topic": "Dream Solution: كيف نوفر الطاقة بعد الكارثة؟", "content": "بعد التفكير العميق: كيف نوفر الطاقة بعد الكارثة؟ — يمكن حلها بـالنظر من زاوية مختلفة تماماً", "source": "dream", "confidence": 0.63, "time": "2026-03-07T00:21:25.459282"}
+{"topic": "BI-OS Boot", "content": "Kernel v0.1.0-alpha booted at 2026-03-07T00:26:10.942004", "source": "kernel", "confidence": 0.5, "time": "2026-03-07T00:26:10.942009"}
+{"topic": "Promotion: code_python", "content": "Promoted to Level 2 (منطق وتحكم)", "source": "curriculum", "confidence": 0.35, "time": "2026-03-07T00:30:47.383090"}
