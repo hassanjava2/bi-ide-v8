@@ -229,7 +229,7 @@ def run_training(capsule_dir, data_path, env):
         model=model,
         args=training_args,
         train_dataset=tokenized,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
     )
     
     logger.info("🏋️ التدريب بدأ...")
@@ -239,7 +239,10 @@ def run_training(capsule_dir, data_path, env):
     
     # Save
     trainer.save_model(output_dir)
-    tokenizer.save_pretrained(output_dir)
+    try:
+        tokenizer.save_pretrained(output_dir)
+    except Exception:
+        pass  # Model already saved by trainer
     
     metrics = result.metrics
     logger.info(f"✅ التدريب اكتمل — {elapsed/60:.1f} دقيقة — loss: {metrics.get('train_loss', '?')}")
