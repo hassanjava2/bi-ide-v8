@@ -16,6 +16,7 @@ import { useStore, FileNode } from "../lib/store";
 import { fs, workspace, git, training, ai, trainingData, AiChatMessage } from "../lib/tauri";
 import { CouncilPanel } from "./CouncilPanel";
 import { HierarchyPanel } from "./HierarchyPanel";
+import { ProjectsPanel } from "./ProjectsPanel";
 import { listen } from "@tauri-apps/api/event";
 
 const AIChat = lazy(() =>
@@ -131,7 +132,7 @@ function TreeNode({ node, depth, workspaceRoot, onToggle, onSelect }: TreeNodePr
 }
 
 export function Sidebar() {
-  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "sync" | "ai" | "training" | "council" | "hierarchy" | "monitor">("explorer");
+  const [activeTab, setActiveTab] = useState<"explorer" | "search" | "git" | "sync" | "ai" | "training" | "council" | "hierarchy" | "monitor" | "projects">("explorer");
   const [isLoading, setIsLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [isSendingChat, setIsSendingChat] = useState(false);
@@ -400,6 +401,10 @@ export function Sidebar() {
       setActiveTab("council");
     });
 
+    const unlistenProjectsPanel = listen("open-projects-panel", () => {
+      setActiveTab("projects");
+    });
+
     const unlistenTrainingStart = listen("training-start-job", async (event: any) => {
       const requestedType = event?.payload?.type;
       const jobType = typeof requestedType === "string" && requestedType.length > 0 ? requestedType : "lora";
@@ -422,6 +427,7 @@ export function Sidebar() {
       unlistenTrainingPanel.then((fn) => fn());
       unlistenCouncilPanel.then((fn) => fn());
       unlistenTrainingStart.then((fn) => fn());
+      unlistenProjectsPanel.then((fn) => fn());
     };
   }, [loadGitStatus, refreshTrainingStatus]);
 
@@ -519,6 +525,16 @@ export function Sidebar() {
           title="مراقبة الأجهزة"
         >
           📡
+        </button>
+        <button
+          onClick={() => setActiveTab("projects")}
+          className={`flex-1 py-2 text-xs font-medium transition-colors relative ${activeTab === "projects"
+            ? "text-cyan-400 border-b-2 border-cyan-500"
+            : "text-dark-400 hover:text-dark-200"
+            }`}
+          title="المشاريع"
+        >
+          🏗️
         </button>
       </div>
 
@@ -656,6 +672,7 @@ export function Sidebar() {
 
         {activeTab === "council" && <CouncilPanel />}
         {activeTab === "hierarchy" && <HierarchyPanel />}
+        {activeTab === "projects" && <ProjectsPanel />}
 
         {activeTab === "monitor" && (
           <Suspense fallback={panelFallback}>
