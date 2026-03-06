@@ -58,17 +58,17 @@ def train_capsule(capsule_dir: Path, capsule_id: str):
     has_gpu = torch.cuda.is_available()
     
     # Adjust steps based on data size
-    max_steps = min(total_lines * 3, 3000)  # 3 epochs or 3000 steps max
+    max_steps = min(total_lines * 2, 2000)  # 2 epochs or 2000 steps max
     
     if has_gpu:
-        batch_size = 1
-        gradient_accum = 16
+        batch_size = 2
+        gradient_accum = 4
         use_bf16 = True
         device_map = "auto"
         max_len = 256
     else:
         batch_size = 1
-        gradient_accum = 8
+        gradient_accum = 4
         use_bf16 = False
         device_map = "cpu"
         max_len = 128
@@ -86,9 +86,7 @@ def train_capsule(capsule_dir: Path, capsule_id: str):
         device_map=device_map,
         trust_remote_code=True,
     )
-    
-    if has_gpu:
-        model.gradient_checkpointing_enable()
+    # NOTE: gradient_checkpointing removed — slows training 50x
     
     # Load data
     dataset = load_dataset("json", data_files=[str(f) for f in data_files], split="train")
