@@ -450,75 +450,156 @@ async def council_message(request: MessageRequest):
     )
 
 
-# === Trained LoRA Model Inference (GPU — PyTorch cu128 supports Blackwell sm_120) ===
-_lora_model = None
-_lora_tokenizer = None
+# === Multi-Brain LoRA System — كل حكيم = دماغ مختلف ===
+_base_model = None
+_base_tokenizer = None
+_loaded_adapters: Dict[str, Any] = {}  # sage_id -> {"model": PeftModel, "last_used": time}
+_sage_mapping = None
+MAX_LOADED_ADAPTERS = 4  # حد أقصى بالذاكرة (GPU 24.5GB)
 
-async def _inference_trained_model(prompt: str, wise_man: str) -> str:
-    """Inference using the trained LoRA model on GPU (Blackwell sm_120 supported)."""
-    global _lora_model, _lora_tokenizer
+def _load_sage_mapping() -> dict:
+    """تحميل خريطة الأدمغة"""
+    global _sage_mapping
+    if _sage_mapping is None:
+        mapping_paths = [
+            Path("/home/bi/bi-ide-v8/config/sage_brain_mapping.json"),
+            Path(__file__).parent.parent / "config" / "sage_brain_mapping.json",
+        ]
+        for p in mapping_paths:
+            if p.exists():
+                _sage_mapping = json.loads(p.read_text())
+                print(f"✅ Sage brain mapping loaded: {len(_sage_mapping.get('sages', {}))} sages")
+                return _sage_mapping
+        # Fallback: no mapping, use general
+        _sage_mapping = {"sages": {}, "default_adapter": "lora-general"}
+        print("⚠️ No sage_brain_mapping.json found, using general adapter")
+    return _sage_mapping
+
+
+def _get_adapter_name_for_sage(sage_id: str) -> str:
+    """اسم الـ adapter لحكيم معين"""
+    mapping = _load_sage_mapping()
+    sage_config = mapping.get("sages", {}).get(sage_id, {})
+    return sage_config.get("adapter", mapping.get("default_adapter", "lora-general"))
+
+
+def _get_system_prompt_for_sage(sage_id: str, wise_man: str) -> str:
+    """System prompt خاص بالحكيم"""
+    mapping = _load_sage_mapping()
+    sage_config = mapping.get("sages", {}).get(sage_id, {})
+    if sage_config.get("system_prompt"):
+        return sage_config["system_prompt"]
+    return f"أنت {wise_man} من مجلس حكماء BI-IDE. أجب باحترافية ودقة بالعربية."
+
+
+def _evict_oldest_adapter():
+    """إزالة أقدم adapter من الذاكرة (LRU)"""
+    global _loaded_adapters
+    if len(_loaded_adapters) >= MAX_LOADED_ADAPTERS:
+        oldest = min(_loaded_adapters.items(), key=lambda x: x[1]["last_used"])
+        sage_id = oldest[0]
+        print(f"🔄 Evicting adapter for '{sage_id}' (LRU)")
+        del _loaded_adapters[sage_id]
+        import gc, torch
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+
+async def _inference_trained_model(prompt: str, wise_man: str, sage_id: str = "general_sage") -> str:
+    """Inference using per-sage LoRA adapter on GPU.
+    
+    كل حكيم يحمّل الـ adapter الخاص بيه.
+    إذا ما لقى adapter مخصص → يستخدم lora-general.
+    """
+    global _base_model, _base_tokenizer, _loaded_adapters
     import asyncio, pathlib
 
     def _load_and_infer():
-        global _lora_model, _lora_tokenizer
+        global _base_model, _base_tokenizer, _loaded_adapters
+        import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
         models_dir = pathlib.Path("/home/bi/training_data/models/finetuned")
+        adapter_name = _get_adapter_name_for_sage(sage_id)
 
-        if _lora_model is None:
-            import torch
-            from transformers import AutoModelForCausalLM, AutoTokenizer
-
-            # Find latest LoRA adapter (check both auto_* and run_* naming)
-            lora_dirs = sorted(
-                list(models_dir.glob("auto_*")) + list(models_dir.glob("run_*")),
-                key=lambda p: p.name, reverse=True
+        # 1. Load base model (shared, one time)
+        if _base_model is None:
+            print(f"[Multi-Brain] Loading base model (Qwen2.5-1.5B)...")
+            _base_model = AutoModelForCausalLM.from_pretrained(
+                "Qwen/Qwen2.5-1.5B",
+                torch_dtype=torch.float16,
+                device_map="auto",
+                trust_remote_code=True,
             )
+            _base_tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-1.5B", trust_remote_code=True)
+            print(f"[Multi-Brain] Base model loaded ✅")
+
+        # 2. Load sage-specific adapter (cached)
+        if sage_id not in _loaded_adapters:
+            # Find adapter directory
             adapter_path = None
-            for d in lora_dirs:
-                if (d / "adapter_config.json").exists():
-                    adapter_path = d
-                    break
-                checkpoints = sorted(d.glob("checkpoint-*"), key=lambda p: p.name, reverse=True)
-                for cp in checkpoints:
-                    if (cp / "adapter_config.json").exists():
-                        adapter_path = cp
+            
+            # Try exact name match first
+            exact_dir = models_dir / adapter_name
+            if exact_dir.exists() and (exact_dir / "adapter_config.json").exists():
+                adapter_path = exact_dir
+            else:
+                # Fallback: search auto_* and run_* dirs
+                lora_dirs = sorted(
+                    list(models_dir.glob("auto_*")) + list(models_dir.glob("run_*")),
+                    key=lambda p: p.name, reverse=True
+                )
+                for d in lora_dirs:
+                    if (d / "adapter_config.json").exists():
+                        adapter_path = d
                         break
-                if adapter_path:
-                    break
+                    checkpoints = sorted(d.glob("checkpoint-*"), key=lambda p: p.name, reverse=True)
+                    for cp in checkpoints:
+                        if (cp / "adapter_config.json").exists():
+                            adapter_path = cp
+                            break
+                    if adapter_path:
+                        break
 
             if adapter_path:
-                print(f"[Council] Loading LoRA from: {adapter_path}")
+                # Evict oldest if at capacity
+                _evict_oldest_adapter()
+                
+                print(f"[Multi-Brain] Loading adapter '{adapter_name}' for sage '{sage_id}' from: {adapter_path}")
                 from peft import PeftModel
-                # GPU inference — PyTorch cu128 supports Blackwell sm_120
-                base_model = AutoModelForCausalLM.from_pretrained(
-                    "Qwen/Qwen2.5-1.5B",
-                    torch_dtype=torch.float16,
-                    device_map="auto",
-                    trust_remote_code=True,
-                )
-                _lora_model = PeftModel.from_pretrained(base_model, str(adapter_path))
-                _lora_model.eval()
-                _lora_tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-1.5B", trust_remote_code=True)
-                print(f"[Council] LoRA model loaded on GPU successfully")
+                sage_model = PeftModel.from_pretrained(_base_model, str(adapter_path))
+                sage_model.eval()
+                _loaded_adapters[sage_id] = {
+                    "model": sage_model,
+                    "adapter_name": adapter_name,
+                    "adapter_path": str(adapter_path),
+                    "last_used": time.time(),
+                }
+                print(f"[Multi-Brain] Sage '{sage_id}' brain loaded ✅ ({len(_loaded_adapters)} adapters in memory)")
             else:
-                raise FileNotFoundError("No LoRA adapter found")
+                raise FileNotFoundError(f"No adapter found for sage '{sage_id}' (tried '{adapter_name}')")
+        else:
+            # Update last used
+            _loaded_adapters[sage_id]["last_used"] = time.time()
 
-        # Generate on GPU
-        import torch
-        system_prompt = f"أنت {wise_man} من مجلس حكماء BI-IDE. أجب باحترافية ودقة بالعربية."
+        # 3. Generate with sage-specific model
+        sage_model = _loaded_adapters[sage_id]["model"]
+        system_prompt = _get_system_prompt_for_sage(sage_id, wise_man)
         full_prompt = f"<|im_start|>system\n{system_prompt}<|im_end|>\n<|im_start|>user\n{prompt}<|im_end|>\n<|im_start|>assistant\n"
 
-        inputs = _lora_tokenizer(full_prompt, return_tensors="pt").to(_lora_model.device)
+        inputs = _base_tokenizer(full_prompt, return_tensors="pt").to(sage_model.device)
         with torch.no_grad():
-            outputs = _lora_model.generate(
+            outputs = sage_model.generate(
                 **inputs,
                 max_new_tokens=512,
                 temperature=0.7,
                 top_p=0.9,
                 repetition_penalty=1.3,
                 do_sample=True,
-                pad_token_id=_lora_tokenizer.eos_token_id,
+                pad_token_id=_base_tokenizer.eos_token_id,
             )
-        response = _lora_tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
+        response = _base_tokenizer.decode(outputs[0][inputs["input_ids"].shape[1]:], skip_special_tokens=True)
         return response.strip()
 
     return await asyncio.get_event_loop().run_in_executor(None, _load_and_infer)

@@ -349,7 +349,44 @@ class CouncilService:
         """
         محاولة الحصول على رد حقيقي من الدماغ/LoRA
         يرجع None إذا الموديل مو متوفر
+        
+        كل حكيم يُرسل sage_id خاص بيه → RTX يحمّل الـ adapter المناسب
         """
+        # Map member role to sage_id for multi-brain system
+        role_to_sage = {
+            "أمن المعلومات": "security_sage",
+            "security": "security_sage",
+            "هندسة معمارية": "architect_sage",
+            "architecture": "architect_sage",
+            "أداء": "performance_sage",
+            "performance": "performance_sage",
+            "أعمال": "business_sage",
+            "business": "business_sage",
+            "تجربة المستخدم": "ux_sage",
+            "ux": "ux_sage",
+            "بيانات": "data_sage",
+            "data": "data_sage",
+            "بنية تحتية": "devops_sage",
+            "devops": "devops_sage",
+            "قانون": "legal_sage",
+            "legal": "legal_sage",
+            "طب": "medical_sage",
+            "medical": "medical_sage",
+            "هندسة": "engineering_sage",
+            "engineering": "engineering_sage",
+            "فيزياء": "physics_sage",
+            "physics": "physics_sage",
+            "كيمياء": "chemistry_sage",
+            "chemistry": "chemistry_sage",
+            "رياضيات": "math_sage",
+            "math": "math_sage",
+            "تاريخ": "history_sage",
+            "history": "history_sage",
+            "استراتيجية": "strategy_sage",
+            "strategy": "strategy_sage",
+        }
+        sage_id = role_to_sage.get(member.role.lower(), "general_sage")
+        
         try:
             # Try council_ai_bridge for real model inference
             from hierarchy.council_ai_bridge import council_bridge
@@ -357,6 +394,7 @@ class CouncilService:
                 response = await council_bridge.get_sage_response(
                     sage_name=member.name,
                     sage_role=member.role,
+                    sage_id=sage_id,  # ← NEW: multi-brain support
                     query=query,
                     context=context
                 )
@@ -366,6 +404,29 @@ class CouncilService:
             logger.debug("council_ai_bridge غير متوفر")
         except Exception as e:
             logger.debug(f"فشل council_ai_bridge: {e}")
+        
+        # Direct HTTP fallback to RTX API
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.post(
+                    "http://100.104.35.44:8090/council/message",
+                    json={
+                        "message": f"[{member.name} - {member.role}] {query}",
+                        "context": {"sage_id": sage_id, **(context or {})}
+                    }
+                )
+                if resp.status_code == 200:
+                    data = resp.json()
+                    if data.get("confidence", 0) > 0:
+                        return {
+                            "text": data["response"],
+                            "reasoning": f"رد حقيقي من {member.name} (دماغ: {sage_id})",
+                            "vote": "approve",
+                            "confidence": data["confidence"],
+                        }
+        except Exception as e:
+            logger.debug(f"فشل HTTP RTX: {e}")
         
         return None
     

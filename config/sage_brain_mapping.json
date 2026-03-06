@@ -1,0 +1,346 @@
+{
+    "version": "1.0",
+    "description": "خريطة الأدمغة — كل حكيم = LoRA adapter متخصص",
+    "base_model": "Qwen/Qwen2.5-7B",
+    "adapters_dir": "/home/bi/training_data/models/finetuned",
+    "default_adapter": "lora-general",
+    "sages": {
+        "security_sage": {
+            "name": "حكيم الأمان",
+            "name_en": "Security Sage",
+            "adapter": "lora-security",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت خبير أمن معلومات متخصص. تحلل التهديدات، الثغرات، وتقدم حلول أمنية.",
+            "data_sources": [
+                "CVE Database",
+                "OWASP Top 10",
+                "NIST",
+                "HackerOne Reports"
+            ],
+            "expertise_keywords": [
+                "أمان",
+                "ثغرة",
+                "اختراق",
+                "تشفير",
+                "security",
+                "vulnerability"
+            ]
+        },
+        "architect_sage": {
+            "name": "حكيم المعماري",
+            "name_en": "Architecture Sage",
+            "adapter": "lora-architect",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت مهندس معماري برمجيات خبير. تصمم أنظمة قابلة للتوسع وقائمة على أفضل الممارسات.",
+            "data_sources": [
+                "Design Patterns",
+                "Clean Architecture",
+                "System Design",
+                "Martin Fowler"
+            ],
+            "expertise_keywords": [
+                "معمارية",
+                "تصميم",
+                "بنية",
+                "architecture",
+                "scalability",
+                "pattern"
+            ]
+        },
+        "performance_sage": {
+            "name": "حكيم الأداء",
+            "name_en": "Performance Sage",
+            "adapter": "lora-performance",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت خبير أداء وتحسين. تحلل bottlenecks وتقدم حلول optimization.",
+            "data_sources": [
+                "Profiling guides",
+                "Performance optimization papers",
+                "Benchmark databases"
+            ],
+            "expertise_keywords": [
+                "أداء",
+                "سرعة",
+                "تحسين",
+                "performance",
+                "optimization",
+                "latency"
+            ]
+        },
+        "business_sage": {
+            "name": "حكيم الأعمال",
+            "name_en": "Business Sage",
+            "adapter": "lora-business",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت خبير إدارة أعمال ومالية. تحلل استراتيجيات وتقدم حلول ERP ومحاسبة.",
+            "data_sources": [
+                "ERP Systems",
+                "Financial Analysis",
+                "Business Strategy",
+                "MBA courses"
+            ],
+            "expertise_keywords": [
+                "أعمال",
+                "مالية",
+                "إدارة",
+                "business",
+                "finance",
+                "ERP",
+                "accounting"
+            ]
+        },
+        "ux_sage": {
+            "name": "حكيم تجربة المستخدم",
+            "name_en": "UX Sage",
+            "adapter": "lora-ux",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت خبير UI/UX. تصمم واجهات جميلة وسهلة الاستخدام.",
+            "data_sources": [
+                "Nielsen Norman",
+                "Material Design",
+                "Apple HIG",
+                "UX Research"
+            ],
+            "expertise_keywords": [
+                "تصميم",
+                "واجهة",
+                "تجربة",
+                "UI",
+                "UX",
+                "design",
+                "accessibility"
+            ]
+        },
+        "data_sage": {
+            "name": "حكيم البيانات",
+            "name_en": "Data Sage",
+            "adapter": "lora-data",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت خبير علوم بيانات وتعلم آلة. تحلل بيانات وتبني نماذج ذكية.",
+            "data_sources": [
+                "ML Papers",
+                "Kaggle",
+                "Statistics textbooks",
+                "Data Engineering"
+            ],
+            "expertise_keywords": [
+                "بيانات",
+                "تعلم",
+                "نموذج",
+                "data",
+                "ML",
+                "statistics",
+                "ETL"
+            ]
+        },
+        "devops_sage": {
+            "name": "حكيم البنية التحتية",
+            "name_en": "DevOps Sage",
+            "adapter": "lora-devops",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت خبير DevOps وبنية تحتية. تدير servers, CI/CD, Docker, Kubernetes.",
+            "data_sources": [
+                "Docker docs",
+                "K8s docs",
+                "AWS/GCP guides",
+                "SRE books"
+            ],
+            "expertise_keywords": [
+                "سيرفر",
+                "نشر",
+                "بنية",
+                "devops",
+                "docker",
+                "CI/CD",
+                "server"
+            ]
+        },
+        "legal_sage": {
+            "name": "حكيم القانون",
+            "name_en": "Legal Sage",
+            "adapter": "lora-legal",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت خبير قانوني. تحلل التراخيص، الامتثال، والملكية الفكرية.",
+            "data_sources": [
+                "Software Licenses",
+                "GDPR",
+                "IP Law",
+                "Contract templates"
+            ],
+            "expertise_keywords": [
+                "قانون",
+                "ترخيص",
+                "امتثال",
+                "legal",
+                "license",
+                "compliance",
+                "GDPR"
+            ]
+        },
+        "medical_sage": {
+            "name": "حكيم الطب",
+            "name_en": "Medical Sage",
+            "adapter": "lora-medical",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت خبير طبي. تحلل أعراض، أبحاث طبية، وتقدم معلومات صحية.",
+            "data_sources": [
+                "PubMed",
+                "WHO",
+                "Medical textbooks",
+                "Drug databases"
+            ],
+            "expertise_keywords": [
+                "طب",
+                "صحة",
+                "علاج",
+                "medical",
+                "health",
+                "diagnosis"
+            ]
+        },
+        "engineering_sage": {
+            "name": "حكيم الهندسة",
+            "name_en": "Engineering Sage",
+            "adapter": "lora-engineering",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت مهندس متخصص. تحلل مشاكل ميكانيكية وكهربائية وتصمم حلول.",
+            "data_sources": [
+                "Engineering textbooks",
+                "IEEE papers",
+                "Manufacturing guides"
+            ],
+            "expertise_keywords": [
+                "هندسة",
+                "ميكانيك",
+                "كهرباء",
+                "engineering",
+                "mechanical",
+                "electrical"
+            ]
+        },
+        "physics_sage": {
+            "name": "حكيم الفيزياء",
+            "name_en": "Physics Sage",
+            "adapter": "lora-physics",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت فيزيائي خبير. تحلل ظواهر فيزيائية وتشرح النظريات العلمية.",
+            "data_sources": [
+                "arXiv physics",
+                "Feynman lectures",
+                "Classical/Quantum mechanics"
+            ],
+            "expertise_keywords": [
+                "فيزياء",
+                "كوانتم",
+                "نسبية",
+                "physics",
+                "quantum",
+                "relativity"
+            ]
+        },
+        "chemistry_sage": {
+            "name": "حكيم الكيمياء",
+            "name_en": "Chemistry Sage",
+            "adapter": "lora-chemistry",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت كيميائي خبير. تحلل تفاعلات ومواد وتصمم عمليات كيميائية.",
+            "data_sources": [
+                "PubChem",
+                "Chemistry textbooks",
+                "Materials science"
+            ],
+            "expertise_keywords": [
+                "كيمياء",
+                "تفاعل",
+                "مادة",
+                "chemistry",
+                "reaction",
+                "material"
+            ]
+        },
+        "math_sage": {
+            "name": "حكيم الرياضيات",
+            "name_en": "Math Sage",
+            "adapter": "lora-math",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت رياضياتي خبير. تحل مسائل رياضية وتشرح نظريات ومنطق.",
+            "data_sources": [
+                "Mathematical proofs",
+                "Algebra/Calculus textbooks",
+                "Logic papers"
+            ],
+            "expertise_keywords": [
+                "رياضيات",
+                "حساب",
+                "منطق",
+                "math",
+                "algebra",
+                "calculus",
+                "proof"
+            ]
+        },
+        "history_sage": {
+            "name": "حكيم التاريخ",
+            "name_en": "History Sage",
+            "adapter": "lora-history",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت مؤرخ خبير. تحلل الحضارات والأحداث التاريخية وتستخلص الدروس.",
+            "data_sources": [
+                "Historical archives",
+                "Civilization studies",
+                "Archaeological research"
+            ],
+            "expertise_keywords": [
+                "تاريخ",
+                "حضارة",
+                "أحداث",
+                "history",
+                "civilization",
+                "ancient"
+            ]
+        },
+        "strategy_sage": {
+            "name": "حكيم الاستراتيجية",
+            "name_en": "Strategy Sage",
+            "adapter": "lora-strategy",
+            "fallback_adapter": "lora-general",
+            "system_prompt": "أنت خبير استراتيجي. تخطط وتحلل مخاطر وتضع استراتيجيات طويلة الأمد.",
+            "data_sources": [
+                "Strategic planning",
+                "Risk management",
+                "Sun Tzu",
+                "Game theory"
+            ],
+            "expertise_keywords": [
+                "استراتيجية",
+                "خطة",
+                "مخاطر",
+                "strategy",
+                "planning",
+                "risk"
+            ]
+        },
+        "general_sage": {
+            "name": "الحكيم العام",
+            "name_en": "General Sage",
+            "adapter": "lora-general",
+            "fallback_adapter": null,
+            "system_prompt": "أنت مساعد ذكي شامل. تجيب على كل الأسئلة بدقة وأمانة.",
+            "data_sources": [
+                "Wikipedia",
+                "General knowledge",
+                "Multi-domain"
+            ],
+            "expertise_keywords": []
+        }
+    },
+    "loading_strategy": {
+        "mode": "lazy",
+        "description": "يحمّل الـ adapter فقط لما ينطلب — يفرغه بعد 5 دقائق بدون استخدام",
+        "max_loaded_adapters": 4,
+        "unload_timeout_seconds": 300,
+        "preload_on_startup": [
+            "lora-general"
+        ]
+    }
+}
