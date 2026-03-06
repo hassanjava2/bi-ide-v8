@@ -253,18 +253,56 @@ activate.py, unified_activation.py, connect_services.py
 
 ---
 
-## 7. الدماغ — البنية الصحيحة
+## 7. الدماغ — معمارية الكبسولات (Brain Capsule Architecture)
 
 ### ما هو الدماغ؟
-**ليس Ollama. ليس ChatGPT.** = نموذج لغوي خاص (Qwen2.5-1.5B + LoRA) متدرب على بياناتنا.
+**ليس Ollama. ليس ChatGPT.** = نموذج لغوي خاص (Qwen2.5 + LoRA) متدرب على بياناتنا.
+
+### ⚠️ مبادئ الكبسولات (جديد — يحكم كل بنية الأدمغة):
+
+```
+1. كل كيان = سرب أدمغة (مو دماغ واحد)
+   - كل حكيم = عدة LoRA adapters بمنظورات مختلفة
+   - كل سرب فيه "متمرد" يتحدى الكل
+
+2. كبسولة مغلقة (Encapsulation)
+   - كل دماغ = كبسولة فيها: adapter + بيانات + config + سجل تعلم
+   - التدريب يصير داخل الكبسولة
+   - brain/capsule.py
+
+3. سجل المعرفة (Knowledge Directory)
+   - كل كبسولة تعلن: "أنا أعرف عن [...]"
+   - brain/capsule_registry.py
+
+4. تواصل بين الكبسولات (Communication Bus)
+   - كبسولة تسأل كبسولة عن تخصصها
+   - مشاريع تعاونية — كل الكبسولات تشتغل مع بعض
+   - brain/capsule_bus.py
+
+5. وراثة (Inheritance)
+   - تخصص جديد = يرث من أب (+ أم اختياري)
+   - كيمياء عضوية ← يرث من كيمياء
+   - تشفير ← يرث من رياضيات + أمان
+   
+6. ما يعرف → يطلب (مو يخترع!)
+   - ما يعرف → يبلّغ المسؤول → كشاف يبحث → يتعلم
+   - لا hallucination — لا اختراع إجابات
+   
+7. ∞ كشاف متخصص (لكل مجال كشاف يعرف وين يدور)
+   - كشاف أمن، كشاف طب، كشاف فيزياء...
+   - كشاف الظل (shadow scout) — OSINT/Threat Intelligence
+   
+8. تطور ذاتي (Auto-Evolution)
+   - تقييم → حذف الضعيف → تكاثر القوي → mutation
+   - brain/brain_factory.py
+```
 
 ### المسار الصحيح:
 ```
 بيانات (Wikipedia, أبحاث, كتب) ──→ Scout + Downloader ينزّلون
-──→ بيانات تدريب (NVMe2 /data/) ──→ Training Daemon يدرّب
-──→ LoRA Adapters ──→ GPU يحمّلها ──→ المجلس يرد بذكاء
-──→ الي تم التدرب عليها تنحذف ──→ التنزيل يستمر
-──→ من يخلص الانترنت + تخلص البيانات ──→ يبدي يتدرب من Ollama
+──→ تدخل كبسولة التخصص المناسب ──→ Training Daemon يدرّب
+──→ LoRA Adapter داخل الكبسولة ──→ GPU يحمّلها ──→ يرد بذكاء
+──→ ما يعرف → يسأل كبسولة ثانية أو يطلب من الكشاف
 ```
 
 ### قدرات الدماغ (14 قدرة):
@@ -286,10 +324,13 @@ activate.py, unified_activation.py, connect_services.py
 | **دولاب البيانات** | كل استخدام = تدريب جديد |
 | **نظرية كل شي** | يربط بين كل الاختصاصات |
 
-### تطور الدماغ:
-- **يتطور أوتوماتيكياً** بشكل كامل للأفضل
-- اكو بنية دماغ ضخمة وخطط سابقة — **لازم تتراجع وتتأكد** (`brain/`, `docs/`)
-- ملفات الدماغ: `brain/bi_brain.py`, `brain/scheduler.py`, `brain/evaluator.py`, `brain/config.py`
+### ملفات الدماغ:
+- `brain/capsule.py` — الكبسولة (encapsulation + inheritance)
+- `brain/capsule_registry.py` — سجل المعرفة (discovery)
+- `brain/capsule_bus.py` — ناقل التواصل (inter-capsule)
+- `brain/brain_factory.py` — مصنع الأدمغة (create/evaluate/evolve)
+- `brain/bi_brain.py` — الدماغ الرئيسي (scheduler + evaluator)
+- `config/sage_brain_mapping.json` — سجل شبكة الأدمغة اللانهائية
 
 ---
 
