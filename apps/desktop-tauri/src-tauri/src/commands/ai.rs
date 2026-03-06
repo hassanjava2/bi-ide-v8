@@ -23,7 +23,7 @@ pub struct CouncilMessageResponse {
     pub processing_time_ms: u64,
 }
 
-/// Send a message to the AI Council via HTTP
+/// Send a message to the AI — all paths try brain capsules first
 /// Priority: 1. Brain capsules (/brain/ask) → 2. Council (/council/message) → 3. VPS fallback
 #[tauri::command]
 pub async fn send_council_message(
@@ -34,34 +34,31 @@ pub async fn send_council_message(
     info!("AI message: {} chars, session: {:?}", message.len(), session_id);
 
     let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(60))
+        .timeout(std::time::Duration::from_secs(90))
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
-    let is_council = session_id.as_deref() == Some("council-panel");
     let rtx_base = "http://100.104.35.44:8090";
 
-    // === Path 1: Brain capsules (for AI Assistant) ===
-    if !is_council {
-        let brain_url = format!("{}/brain/ask", rtx_base);
-        let brain_body = serde_json::json!({
-            "question": message,
-            "max_tokens": 512
-        });
-        match try_brain_ask(&client, &brain_url, &brain_body, 30).await {
-            Ok(resp) => {
-                info!("Brain capsule response received");
-                return Ok(resp);
-            }
-            Err(e) => {
-                warn!("Brain capsule failed: {}, falling back to council", e);
-            }
+    // === Path 1: Brain capsules (ALL messages — council + AI assistant) ===
+    let brain_url = format!("{}/brain/ask", rtx_base);
+    let brain_body = serde_json::json!({
+        "question": message,
+        "max_tokens": 512
+    });
+    match try_brain_ask(&client, &brain_url, &brain_body, 40).await {
+        Ok(resp) => {
+            info!("Brain capsule response received");
+            return Ok(resp);
+        }
+        Err(e) => {
+            warn!("Brain capsule failed: {}, trying council", e);
         }
     }
 
-    // === Path 2: Council (RTX direct) ===
+    // === Path 2: Council (RTX direct — LoRA model, needs 8-10s) ===
     let rtx_url = format!("{}/council/message", rtx_base);
-    match try_send(&client, &rtx_url, &message, &session_id, 30).await {
+    match try_send(&client, &rtx_url, &message, &session_id, 45).await {
         Ok(resp) => {
             info!("RTX council response received");
             return Ok(resp);
