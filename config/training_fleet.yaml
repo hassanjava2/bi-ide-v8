@@ -15,6 +15,19 @@ workers:
     venv: /home/bi/.bi-ide-worker/venv/bin/python3
     max_concurrent: 2      # كبسولتين بنفس الوقت (24GB / 10GB each)
 
+# === Hostinger VPS (CPU only) ===
+  - name: vps-hostinger
+    host: bi-iq.com
+    user: root
+    gpus: 0
+    vram_gb: 0
+    model: CPU
+    role: training
+    ssh_key: ~/.ssh/id_rsa
+    workspace: /root/.bi-ide-worker
+    venv: /root/.bi-ide-worker/venv/bin/python3
+    max_concurrent: 1
+
 # === أضف حاسبات هنا ===
 # مثال H200:
 #  - name: h200-cluster-1
