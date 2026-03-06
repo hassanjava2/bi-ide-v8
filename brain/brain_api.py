@@ -35,6 +35,8 @@ from brain.layer_system import layer_manager
 from brain.vision_layer import vision
 from brain.self_evolution_loop import evolver
 from brain.knowledge_scout import unified_scout
+from brain.vision_scout import vision_scout
+from brain.company_camera import company as company_mgr
 
 
 def create_app():
@@ -117,6 +119,39 @@ def create_app():
 
     class EvolutionReq(BaseModel):
         reason: str = ""
+
+    class EmployeeReq(BaseModel):
+        employee_id: str
+        name: str
+        name_ar: str
+        department: str = ""
+        role: str = ""
+        shift_start: str = "08:00"
+        shift_end: str = "16:00"
+        skills: list = []
+
+    class CameraReq(BaseModel):
+        camera_id: str
+        name: str
+        url: str
+        location: str = ""
+        role: str = "مدخل"
+
+    class AttendanceReq(BaseModel):
+        employee_id: str
+        camera_id: str = ""
+
+    class TaskCreateReq(BaseModel):
+        title: str
+        description: str = ""
+        department: str = ""
+        priority: int = 3
+        deadline: str = ""
+        assign_to: str = None
+
+    class FeatureReq(BaseModel):
+        feature_name: str
+        config: dict = {}
 
     # ─── Chat ───
     @app.post("/api/chat")
@@ -267,6 +302,8 @@ def create_app():
             "vision": vision.get_status(),
             "evolution": evolver.get_status(),
             "scout": unified_scout.get_status(),
+            "vision_scout": vision_scout.get_full_status(),
+            "company": company_mgr.get_summary(),
         }
 
     # ═══════════════════════════════════════════════════════
@@ -458,6 +495,97 @@ def create_app():
     async def scout_cycle():
         return unified_scout.scout_cycle()
 
+    # ═══════════════════════════════════════════════════════
+    # كشافة صورية 📷
+    # ═══════════════════════════════════════════════════════
+
+    @app.get("/api/vision-scout/status")
+    async def vs_status():
+        return vision_scout.get_full_status()
+
+    @app.post("/api/vision-scout/cycle")
+    async def vs_cycle():
+        return vision_scout.auto_cycle()
+
+    @app.get("/api/vision-scout/capsules")
+    async def vs_capsules():
+        return vision_scout.get_full_status().get("capsules", {})
+
+    @app.get("/api/vision-scout/training")
+    async def vs_training():
+        return vision_scout.trainer.get_status()
+
+    @app.post("/api/vision-scout/train")
+    async def vs_train():
+        return vision_scout.trainer.train_step()
+
+    # ═══════════════════════════════════════════════════════
+    # إدارة شركة 🏢
+    # ═══════════════════════════════════════════════════════
+
+    @app.get("/api/company/summary")
+    async def company_summary():
+        return company_mgr.get_summary()
+
+    @app.get("/api/company/report")
+    async def company_report(date: str = None):
+        return company_mgr.daily_report(date)
+
+    @app.get("/api/company/employees")
+    async def company_employees():
+        return {eid: e.__dict__ for eid, e in company_mgr.employees.items()}
+
+    @app.post("/api/company/employees")
+    async def company_add_employee(r: EmployeeReq):
+        e = company_mgr.add_employee(r.employee_id, r.name, r.name_ar,
+                                      r.department, r.role, r.shift_start,
+                                      r.shift_end, r.skills)
+        return e.__dict__
+
+    @app.delete("/api/company/employees/{employee_id}")
+    async def company_del_employee(employee_id: str):
+        company_mgr.remove_employee(employee_id)
+        return {"status": "deleted"}
+
+    @app.get("/api/company/employees/{employee_id}/report")
+    async def company_emp_report(employee_id: str):
+        return company_mgr.employee_report(employee_id)
+
+    @app.get("/api/company/cameras")
+    async def company_cameras():
+        return {cid: c.__dict__ for cid, c in company_mgr.cameras.items()}
+
+    @app.post("/api/company/cameras")
+    async def company_add_camera(r: CameraReq):
+        c = company_mgr.add_camera(r.camera_id, r.name, r.url, r.location, r.role)
+        return c.__dict__
+
+    @app.post("/api/company/check-in")
+    async def company_checkin(r: AttendanceReq):
+        return company_mgr.check_in(r.employee_id, r.camera_id)
+
+    @app.post("/api/company/check-out")
+    async def company_checkout(r: AttendanceReq):
+        return company_mgr.check_out(r.employee_id, r.camera_id)
+
+    @app.get("/api/company/tasks")
+    async def company_tasks():
+        return {tid: t.__dict__ for tid, t in company_mgr.tasks.items()}
+
+    @app.post("/api/company/tasks")
+    async def company_create_task(r: TaskCreateReq):
+        t = company_mgr.create_task(r.title, r.description, r.department,
+                                     r.priority, r.deadline, r.assign_to)
+        return t.__dict__
+
+    @app.post("/api/company/tasks/{task_id}/complete")
+    async def company_complete_task(task_id: str):
+        return company_mgr.complete_task(task_id)
+
+    @app.post("/api/company/features")
+    async def company_add_feature(r: FeatureReq):
+        return company_mgr.extend_feature(r.feature_name, r.config)
+
     return app
 
 
@@ -480,6 +608,7 @@ if __name__ == "__main__":
 /api/capsules/tree     /api/factories
 /api/layers            /api/vision/analyze
 /api/evolution/status  /api/scout/status
+/api/vision-scout/*    /api/company/*
 /api/status            /api/memory/stats
 {'═' * 50}""")
         uvicorn.run(app, host="0.0.0.0", port=args.port)

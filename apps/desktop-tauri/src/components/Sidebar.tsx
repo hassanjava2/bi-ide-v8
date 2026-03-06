@@ -26,6 +26,8 @@ import { ProjectsPanel } from "./ProjectsPanel";
 import { FactoriesPanel } from "./FactoriesPanel";
 import { CapsuleTreePanel } from "./CapsuleTreePanel";
 import { BrainDashboardPanel } from "./BrainDashboardPanel";
+import { CompanyCameraPanel } from "./CompanyCameraPanel";
+import { VisionScoutPanel } from "./VisionScoutPanel";
 import { listen } from "@tauri-apps/api/event";
 
 const AIChat = lazy(() =>
@@ -625,6 +627,12 @@ export function Sidebar() {
               <BrainDashboardPanel />
             </div>
             <div className="border-t border-dark-700">
+              <VisionScoutPanel />
+            </div>
+            <div className="border-t border-dark-700">
+              <CompanyCameraPanel />
+            </div>
+            <div className="border-t border-dark-700">
               <Suspense fallback={panelFallback}>
                 <MonitorDashboard />
               </Suspense>
@@ -632,6 +640,6 @@ export function Sidebar() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 }
