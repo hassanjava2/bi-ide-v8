@@ -142,6 +142,9 @@ class RoutingDecision:
     selected_capsules: List[str]
     confidence: float
     reasoning: str
+    mode: str = "fast"  # fast | deep
+    research_data: Optional[Dict] = None  # بيانات البحث العميق
+    needs_training: List[str] = field(default_factory=list)  # كبسولات تحتاج تدريب
     timestamp: str = field(default_factory=lambda: datetime.now().isoformat())
 
 
@@ -216,15 +219,13 @@ class CapsuleRouter:
         else:
             return "complex"
 
-    def route(self, query: str, max_capsules: int = 3) -> RoutingDecision:
+    def route(self, query: str, max_capsules: int = 3, mode: str = "fast") -> RoutingDecision:
         """
         التوجيه الرئيسي — يختار الكبسولات المناسبة
         
-        الخوارزمية:
-          1. تحليل السؤال
-          2. حساب نقاط كل كبسولة
-          3. اختيار الأعلى نقاطاً
-          4. إرجاع القرار
+        mode:
+          - 'fast': استخدم الي تعرفه حالياً ⚡
+          - 'deep': ابحث عن المنافسين، تعلم، ثم ابني 🔬
         """
         query_lower = query.lower()
         analysis = self.analyze_query(query)
@@ -268,11 +269,41 @@ class CapsuleRouter:
         # ترتيب حسب النقاط
         sorted_capsules = sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
-        # === منطق الاختيار الذكي ===
+        # === منطق الاختيار ===
         selected = []
         reasoning_parts = []
+        needs_training = []
+        research_data = None
 
-        if analysis["complexity"] == "simple" or analysis["is_chat"]:
+        if mode == "deep":
+            # === الوضع العميق 🔬 ===
+            reasoning_parts.append("🔬 DEEP MODE")
+
+            # 1. بحث عن المنافسين
+            research_data = self._deep_research(query, analysis)
+            reasoning_parts.append(f"Researched {research_data.get('competitors_found', 0)} competitors")
+
+            # 2. كل الكبسولات ذات الصلة (حتى 5)
+            for cid, score in sorted_capsules[:5]:
+                if score > 3.0:
+                    selected.append(cid)
+
+            # 3. المجلس دائماً بالوضع العميق
+            if "sage" not in selected:
+                selected.append("sage")
+            if "rebel" not in selected:
+                selected.append("rebel")
+
+            # 4. اكتشاف الكبسولات الي تحتاج تدريب
+            for cid in selected:
+                info = self.available.get(cid, {})
+                if not info.get("ready") and not info.get("has_data"):
+                    needs_training.append(cid)
+
+            if needs_training:
+                reasoning_parts.append(f"Need training: {', '.join(needs_training)}")
+
+        elif analysis["complexity"] == "simple" or analysis["is_chat"]:
             # سؤال بسيط → كبسولة واحدة
             if sorted_capsules:
                 selected = [sorted_capsules[0][0]]
@@ -304,14 +335,138 @@ class CapsuleRouter:
             selected_capsules=selected,
             confidence=round(confidence, 2),
             reasoning=" | ".join(reasoning_parts),
+            mode=mode,
+            research_data=research_data,
+            needs_training=needs_training,
         )
 
         # تسجيل القرار
         self.history.append(decision)
         self._log_decision(decision)
 
-        logger.info(f"🧠 Route: '{query[:50]}...' → {selected} (conf: {confidence:.0%})")
+        logger.info(f"🧠 Route [{mode}]: '{query[:50]}...' → {selected} (conf: {confidence:.0%})")
         return decision
+
+    def _deep_research(self, query: str, analysis: Dict) -> Dict:
+        """
+        البحث العميق 🔬 — يجمع معلومات عن المنافسين والبدائل
+        
+        1. يحلل نوع المشروع المطلوب
+        2. يبحث عن المنافسين
+        3. يستخرج ميزاتهم
+        4. يولّد بيانات تدريب للكبسولات
+        """
+        import urllib.request
+        import urllib.parse
+
+        research = {
+            "query": query,
+            "competitors_found": 0,
+            "competitors": [],
+            "features": [],
+            "tech_stack": [],
+            "recommendations": [],
+        }
+
+        # استخراج نوع المشروع
+        project_keywords = self._extract_project_type(query)
+        if not project_keywords:
+            return research
+
+        # === بحث GitHub عن مشاريع مشابهة ===
+        try:
+            search_query = urllib.parse.quote(" ".join(project_keywords))
+            url = f"https://api.github.com/search/repositories?q={search_query}&sort=stars&per_page=5"
+            data = json.loads(urllib.request.urlopen(url, timeout=10).read())
+
+            for repo in data.get("items", [])[:5]:
+                competitor = {
+                    "name": repo["full_name"],
+                    "description": repo.get("description", ""),
+                    "language": repo.get("language", ""),
+                    "stars": repo.get("stargazers_count", 0),
+                    "topics": repo.get("topics", []),
+                }
+                research["competitors"].append(competitor)
+                research["competitors_found"] += 1
+
+                # جمع التقنيات
+                if competitor["language"] and competitor["language"] not in research["tech_stack"]:
+                    research["tech_stack"].append(competitor["language"])
+
+                # جمع المواضيع كميزات
+                for topic in competitor.get("topics", [])[:5]:
+                    if topic not in research["features"]:
+                        research["features"].append(topic)
+
+            logger.info(f"🔬 Found {research['competitors_found']} competitors on GitHub")
+
+        except Exception as e:
+            logger.warning(f"GitHub search failed: {e}")
+
+        # === توصيات بناءً على البحث ===
+        if research["competitors"]:
+            top = research["competitors"][0]
+            research["recommendations"] = [
+                f"Top competitor: {top['name']} ({top['stars']} stars)",
+                f"Recommended tech: {', '.join(research['tech_stack'][:3])}",
+                f"Must-have features: {', '.join(research['features'][:10])}",
+            ]
+
+        # === حفظ بيانات البحث كتدريب ===
+        self._save_research_as_training(query, research)
+
+        return research
+
+    def _extract_project_type(self, query: str) -> List[str]:
+        """استخراج نوع المشروع من السؤال"""
+        # كلمات مفتاحية للمشاريع
+        project_words = {
+            "تطبيق": "app", "موقع": "website", "متجر": "ecommerce store",
+            "توصيل": "delivery app", "دردشة": "chat app", "لعبة": "game",
+            "مدونة": "blog", "منتدى": "forum", "إدارة": "management system",
+            "app": "app", "website": "website", "store": "ecommerce",
+            "delivery": "delivery", "chat": "chat", "game": "game",
+            "dashboard": "dashboard", "api": "api", "cms": "cms",
+            "erp": "erp", "crm": "crm", "social": "social media",
+        }
+
+        keywords = []
+        query_lower = query.lower()
+        for word, english in project_words.items():
+            if word in query_lower:
+                keywords.append(english)
+
+        return keywords if keywords else query.split()[:3]
+
+    def _save_research_as_training(self, query: str, research: Dict):
+        """حفظ نتائج البحث كبيانات تدريب"""
+        if not research.get("competitors"):
+            return
+
+        samples = []
+        for comp in research["competitors"]:
+            sample = {
+                "input_text": f"What is {comp['name']}? Analyze its features and architecture.",
+                "output_text": (
+                    f"{comp['name']}: {comp['description']}\n"
+                    f"Language: {comp['language']}, Stars: {comp['stars']}\n"
+                    f"Topics: {', '.join(comp.get('topics', []))}"
+                ),
+            }
+            samples.append(sample)
+
+        if samples:
+            try:
+                data_dir = self.capsules_dir / "knowledge_arabic" / "data"
+                data_dir.mkdir(parents=True, exist_ok=True)
+                out_file = data_dir / f"deep_research_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl"
+                with open(out_file, "w", encoding="utf-8") as f:
+                    for s in samples:
+                        f.write(json.dumps(s, ensure_ascii=False) + "\n")
+                logger.info(f"💾 Saved {len(samples)} research samples")
+            except Exception:
+                pass
 
     def combine_responses(self, query: str, responses: List[CapsuleResponse]) -> str:
         """
@@ -426,9 +581,9 @@ class CapsuleRouter:
 router = CapsuleRouter()
 
 
-def ask(query: str, max_capsules: int = 3) -> RoutingDecision:
+def ask(query: str, max_capsules: int = 3, mode: str = "fast") -> RoutingDecision:
     """نقطة الدخول الرئيسية"""
-    return router.route(query, max_capsules)
+    return router.route(query, max_capsules, mode)
 
 
 def status() -> Dict:
@@ -444,24 +599,25 @@ if __name__ == "__main__":
     print("🧠 Capsule Router — Test Mode\n")
 
     test_queries = [
-        "سوي لي API بـ Python مع قاعدة بيانات",
-        "شنو ثغرات الـ CVE الجديدة؟",
-        "شلون أنشر المشروع على السيرفر؟",
-        "سوي واجهة مستخدم حلوة بـ React",
-        "شنو رأيك بخطة المشروع؟",
-        "هلا شلونك؟",
-        "Explain buffer overflow vulnerability",
-        "Write a Rust function to sort files",
-        "ترجم هالنص للإنجليزي",
-        "Fix this Python error: IndexError",
+        ("سوي لي API بـ Python مع قاعدة بيانات", "fast"),
+        ("شنو ثغرات الـ CVE الجديدة؟", "fast"),
+        ("سوي تطبيق توصيل أفضل من Uber", "deep"),
+        ("سوي واجهة مستخدم حلوة بـ React", "fast"),
+        ("سوي متجر إلكتروني", "deep"),
+        ("هلا شلونك؟", "fast"),
     ]
 
-    for q in test_queries:
-        decision = ask(q)
+    for q, m in test_queries:
+        decision = ask(q, mode=m)
         capsules = " + ".join(decision.selected_capsules)
-        print(f"  Q: {q}")
-        print(f"  → {capsules} (conf: {decision.confidence:.0%})")
-        print(f"  💭 {decision.reasoning}")
+        icon = "⚡" if m == "fast" else "🔬"
+        print(f"  {icon} Q: {q}")
+        print(f"    → {capsules} (conf: {decision.confidence:.0%})")
+        print(f"    💭 {decision.reasoning}")
+        if decision.research_data and decision.research_data.get("competitors"):
+            print(f"    📊 Competitors: {[c['name'] for c in decision.research_data['competitors'][:3]]}")
+        if decision.needs_training:
+            print(f"    🎓 Needs training: {decision.needs_training}")
         print()
 
     print(f"\n📊 Status: {json.dumps(status(), indent=2, ensure_ascii=False)}")
