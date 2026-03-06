@@ -162,15 +162,15 @@ def run_training(capsule_dir, data_path, env):
     if env["has_gpu"]:
         batch_size = 1
         gradient_accum = 16
-        fp16 = True
+        use_bf16 = True  # RTX 5090 Blackwell supports bf16 natively
         device_map = "auto"
-        max_len = 256  # Reduce to fit in 24GB
+        max_len = 256
         logger.info(f"🚀 GPU training: {env['gpu_name']} ({env['gpu_memory_gb']}GB)")
     else:
         batch_size = 1
         max_len = 256
         gradient_accum = 16
-        fp16 = False
+        use_bf16 = False
         device_map = "cpu"
         logger.info(f"🐢 CPU training: {env['cpu_count']} cores (أبطأ بس يساعد)")
     
@@ -182,10 +182,14 @@ def run_training(capsule_dir, data_path, env):
     
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        torch_dtype=torch.float16 if fp16 else torch.float32,
+        torch_dtype=torch.bfloat16 if use_bf16 else torch.float32,
         device_map=device_map,
         trust_remote_code=True,
     )
+    
+    # Enable gradient checkpointing for memory savings
+    if env["has_gpu"]:
+        model.gradient_checkpointing_enable()
     
     # Load dataset
     logger.info(f"📂 تحميل البيانات: {data_path}")
@@ -226,7 +230,8 @@ def run_training(capsule_dir, data_path, env):
         per_device_train_batch_size=batch_size,
         gradient_accumulation_steps=gradient_accum,
         learning_rate=5e-5,
-        fp16=fp16,
+        bf16=use_bf16,
+        fp16=False,
         save_strategy="steps",
         save_steps=500,
         logging_steps=10,
