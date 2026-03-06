@@ -14,6 +14,7 @@ workers:
     workspace: ~/bi-ide-v8
     venv: /home/bi/.bi-ide-worker/venv/bin/python3
     max_concurrent: 2      # كبسولتين بنفس الوقت (24GB / 10GB each)
+    cpu_percent: 30         # 30% من المعالج — الباقي لخدمات أخرى
 
 # === Hostinger VPS (CPU only) ===
   - name: vps-hostinger
@@ -27,6 +28,7 @@ workers:
     workspace: /root/.bi-ide-worker
     venv: /root/.bi-ide-worker/venv/bin/python3
     max_concurrent: 1
+    cpu_percent: 75         # 75% — الباقي للموقع
 
 # === Windows Desktop (RTX 4050 6GB) ===
   - name: windows-desktop
@@ -40,6 +42,7 @@ workers:
     workspace: C:\Users\bi\.bi-ide-worker
     venv: python
     max_concurrent: 1
+    cpu_percent: 50         # 50% من المعالج
 
 # === أضف حاسبات هنا ===
 # مثال H200:

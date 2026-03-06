@@ -37,6 +37,17 @@ def train_capsule(capsule_dir: Path, base_model: str, config: dict) -> dict:
 
     os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
+    # === إدارة المعالج — استغلال كل الكورات ===
+    import multiprocessing
+    total_cores = multiprocessing.cpu_count()
+    cpu_percent = config.get("cpu_percent", 75)  # نسبة استخدام المعالج
+    usable_cores = max(1, int(total_cores * cpu_percent / 100))
+    torch.set_num_threads(usable_cores)
+    torch.set_num_interop_threads(max(1, usable_cores // 2))
+    os.environ["OMP_NUM_THREADS"] = str(usable_cores)
+    os.environ["MKL_NUM_THREADS"] = str(usable_cores)
+    logger.info(f"🔧 CPU: {usable_cores}/{total_cores} cores ({cpu_percent}%)")
+
     data_dir = capsule_dir / "data"
     model_dir = capsule_dir / "model"
     model_dir.mkdir(parents=True, exist_ok=True)
