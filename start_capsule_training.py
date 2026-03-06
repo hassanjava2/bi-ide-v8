@@ -207,6 +207,13 @@ def run_training(capsule_dir, data_path, env):
     
     tokenized = dataset.map(tokenize_fn, batched=True, remove_columns=dataset.column_names)
     
+    # Add labels for causal LM (labels = input_ids)
+    def add_labels(examples):
+        examples["labels"] = examples["input_ids"].copy()
+        return examples
+    
+    tokenized = tokenized.map(add_labels, batched=True)
+    
     # Training
     training_args = TrainingArguments(
         output_dir=output_dir,
