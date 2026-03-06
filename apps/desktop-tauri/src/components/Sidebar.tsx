@@ -23,6 +23,9 @@ import { fs, workspace, git, training, ai, trainingData, AiChatMessage } from ".
 import { CouncilPanel } from "./CouncilPanel";
 import { HierarchyPanel } from "./HierarchyPanel";
 import { ProjectsPanel } from "./ProjectsPanel";
+import { FactoriesPanel } from "./FactoriesPanel";
+import { CapsuleTreePanel } from "./CapsuleTreePanel";
+import { BrainDashboardPanel } from "./BrainDashboardPanel";
 import { listen } from "@tauri-apps/api/event";
 
 const AIChat = lazy(() =>
@@ -611,6 +614,15 @@ export function Sidebar() {
             <CouncilPanel />
             <div className="border-t border-dark-700">
               <HierarchyPanel />
+            </div>
+            <div className="border-t border-dark-700">
+              <FactoriesPanel />
+            </div>
+            <div className="border-t border-dark-700">
+              <CapsuleTreePanel />
+            </div>
+            <div className="border-t border-dark-700">
+              <BrainDashboardPanel />
             </div>
             <div className="border-t border-dark-700">
               <Suspense fallback={panelFallback}>
