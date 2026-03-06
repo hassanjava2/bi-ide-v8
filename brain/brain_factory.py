@@ -16,6 +16,7 @@ import logging
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
+from brain.capsule_registry import capsule_registry
 
 logger = logging.getLogger("brain_factory")
 
@@ -59,6 +60,32 @@ class BrainFactory:
         self.capsules_dir = capsules_dir or CAPSULES_ROOT
         self.capsules_dir.mkdir(parents=True, exist_ok=True)
         self.evolution_count = 0
+        self.registry = capsule_registry
+
+    def _register_capsule(self, capsule_id: str, specialty: str = "",
+                           parent: str = None, layer: int = 0):
+        """تسجيل كبسولة بالشبكة — تصير مرئية للكل"""
+        capsule_dir = self.capsules_dir / capsule_id
+        info = self._load_capsule_info(capsule_dir) if capsule_dir.exists() else {}
+
+        # مواضيع الكبسولة حسب التخصص
+        topics = [capsule_id, specialty] if specialty else [capsule_id]
+        # إضافة كلمات التخصص من الاسم
+        topics.extend(capsule_id.replace("_", " ").split())
+
+        self.registry.register({
+            "capsule_id": capsule_id,
+            "name": capsule_id,
+            "specialty": specialty or capsule_id,
+            "topics": list(set(topics)),
+            "topic_count": len(set(topics)),
+            "layer": layer,
+            "parent": parent,
+            "has_model": info.get("has_model", False),
+            "loss": info.get("loss"),
+            "avg_confidence": 0.5,
+        })
+        logger.info(f"📝 Registered {capsule_id} in network")
 
     def get_all_capsules(self) -> list[dict]:
         """جلب كل الكبسولات مع معلوماتها"""
@@ -193,6 +220,10 @@ class BrainFactory:
             parent_meta_path.write_text(json.dumps(parent_meta, indent=2, ensure_ascii=False))
 
         logger.info(f"🧒 Child: {child_id} (L{parent_layer + 1}) from {parent_id}")
+
+        # تسجيل بالشبكة فوراً
+        self._register_capsule(child_id, specialty, parent_id, parent_layer + 1)
+
         return child_id
 
     def breed(self, p1: str, p2: str, name: str) -> str:
@@ -211,6 +242,7 @@ class BrainFactory:
                 shutil.copy2(f, child_data / f"from_{p2}_{f.name}")
 
         logger.info(f"🧬 Bred: {p1} × {p2} → {child_id}")
+        # التسجيل صار أوتوماتيك داخل create_child
         return child_id
 
     def evolve(self) -> dict:
@@ -259,7 +291,23 @@ class BrainFactory:
                 archived.append(capsule["id"])
 
         logger.info(f"🧬 Evolution #{self.evolution_count}: +{len(created)} -{len(archived)}")
+
+        # تحديث السجل — كل الكبسولات المدربة تنربط بالشبكة
+        self.sync_registry()
+
         return {"cycle": self.evolution_count, "created": created, "archived": archived}
+
+    def sync_registry(self):
+        """مزامنة — تسجيل كل كبسولة موجودة بالشبكة"""
+        for c in self.get_all_capsules():
+            if not c["archived"]:
+                self._register_capsule(
+                    c["id"],
+                    c.get("specialty", c["id"]),
+                    c.get("parent"),
+                    c.get("layer", 0),
+                )
+        logger.info(f"🔄 Registry synced: {len(self.registry.get_all())} capsules connected")
 
     def get_tree(self) -> dict:
         """بناء شجرة الكبسولات"""
