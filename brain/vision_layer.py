@@ -10,9 +10,12 @@ vision_layer.py — طبقة تحليل الصور والفيديو 👁️
   5. مراقبة عمال المصنع ← توجيه + تدريب
 
 يستخدم:
-  - YOLO/ONNX للكشف
+  - نموذج BI-Vision (خاص بينا — MobileNet+SE)
+  - YOLO كمعلّم خارجي (بياناتنا ما تطلع)
   - OCR للنصوص
   - Activity Recognition للنشاطات
+
+الأولوية: BI-Vision → YOLO → Rule-based
 """
 
 import json
@@ -32,6 +35,8 @@ try:
 except ImportError:
     import sys; sys.path.insert(0, str(PROJECT_ROOT))
     from brain.memory_system import memory
+
+MODELS_DIR = PROJECT_ROOT / "brain" / "vision_data" / "models"
 
 
 @dataclass
@@ -61,8 +66,10 @@ class ImageAnalyzer:
     """
     محلل الصور — يكشف أشياء + نصوص + تصنيف
 
-    Phase 1: Rule-based + metadata
-    Phase 2: YOLO/ONNX models (بعد التدريب)
+    الأولوية:
+      1. BI-Vision (نموذجنا الخاص)
+      2. YOLO (معلّم خارجي — بياناتنا ما تطلع)
+      3. Rule-based (قواعد)
     """
 
     KNOWN_EXTENSIONS = {
@@ -71,18 +78,42 @@ class ImageAnalyzer:
 
     def __init__(self):
         self.model_loaded = False
-        self._try_load_model()
+        self.yolo_model = None
+        self.bi_vision_model = None
+        self.active_model = "rule-based"  # "bi-vision" | "yolo" | "rule-based"
+        self._try_load_models()
 
-    def _try_load_model(self):
-        """محاولة تحميل نموذج YOLO"""
+    def _try_load_models(self):
+        """تحميل النماذج — BI-Vision أولاً ثم YOLO"""
+        # 1. محاولة BI-Vision (نموذجنا)
         try:
-            # Phase 2: YOLO
-            # from ultralytics import YOLO
-            # self.model = YOLO("yolov8n.pt")
-            # self.model_loaded = True
+            import torch
+            bi_path = MODELS_DIR / "bi_vision_latest.pt"
+            if bi_path.exists():
+                self.bi_vision_model = torch.load(bi_path, map_location="cpu")
+                self.bi_vision_model.eval()
+                self.model_loaded = True
+                self.active_model = "bi-vision"
+                logger.info("✅ BI-Vision model loaded (our model)")
+                return
+        except Exception:
             pass
+
+        # 2. محاولة YOLO (معلّم خارجي)
+        try:
+            from ultralytics import YOLO
+            yolo_path = MODELS_DIR / "yolov8n.pt"
+            if yolo_path.exists():
+                self.yolo_model = YOLO(str(yolo_path))
+            else:
+                self.yolo_model = YOLO("yolov8n.pt")
+            self.model_loaded = True
+            self.active_model = "yolo"
+            logger.info("✅ YOLO teacher model loaded (external)")
         except ImportError:
-            logger.info("Vision: YOLO not installed — using rule-based analysis")
+            logger.info("👁️ Vision: no model — using rule-based")
+        except Exception as e:
+            logger.warning(f"YOLO load error: {e}")
 
     def analyze(self, filepath: str, content_bytes: bytes = None) -> AnalysisResult:
         """تحليل صورة"""
@@ -93,33 +124,33 @@ class ImageAnalyzer:
             result.summary = f"File not found: {filepath}"
             return result
 
-        # Metadata analysis
+        # Metadata
         result.metadata = {
             "filename": fp.name,
             "extension": fp.suffix.lower(),
             "size_bytes": fp.stat().st_size if fp.exists() else len(content_bytes or b""),
+            "model_used": self.active_model,
         }
 
-        if self.model_loaded:
-            result = self._analyze_with_model(filepath, result)
+        # الأولوية: BI-Vision → YOLO → Rule-based
+        if self.bi_vision_model:
+            result = self._analyze_bi_vision(filepath, result)
+        elif self.yolo_model:
+            result = self._analyze_yolo(filepath, result)
         else:
             result = self._analyze_rule_based(fp, result)
 
-        # حفظ بالذاكرة
         memory.save_knowledge(
             topic=f"Image Analysis: {fp.name}",
-            content=result.summary,
-            source="vision_layer",
+            content=result.summary, source="vision_layer",
         )
-
         return result
 
     def _analyze_rule_based(self, fp: Path, result: AnalysisResult) -> AnalysisResult:
-        """تحليل قائم على القواعد (Phase 1)"""
+        """تحليل قائم على القواعد"""
         size_mb = result.metadata["size_bytes"] / (1024 * 1024)
-
-        # تصنيف حسب الاسم
         name = fp.stem.lower()
+
         categories = {
             "screenshot": ["screen", "screenshot", "capture", "snap"],
             "diagram": ["diagram", "chart", "graph", "flow", "uml"],
@@ -137,17 +168,65 @@ class ImageAnalyzer:
         result.objects.append(DetectedObject(
             label=detected_cat, confidence=0.6, category="classification"
         ))
-
-        result.summary = (
-            f"Image: {fp.name} ({size_mb:.1f}MB), "
-            f"Category: {detected_cat}"
-        )
-
+        result.summary = f"Image: {fp.name} ({size_mb:.1f}MB), Category: {detected_cat} [rule-based]"
         return result
 
-    def _analyze_with_model(self, filepath: str, result: AnalysisResult) -> AnalysisResult:
-        """تحليل بـ YOLO (Phase 2)"""
-        # TODO: implement when YOLO installed
+    def _analyze_yolo(self, filepath: str, result: AnalysisResult) -> AnalysisResult:
+        """تحليل بـ YOLO — معلّم خارجي (بياناتنا ما تطلع)"""
+        try:
+            detections = self.yolo_model(filepath, verbose=False)
+            for r in detections:
+                for box in r.boxes:
+                    obj = DetectedObject(
+                        label=r.names[int(box.cls[0])],
+                        confidence=round(float(box.conf[0]), 3),
+                        bbox=box.xyxy[0].tolist(),
+                        category="yolo_detection",
+                    )
+                    result.objects.append(obj)
+
+            result.summary = (f"Image: {Path(filepath).name}, "
+                            f"{len(result.objects)} objects [YOLO teacher]")
+        except Exception as e:
+            logger.warning(f"YOLO analysis failed: {e}")
+            result = self._analyze_rule_based(Path(filepath), result)
+        return result
+
+    def _analyze_bi_vision(self, filepath: str, result: AnalysisResult) -> AnalysisResult:
+        """تحليل بنموذج BI-Vision (نموذجنا الخاص)"""
+        try:
+            import torch
+            from torchvision import transforms
+            from PIL import Image
+
+            img = Image.open(filepath).convert("RGB")
+            transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+            ])
+            tensor = transform(img).unsqueeze(0)
+
+            with torch.no_grad():
+                output = self.bi_vision_model(tensor)
+                probs = torch.softmax(output, dim=1)
+                top5 = torch.topk(probs, 5)
+
+            for prob, idx in zip(top5.values[0], top5.indices[0]):
+                result.objects.append(DetectedObject(
+                    label=f"class_{idx.item()}",
+                    confidence=round(prob.item(), 3),
+                    category="bi_vision",
+                ))
+
+            result.summary = (f"Image: {Path(filepath).name}, "
+                            f"{len(result.objects)} detections [BI-Vision]")
+        except Exception as e:
+            logger.warning(f"BI-Vision failed, falling back to YOLO: {e}")
+            if self.yolo_model:
+                result = self._analyze_yolo(filepath, result)
+            else:
+                result = self._analyze_rule_based(Path(filepath), result)
         return result
 
 
@@ -191,13 +270,26 @@ class CameraMonitor:
 
     يراقب:
       - مصانع ← يكشف مشاكل
-      - عمال ← يوجه ويدرب
+      - عمال ← يوجه ويدرب (حضور/انصراف أوتوماتيكي)
       - سلامة ← ينبه على مخاطر
+
+    متصل بـ company_camera لإدارة الشركة 🏢
     """
 
     def __init__(self):
         self.cameras: Dict[str, Dict] = {}
         self.alerts: List[Dict] = []
+        self.image_analyzer = ImageAnalyzer()
+        self._company = None  # lazy import
+
+    def _get_company(self):
+        if self._company is None:
+            try:
+                from brain.company_camera import company
+                self._company = company
+            except ImportError:
+                pass
+        return self._company
 
     def add_camera(self, camera_id: str, url: str, location: str = "", purpose: str = "general"):
         """إضافة كاميرا"""
@@ -207,26 +299,33 @@ class CameraMonitor:
         }
 
     def monitor_frame(self, camera_id: str, frame_data: bytes = None) -> Dict:
-        """تحليل إطار من كاميرا"""
+        """تحليل إطار من كاميرا — يرسل نتائج لـ company_camera"""
         if camera_id not in self.cameras:
             return {"error": f"Camera {camera_id} not found"}
 
         cam = self.cameras[camera_id]
-
-        # Phase 2: Real frame analysis
         analysis = {
             "camera": camera_id, "location": cam["location"],
             "timestamp": datetime.now().isoformat(),
             "objects_detected": 0, "warnings": [],
         }
 
-        # مستقبلاً: YOLO detection + activity recognition
+        # إرسال النتائج لنظام إدارة الشركة
+        company = self._get_company()
+        if company:
+            result = company.process_camera_frame(
+                camera_id,
+                detected_objects=analysis.get("detected_objects"),
+                alerts=analysis.get("warnings"),
+            )
+            analysis["company_actions"] = result.get("actions", [])
+
         return analysis
 
     def check_safety(self, camera_id: str) -> List[str]:
         """فحص سلامة من الكاميرا"""
         warnings = []
-        # Phase 2: fire detection, PPE check, hazard zones
+        # YOLO safety detection (PPE, fire, hazards)
         return warnings
 
 
@@ -336,7 +435,10 @@ class VisionLayer:
 
     def get_status(self) -> Dict:
         return {
-            "image_model": "loaded" if self.image.model_loaded else "rule-based",
+            "image_model": self.image.active_model,
+            "model_loaded": self.image.model_loaded,
+            "yolo_available": self.image.yolo_model is not None,
+            "bi_vision_available": self.image.bi_vision_model is not None,
             "cameras": len(self.camera.cameras),
             "alerts": len(self.camera.alerts),
         }

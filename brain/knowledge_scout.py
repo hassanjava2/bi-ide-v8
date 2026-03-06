@@ -780,12 +780,86 @@ class OfflineScout:
         logger.info(f"📁 Shared: {len(shares)} shares found")
         return shares
 
+    def discover_mounted_volumes(self) -> List[Dict]:
+        """اكتشاف أقراص خارجية / USB مركّبة"""
+        volumes = []
+
+        # macOS: /Volumes
+        vol_dir = Path("/Volumes")
+        if vol_dir.exists():
+            for v in vol_dir.iterdir():
+                if v.is_dir() and v.name != "Macintosh HD":
+                    try:
+                        files = list(v.rglob("*"))[:100]
+                        readable = [f for f in files if f.is_file() and f.stat().st_size > 0]
+                        volumes.append({
+                            "name": v.name, "path": str(v),
+                            "type": "volume", "files": len(readable),
+                            "size_gb": round(sum(f.stat().st_size for f in readable[:50]) / (1024**3), 2),
+                        })
+                    except PermissionError:
+                        volumes.append({"name": v.name, "path": str(v), "type": "volume", "files": 0, "error": "permission"})
+
+        # Linux: /mnt, /media
+        for mnt_dir in [Path("/mnt"), Path("/media")]:
+            if mnt_dir.exists():
+                for v in mnt_dir.iterdir():
+                    if v.is_dir():
+                        try:
+                            files = list(v.rglob("*"))[:100]
+                            readable = [f for f in files if f.is_file()]
+                            volumes.append({
+                                "name": v.name, "path": str(v),
+                                "type": "mount", "files": len(readable),
+                            })
+                        except PermissionError:
+                            pass
+
+        logger.info(f"💾 Mounted volumes: {len(volumes)}")
+        return volumes
+
+    def scan_usb_files(self, extensions: List[str] = None, max_files: int = 200) -> List[Dict]:
+        """مسح ملفات من USB/أقراص خارجية للتعلّم"""
+        if not extensions:
+            extensions = [".py", ".json", ".csv", ".txt", ".md", ".yaml", ".yml",
+                         ".sql", ".html", ".css", ".js", ".ts", ".rs", ".go",
+                         ".toml", ".ini", ".cfg", ".conf", ".xml"]
+
+        files_found = []
+        volumes = self.discover_mounted_volumes()
+
+        for vol in volumes:
+            vol_path = Path(vol["path"])
+            count = 0
+            try:
+                for f in vol_path.rglob("*"):
+                    if count >= max_files // max(len(volumes), 1):
+                        break
+                    if f.is_file() and f.suffix.lower() in extensions:
+                        try:
+                            size = f.stat().st_size
+                            if 100 < size < 500_000:  # 100B - 500KB
+                                files_found.append({
+                                    "path": str(f), "name": f.name,
+                                    "ext": f.suffix, "size": size,
+                                    "volume": vol["name"],
+                                })
+                                count += 1
+                        except PermissionError:
+                            pass
+            except PermissionError:
+                pass
+
+        logger.info(f"📁 USB files scanned: {len(files_found)}")
+        return files_found[:max_files]
+
     def collect_local_knowledge(self) -> Dict:
         """جمع كل المعرفة المحلية المتاحة"""
         knowledge = {
             "lan_devices": len(self.discovered_devices),
             "services": len(self.discovered_services),
             "data_sources": [],
+            "mounted_volumes": [],
         }
 
         # بحث عن مصادر بيانات محلية
@@ -799,6 +873,9 @@ class OfflineScout:
         for src in local_sources:
             if os.path.exists(src):
                 knowledge["data_sources"].append(src)
+
+        # أقراص خارجية
+        knowledge["mounted_volumes"] = self.discover_mounted_volumes()
 
         # بحث عن databases محلية
         db_patterns = ["*.db", "*.sqlite", "*.sqlite3"]
@@ -820,6 +897,8 @@ class OfflineScout:
             "lan": self.scan_lan(),
             "usb": self.discover_usb(),
             "shares": self.discover_shared_files(),
+            "volumes": self.discover_mounted_volumes(),
+            "usb_files": len(self.scan_usb_files()),
             "local": self.collect_local_knowledge(),
             "timestamp": datetime.now().isoformat(),
         }
