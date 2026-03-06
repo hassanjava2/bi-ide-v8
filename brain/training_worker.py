@@ -46,11 +46,11 @@ def train_capsule(capsule_dir: Path, base_model: str, config: dict) -> dict:
     # === دمج JSONL ===
     merged = data_dir / "merged_train.jsonl"
     count = 0
-    with open(merged, "w") as out:
+    with open(merged, "w", encoding="utf-8") as out:
         for f in data_dir.glob("*.jsonl"):
             if f.name == "merged_train.jsonl":
                 continue
-            with open(f) as fh:
+            with open(f, encoding="utf-8") as fh:
                 for line in fh:
                     line = line.strip()
                     if not line:
