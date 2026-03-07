@@ -84,6 +84,14 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️ BI Brain start failed: {e}")
     
+    # Sync Capsule Bridge (links 498 capsules to tree + hierarchy + real_life)
+    try:
+        from brain.capsule_bridge import bridge
+        bridge.sync_all()
+        logger.info("✅ Capsule Bridge synced")
+    except Exception as e:
+        logger.warning(f"⚠️ Capsule Bridge sync failed: {e}")
+    
     logger.info("🏛️ BI-IDE API fully operational")
     
     yield
@@ -145,6 +153,12 @@ app.include_router(admin_router, prefix="/api/v1", tags=["Admin"])
 app.include_router(rtx5090_router, prefix="/api/v1", tags=["RTX 5090"])
 app.include_router(network_router, prefix="/api/v1", tags=["Network"])
 app.include_router(brain_router, prefix="/api/v1", tags=["Brain"])
+# Capsule management
+try:
+    from api.routes.capsule_api import router as capsule_router
+    app.include_router(capsule_router, tags=["Capsules"])
+except ImportError as e:
+    logger.warning(f"Capsule API not loaded: {e}")
 # WebSocket notifications
 app.include_router(
     notifications_router, prefix="/api/v1", tags=["Notifications"]

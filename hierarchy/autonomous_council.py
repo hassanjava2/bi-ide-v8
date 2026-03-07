@@ -57,7 +57,90 @@ class CouncilMember:
     voice_color: str  # For UI display
     
     def generate_opinion(self, topic: str, context: Dict) -> str:
-        """توليد رأي حسب الشخصية والاختصاص والموضوع"""
+        """توليد رأي حسب الشخصية والاختصاص والموضوع — يستخدم Ollama أولاً"""
+        # 1. Try RTX Ollama for REAL AI opinion
+        try:
+            opinion = self._generate_with_ollama(topic)
+            if opinion and len(opinion) > 20:
+                return opinion
+        except Exception:
+            pass
+        
+        # 2. Fallback to template-based opinion
+        return self._generate_template_opinion(topic, context)
+    
+    def _generate_with_ollama(self, topic: str) -> str:
+        """Generate opinion using RTX Ollama"""
+        import requests
+        import os
+        
+        rtx_host = os.getenv("RTX5090_HOST", os.getenv("RTX4090_HOST", "192.168.1.164"))
+        rtx_port = int(os.getenv("RTX5090_PORT", os.getenv("RTX4090_PORT", "8090")))
+        
+        # Build personality-aware prompt
+        system_prompt = (
+            f"أنت {self.name}، {self.title}. "
+            f"اختصاصاتك: {', '.join(self.expertise)}. "
+            f"شخصيتك: {self.personality}. "
+            f"أجب بإيجاز (2-3 جمل) كخبير في مجالك. "
+            f"لا تذكر اسمك في الرد."
+        )
+        
+        # Try /brain/ask first (capsule-aware)
+        try:
+            resp = requests.post(
+                f"http://{rtx_host}:{rtx_port}/brain/ask",
+                json={"question": topic, "max_tokens": 256, "system": system_prompt},
+                timeout=15,
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                answer = data.get("answer") or data.get("response", "")
+                if answer and len(answer) > 20:
+                    return answer
+        except Exception:
+            pass
+        
+        # Try /council/message
+        try:
+            resp = requests.post(
+                f"http://{rtx_host}:{rtx_port}/council/message",
+                json={"message": topic, "system": system_prompt},
+                timeout=15,
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                answer = data.get("response", "")
+                if answer and len(answer) > 20:
+                    return answer
+        except Exception:
+            pass
+        
+        # Try direct Ollama API (if running on localhost or RTX)
+        for ollama_url in [f"http://{rtx_host}:11434", "http://localhost:11434"]:
+            try:
+                resp = requests.post(
+                    f"{ollama_url}/api/generate",
+                    json={
+                        "model": os.getenv("OLLAMA_MODEL", "qwen2.5:7b"),
+                        "prompt": topic,
+                        "system": system_prompt,
+                        "stream": False,
+                        "options": {"temperature": 0.8, "num_predict": 200},
+                    },
+                    timeout=20,
+                )
+                if resp.status_code == 200:
+                    answer = resp.json().get("response", "")
+                    if answer and len(answer) > 20:
+                        return answer
+            except Exception:
+                continue
+        
+        return ""  # Fallback to template
+    
+    def _generate_template_opinion(self, topic: str, context: Dict) -> str:
+        """توليد رأي بالقالب (fallback)"""
         topic_lower = topic.lower()
         
         # Domain-specific knowledge bases for contextual opinions

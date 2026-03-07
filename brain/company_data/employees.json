@@ -1,0 +1,86 @@
+{
+  "emp_001": {
+    "employee_id": "emp_001",
+    "name": "Hassan",
+    "name_ar": "حسن",
+    "department": "هندسة",
+    "role": "مهندس",
+    "face_encoding": "",
+    "status": "حاضر",
+    "shift_start": "08:00",
+    "shift_end": "16:00",
+    "total_days": 1,
+    "late_count": 0,
+    "early_leave_count": 0,
+    "active_task": "task_1772839612_0",
+    "skills": [
+      "welding",
+      "electrical",
+      "plc"
+    ],
+    "performance_score": 0.5
+  },
+  "emp_002": {
+    "employee_id": "emp_002",
+    "name": "Ali",
+    "name_ar": "علي",
+    "department": "إنتاج",
+    "role": "مشغّل",
+    "face_encoding": "",
+    "status": "حاضر",
+    "shift_start": "08:00",
+    "shift_end": "16:00",
+    "total_days": 1,
+    "late_count": 0,
+    "early_leave_count": 0,
+    "active_task": "",
+    "skills": [
+      "machine",
+      "production",
+      "quality"
+    ],
+    "performance_score": 0.5
+  },
+  "emp_003": {
+    "employee_id": "emp_003",
+    "name": "Zahra",
+    "name_ar": "زهراء",
+    "department": "إدارة",
+    "role": "محاسبة",
+    "face_encoding": "",
+    "status": "حاضر",
+    "shift_start": "08:00",
+    "shift_end": "16:00",
+    "total_days": 1,
+    "late_count": 0,
+    "early_leave_count": 0,
+    "active_task": "task_1772839612_2",
+    "skills": [
+      "accounting",
+      "excel",
+      "report"
+    ],
+    "performance_score": 0.5
+  },
+  "emp_004": {
+    "employee_id": "emp_004",
+    "name": "Ahmed",
+    "name_ar": "أحمد",
+    "department": "مخزن",
+    "role": "مسؤول مخزون",
+    "face_encoding": "",
+    "status": "حاضر",
+    "shift_start": "08:00",
+    "shift_end": "16:00",
+    "total_days": 1,
+    "late_count": 0,
+    "early_leave_count": 0,
+    "active_task": "task_1772839612_1",
+    "skills": [
+      "inventory",
+      "logistics",
+      "forklift"
+    ],
+    "performance_score": 0.5
+  }
+}

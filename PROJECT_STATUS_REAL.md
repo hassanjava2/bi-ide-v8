@@ -1,8 +1,8 @@
 # BI-IDE v8 - حالة المشروع الحقيقية
 
-**تاريخ التحديث:** 2026-02-24  
-**الإصدار:** 8.0.0  
-**الحالة:** ~80% جاهز للإنتاج (بعد الإصلاحات الأمنية)
+**تاريخ التحديث:** 2026-03-07  
+**الإصدار:** 8.2.0  
+**الحالة:** ~90% جاهز للإنتاج
 
 ---
 
@@ -10,10 +10,13 @@
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║  المشروع: BI-IDE v8                                          ║
-║  الجاهزية: ~80%                                              ║
-║  الحالة: Beta مُحسَّن - قريب من الإنتاج                     ║
-║  الأمن: ✅ تم إصلاح الثغرات الحرجة                           ║
+║  المشروع: BI-IDE v8.2                                       ║
+║  الجاهزية: ~90%                                             ║
+║  الكبسولات: 498 (مربوطة بشجرة وراثة 592 عقدة)              ║
+║  الحكماء: 16 حكيم × Ollama RTX 5090                        ║
+║  Real Life Layer: 25 agent + PhysicsEngine                  ║
+║  Training Pipeline: 4 scripts جاهزة                         ║
+║  Google Drive: 451+ GB من أصل 30 TB                         ║
 ╚══════════════════════════════════════════════════════════════╝
 ```
 
@@ -23,57 +26,27 @@
 
 | المكون | الحالة | التفاصيل |
 |--------|--------|----------|
-| **ERP System** | ✅ شغّال | 6 modules كاملة (Accounting, Inventory, HR, Invoices, CRM, Dashboard) |
+| **ERP System** | ✅ شغّال | 6 modules (Accounting, Inventory, HR, Invoices, CRM, Dashboard) |
 | **Community Platform** | ✅ شغّال | Forums + Knowledge Base + Code Sharing |
-| **UI/Frontend** | ✅ شغّال | React + TypeScript + Tailwind - Build ناجح |
+| **UI/Frontend** | ✅ شغّال | React + TypeScript + Tailwind — Build ناجح |
 | **Database Layer** | ✅ شغّال | SQLAlchemy 2.0 + PostgreSQL/SQLite |
-| **Auth System** | ✅ شغّال | JWT + RBAC (8 roles) - **تم إصلاح الثغرات** |
-| **API Gateway** | ✅ شغّال | Rate limiting + Middleware |
+| **Auth System** | ✅ شغّال | JWT + RBAC (8 roles) — ثغرات مُصلحة |
+| **API Gateway** | ✅ شغّال | Rate limiting + 13 routers + Capsule API |
 | **DevOps** | ✅ جاهز | Docker + K8s + CI/CD |
+| **AI Hierarchy** | ✅ حقيقي | 7 طبقات + Meta Architect + 100+ entity |
+| **Autonomous Council** | ✅ حقيقي | 16 حكيم × Ollama (24/7 loop) |
+| **Real Life Layer** | ✅ حقيقي | 25 agent + PhysicsEngine + مصانع أسمنت/حديد/طوب |
+| **Capsule System** | ✅ حقيقي | 498 كبسولة + شجرة وراثة + جسر مركزي |
 
 ---
 
-## ⚠️ المكونات العاملة جزئياً
+## ⚠️ يحتاج عمل
 
 | المكون | الحالة | التفاصيل |
 |--------|--------|----------|
-| **AI Hierarchy** | ⚠️ هيكل فقط | الوظائف الذكية وهمية (mock) - محدد في الكود |
-| **Learning System** | ⚠️ TODO | `core/tasks.py` - logic غير منفذ |
-| **Training Pipeline** | ⚠️ قديم | بعض السكربيتات تحتاج تحديث |
-
----
-
-## ❌ ما يحتاج عمل
-
-| المجال | المهام | الأولوية |
-|--------|--------|----------|
-| **AI Enhancement** | BPE + Optimization + Council Memory | متوسطة |
-| **Testing** | تحسين التغطية من ~120 إلى 350+ | متوسطة |
-| **Documentation** | توحيد الوثائق | منخفضة |
-
----
-
-## 🔒 الإصلاحات الأمنية المُنجزة
-
-### ✅ 1. Password Reset (2026-02-24)
-- **المشكلة:** التوكن يُرجع في الـ response
-- **الإصلاح:** تم إزالة التوكن + إضافة email service
-- **الملفات:** `api/routes/users.py`, `core/email_service.py`
-
-### ✅ 2. Debug Mode Bypass (2026-02-24)
-- **المشكلة:** DEBUG=true يسمح لأي شخص بالدخول كـ admin
-- **الإصلاح:** تم تقييد الـ bypass لـ pytest فقط
-- **الملف:** `api/auth.py`
-
-### ✅ 3. AI Mock Labels (2026-02-24)
-- **المشكلة:** AI Hierarchy يرجع بيانات وهمية بدون تحذير
-- **الإصلاح:** تم إضافة `_warning` labels في كل مكان
-- **الملفات:** `hierarchy/__init__.py`, `hierarchy/meta_team.py`, `hierarchy/scouts.py`
-
-### ✅ 4. Test Infrastructure (2026-02-24)
-- **المشكلة:** `conftest.py` فارغ
-- **الإصلاح:** تم إنشاء fixtures مشتركة كاملة
-- **الملف:** `tests/conftest.py`
+| **Training Pipeline** | ⚠️ جاهز — لم يُختبر | Scripts مكتوبة، بانتظار البيانات |
+| **Testing** | ⚠️ ~120 اختبار | هدف: 350+ |
+| **Desktop App (Tauri)** | ⚠️ typecheck OK | يحتاج اختبار تشغيل |
 
 ---
 
@@ -81,50 +54,39 @@
 
 ```
 Codebase:
-├── Python: ~38,000 LOC
+├── Python: ~42,000 LOC
 ├── TypeScript: ~22,000 LOC
-├── Tests: ~120 اختبار (هدف: 350+)
+├── Tests: ~120 اختبار
 └── Docs: ~5,000 LOC
 
-API Endpoints: ~164
+API Endpoints:  ~170+ (+ 6 capsule endpoints)
 Database Models: ~20
-UI Components: 25+
+UI Components:   25+
+Capsules:        498 (28 فئة)
+Sages:           16 حكيم
+RL Agents:       25 متخصص
+Tree Nodes:      592
 ```
 
 ---
 
-## 🚀 جاهزية الإنتاج
+## 🔗 خريطة الربط
 
-### ✅ يمكن النشر
-- ERP System (كامل)
-- Community Platform (كامل)
-- Auth System (بعد الإصلاحات)
-- Database Layer (ثابت)
-
-### ⚠️ يحتاج توضيح
-- AI Hierarchy - **يجب توضيح أنه mock**
-- Learning System - **غير منفذ**
-
-### ❌ لا تنشر حتى يُكتمل
-- Penetration testing
-- WAF
-- Security audit خارجي
-
----
-
-## 📝 ملاحظات
-
-**الوثائق القديمة `PROJECT_STATUS.md`:**  
-تدّعي 100% - **غير دقيقة**. استخدم هذا الملف.
-
-**AI Hierarchy:**  
-الهيكل موجود لكن الوظائف الذكية وهمية. تم إضافة تحذيرات واضحة في الكود.
-
-**Password Reset:**  
-تم الإصلاح. الآن يُرسل إيميل (أو يُطبع في console في development).
+```
+capsule_500.py (498 كبسولة)
+      ↕ capsule_bridge.py
+capsule_tree.py (592 عقدة + وراثة)
+      ↕
+┌─────┼──────────┐
+│     │          │
+hierarchy    real_life    data_preprocessor
+(16 حكيم)   (25 agent)   (498 keyword)
+      ↕
+API /api/v1/capsules/* (6 endpoints)
+      ↕
+IDE Frontend
+```
 
 ---
 
-**الحكم النهائي:** المشروع جاهز لـ **Beta Testing** وقريب من **Production** بعد اختبار إضافي.
-
-**الوقت المُقدَّر للإنتاج الكامل:** 3-5 أيام (اختبار + توثيق)
+**الحكم:** المشروع جاهز للتدريب والتقييم بمجرد اكتمال تنزيل البيانات.

@@ -1,0 +1,35 @@
+{
+  "cam_entrance": {
+    "camera_id": "cam_entrance",
+    "name": "كاميرا المدخل",
+    "url": "rtsp://192.168.1.10:554",
+    "location": "البوابة الرئيسية",
+    "role": "مدخل",
+    "active": true,
+    "last_frame_time": "",
+    "detections_today": 0,
+    "alerts_today": 0
+  },
+  "cam_exit": {
+    "camera_id": "cam_exit",
+    "name": "كاميرا المخرج",
+    "url": "rtsp://192.168.1.11:554",
+    "location": "البوابة الخلفية",
+    "role": "مخرج",
+    "active": true,
+    "last_frame_time": "",
+    "detections_today": 0,
+    "alerts_today": 0
+  },
+  "cam_prod": {
+    "camera_id": "cam_prod",
+    "name": "كاميرا الإنتاج",
+    "url": "rtsp://192.168.1.12:554",
+    "location": "خط الإنتاج 1",
+    "role": "إنتاج",
+    "active": true,
+    "last_frame_time": "",
+    "detections_today": 0,
+    "alerts_today": 0
+  }
+}

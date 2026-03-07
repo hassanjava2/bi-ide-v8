@@ -1,0 +1,42 @@
+[
+  {
+    "employee_id": "emp_001",
+    "date": "2026-03-07",
+    "check_in": "02:26:52",
+    "check_out": "",
+    "status": "حاضر",
+    "hours_worked": 0.0,
+    "camera_id": "cam_entrance",
+    "notes": ""
+  },
+  {
+    "employee_id": "emp_002",
+    "date": "2026-03-07",
+    "check_in": "02:26:52",
+    "check_out": "",
+    "status": "حاضر",
+    "hours_worked": 0.0,
+    "camera_id": "cam_entrance",
+    "notes": ""
+  },
+  {
+    "employee_id": "emp_003",
+    "date": "2026-03-07",
+    "check_in": "02:26:52",
+    "check_out": "",
+    "status": "حاضر",
+    "hours_worked": 0.0,
+    "camera_id": "cam_entrance",
+    "notes": ""
+  },
+  {
+    "employee_id": "emp_004",
+    "date": "2026-03-07",
+    "check_in": "02:26:52",
+    "check_out": "",
+    "status": "حاضر",
+    "hours_worked": 0.0,
+    "camera_id": "cam_entrance",
+    "notes": ""
+  }
+]

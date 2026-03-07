@@ -11,7 +11,8 @@ import {
   Settings,
   Crown,
   Layers,
-  Server
+  Server,
+  TreePine
 } from 'lucide-react'
 
 // Static data moved outside component to prevent recreating on each render
@@ -22,6 +23,7 @@ const MENU_ITEMS = [
   { path: '/community', icon: MessageCircle, label: 'المجتمع' },
   { path: '/ide', icon: Code2, label: 'بيئة التطوير' },
   { path: '/training', icon: Brain, label: 'التدريب' },
+  { path: '/capsules', icon: TreePine, label: 'الكبسولات' },
   { path: '/nodes', icon: Server, label: 'العقد المتصلة' },
   { path: '/downloads', icon: Download, label: 'التنزيلات' },
   { path: '/meta', icon: Layers, label: 'التحكم الفوقي' },
